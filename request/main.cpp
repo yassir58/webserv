@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/13 15:35:19 by Ma3ert            #+#    #+#             */
-/*   Updated: 2022/12/15 13:53:31 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2022/12/16 14:31:37 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,17 +14,17 @@
 
 int checkMethod(std::string method, t_start &startLine)
 {
-	if (method.compare("GET"))
+	if (!method.compare("GET"))
 	{
 		startLine.method = "GET";
 		return (1);
 	}
-	if (method.compare("POST"))
+	if (!method.compare("POST"))
 	{
 		startLine.method = "POST";
 		return (1);
 	}
-	if (method.compare("DELETE"))
+	if (!method.compare("DELETE"))
 	{
 		startLine.method = "DELETE";
 		return (1);
@@ -34,7 +34,7 @@ int checkMethod(std::string method, t_start &startLine)
 
 int	treatAbsoluteURI(std::string target, t_start &line)
 {
-	if (target.compare(0, 6, "http//") || target.compare(0, 6, "HTTP//"))
+	if (!target.compare(0, 6, "http//") || !target.compare(0, 6, "HTTP//"))
 	{
 		target.erase(0, 6);
 		size_t pos = target.find('/', 0);
@@ -49,6 +49,7 @@ int	treatAbsoluteURI(std::string target, t_start &line)
 int treatAbsolutePath(std::string target, t_start &line)
 {
 	line.requestTraget = target;
+	return (1);
 }
 
 int checkRequestTarget(std::string target, t_start &line)
@@ -60,18 +61,48 @@ int checkRequestTarget(std::string target, t_start &line)
 	return (0);
 }
 
+int parseFirstLine(std::string line, std::string &method, std::string &target, std::string &version)
+{
+	size_t start = 0;
+	size_t pos = line.find(' ', start);
+	method = line.substr(start, pos);
+	
+	start = pos + 1;
+	pos = line.find(' ', start);
+	target = line.substr(start, pos - start);
+	
+	start = pos + 1;
+	pos = line.find(' ', start);
+	version = line.substr(start, pos);
+	return (1);
+}
+
+int checkVersion(std::string version, t_start &startLine)
+{
+	size_t pos = version.find('/', 0);
+	std::string protocol = version.substr(0, pos);
+	std::string ver = version.substr(pos + 1, std::string::npos);
+	if ((protocol.compare("http") || protocol.compare("HTTP")) && ver.compare("1.1") )
+		return (0);
+	startLine.httpVersion = version;
+	return (1);
+}
+
 int	treatFirstLine(std::string file, t_start &startLine)
 {
-	std::string method = strtok(&file[0], " ");
-	std::string version = strtok(&file[0], " ");
-	std::string	target = strtok(&file[0], " ");
+	std::string method;
+	std::string	target;
+	std::string version;
 
-	if (method.empty() || version.empty() || target.empty())
+	if (!parseFirstLine(file, method, target, version))
 		return (0);
 	if (!checkMethod(method, startLine))
 		return (0);
 	if (!checkRequestTarget(target, startLine))
 		return (0);
+	if (!checkVersion(version, startLine))
+		return (0);
+	return (1);
 }
 
 int main(int ac, char **av)
@@ -86,7 +117,11 @@ int main(int ac, char **av)
 	getline(fileRequest, firstLine);
 	if (!treatFirstLine(firstLine, newRequest.startLine))
 		return 1;
-	
+	std::cout << std::endl;
+	std::cout << "method: |" << newRequest.startLine.method << "|\n";
+	std::cout << "version: |" << newRequest.startLine.httpVersion << "|\n";
+	std::cout << "target: |" << newRequest.startLine.requestTraget << "|\n";
+	std::cout << "host: " << newRequest.startLine.hostName << "\n";
 	// while (line.empty())
 	// {
 	// 	getline(fileRequest, line);
