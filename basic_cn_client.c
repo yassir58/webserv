@@ -61,18 +61,23 @@ void *thread_executor (void *test)
 
 void *myThreadFun(void *vargp)
 {
-	system ("curl http://192.168.1.140:8080");
-	(void)vargp;
+	char *arg;
+
+	arg = (char *)vargp;
+	if (!strcmp("local", arg))
+		system ("curl http://localhost:8080");
+	else
+		system ("curl http://192.168.1.140:8080");
     return NULL;
 }
   
-int main()
+int main(int argc, char *argv[])
 {
     pthread_t thread_id[100];
 
 	for (int i = 0; i < 100; i++)
 	{
-		pthread_create(&thread_id[i], NULL, myThreadFun, NULL);
+		pthread_create(&thread_id[i], NULL, myThreadFun, argv[argc - 1]);
 	}
 	for (int i = 0; i < 100; i++)
 		pthread_join(thread_id[i], NULL);

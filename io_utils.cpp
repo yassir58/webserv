@@ -2,21 +2,12 @@
 
 
 
-void Server_instance::handle_active_sockets (int socket_fd)
+void Server_instance::handle_active_sockets (void)
 {
-    if (socket_fd == this->_server_fd)
-    {
-        this->_connection_fd = accept(this->_server_fd, (sockaddr *)&this->_server_addr, (socklen_t*)&this->_addr_len);
-        if (this->_connection_fd == -1)
-            throw  Connection_error("ACCEPT ERROR");
-        FD_SET (this->_connection_fd, &this->_current_fds);
-    }
-    else
-    {
         handle_request ();
-        FD_CLR (socket_fd, &this->_current_fds);
+        this->_request_count++;
         bzero (this->_buffer, HEADER_MAX);
-    }
+        std::cout << _request_count << std::endl;
 }
 
 
@@ -29,4 +20,14 @@ void Server_instance::handle_request (void)
     std::cout << this->_buffer << std::endl;
     send (this->_connection_fd, ACK_MESSAGE, strlen (ACK_MESSAGE), 0);
     close (this->_connection_fd);
+}
+
+void Server_instance::accept_connection (void)
+{
+    int new_connection;
+
+    new_connection = accept (this->_server_fd, (sockaddr*)&this->_server_addr, (socklen_t *) &this->_addr_len);
+    if (new_connection == -1)
+        strerror (errno);
+    FD_SET (new_connection, &_current_fds);
 }

@@ -37,13 +37,14 @@ class Server_instance
 {
     private:
         std::string _server_name;
+        int _request_count;
         int _server_fd;
         int _connection_fd;
         int _connection_port;
         int _addr_len;
         sockaddr_in _server_addr;
         fd_set _current_fds;
-        fd_set _active_fds;
+        fd_set _ready_fds;
         std::string _request_text;
         int _server_alive;
         int _read_return ;
@@ -58,8 +59,9 @@ class Server_instance
         //Server_instance (const Server_instance &copy);
         //Server_instance &Server_instance::operator= (const Server_instance &assign);
         int establish_connection (void);
+        void accept_connection (void);
         void handle_request (void);
-        void handle_active_sockets (int socket_fd);
+        void handle_active_sockets (void);
 };
 
 class connection_state

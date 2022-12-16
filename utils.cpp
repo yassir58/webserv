@@ -7,6 +7,7 @@ Server_instance::Server_instance (void)
     this->_server_alive = 1;
     bzero (this->_buffer, HEADER_MAX);
     this->enable = 1;
+    this->_request_count = 0;
     if (this->_server_fd == -1)
         throw  Fatal_error();
     else
@@ -27,6 +28,7 @@ Server_instance::Server_instance (void)
 Server_instance::~Server_instance (void)
 {
     std::cout << "\e[0;31m shutdown server \e[0m" << std::endl;
+    close (this->_server_fd);
 }
 
 // Server_instance::Server_instance (const Server_instance &copy)
@@ -58,6 +60,7 @@ Server_instance::Server_instance (int port, std::string name)
     this->_server_fd = socket (AF_INET, SOCK_STREAM, 0);
     this->_connection_port = port;
     this->_server_alive = 1;
+    this->_request_count = 0;
     this->_server_name = name;
     bzero (this->_buffer, HEADER_MAX);
     this->enable = 1;
@@ -79,24 +82,33 @@ Server_instance::Server_instance (int port, std::string name)
 
 int Server_instance::establish_connection (void)
 {
-    FD_ZERO (&this->_current_fds);
-    FD_SET (this->_server_fd, &this->_current_fds);
-    this->err_check = listen (this->_server_fd, BACK_LOG_MAX) ;
-    if (this->err_check == -1)
-        throw  Connection_error("LISTEN ERROR");
-    std::cout << "\e[0;32m server listen on port \e[0m" << this->_connection_port << std::endl;
+    err_check = listen (this->_server_fd, BACK_LOG_MAX);
+    if (err_check == -1)
+        strerror (errno);
+    else
+        std::cout << "\e[0;33mserver listen on port \e[0m" << this->_connection_port << std::endl;
+    FD_ZERO (&_current_fds);
+    FD_SET (this->_server_fd, &_current_fds);
     while (this->_server_alive)
     {
-        this->_active_fds = this->_current_fds;
-        if (select (FD_SETSIZE, &this->_active_fds, NULL, NULL, NULL) == -1)
-            throw  Connection_error("SELECT ERROR");
-        // !optimization
+        _ready_fds = _current_fds;
+        err_check = select (FD_SETSIZE, &_ready_fds, NULL, NULL, NULL); 
+        if (err_check == -1)
+            std::cout << strerror (errno) << std::endl;
         for (int i = 0; i < FD_SETSIZE; i++)
         {
-            if (FD_ISSET (i, &this->_active_fds))
-                this->handle_active_sockets (i);
+            if (FD_ISSET(i, &_ready_fds))
+            {
+                if (i == this->_server_fd)
+                    this->accept_connection ();
+                else
+                {
+                     this->handle_active_sockets ();
+                     FD_CLR (i, &_current_fds);
+                }
+            }
         }
-    }
+    } 
     return (0); 
 }
 
