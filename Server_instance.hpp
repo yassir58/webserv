@@ -1,5 +1,5 @@
-#ifndef BASIC_CN_SEVER_HPP
-#define BASIC_CN_SERVER_HPP
+#ifndef SERVER_INSTANCE_HPP
+#define SERVER_INSTANCE_HPP
 
 
 #include <sys/socket.h>
@@ -11,7 +11,8 @@
 #include <netinet/in.h> 
 #include <iostream>
 #include <sys/select.h>
-
+#include <poll.h>
+#include <fcntl.h>
 
 #define PORT 8080
 #define HEADER_MAX 8000
@@ -43,8 +44,8 @@ class Server_instance
         int _connection_port;
         int _addr_len;
         sockaddr_in _server_addr;
-        fd_set _current_fds;
-        fd_set _ready_fds;
+        fd_set fds;
+        fd_set ready_fds;
         std::string _request_text;
         int _server_alive;
         int _read_return ;
@@ -56,12 +57,13 @@ class Server_instance
         Server_instance (void); // init server with random port number
         Server_instance (int port, std::string name); // init server with the given port
         ~Server_instance ();
-        //Server_instance (const Server_instance &copy);
-        //Server_instance &Server_instance::operator= (const Server_instance &assign);
+        Server_instance (const Server_instance &copy);
+        Server_instance &operator= (const Server_instance &assign);
+        void bind_socket (void);
         int establish_connection (void);
         void accept_connection (void);
-        void handle_request (void);
-        void handle_active_sockets (void);
+        void handle_request (int conn_fd);
+        void handle_active_sockets (int i);
 };
 
 class connection_state
