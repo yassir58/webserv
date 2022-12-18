@@ -9,6 +9,32 @@
 #define SERVER_CONTEXT 2
 #define LOCATION_CONTEXT 3
 
+class Location 
+{
+    private:
+        std::string endPoint;
+        std::string root;
+    public:
+        Location();
+        ~Location();
+};
+
+class Server {
+    private:
+        std::string listen;
+        std::string serverName;
+        std::string root;
+        Location locations[];
+    public:
+        Server();
+        ~Server();
+};
+
+class http {
+    bool sendFile;
+    std::string indexes;
+    Server virutalServers[];
+};
 
 class Config {
     public:

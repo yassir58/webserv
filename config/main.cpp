@@ -21,6 +21,7 @@ void    validate_file_content(std::ifstream &file)
     }
 }
 
+
 int main(int argc, char **argv)
 {
     char *line;
@@ -34,6 +35,12 @@ int main(int argc, char **argv)
     if (configFile.is_open())
     {
         validate_file_content(configFile);
+        //TODO: Read all the file into an array of string without the lines containing the comments
+        //TODO: Check that all the curly brackets are closed
+        //TODO: Create a parse directive function which should adaptes to every directive in the config file
+        //TODO: Create a small config file which should tell the parser how every directive will be parsed.
+        //TODO: Should create that will convert ip address and port number to integers
+        //TODO: Create a pathParse function that will validate file path and check if it exists
         
     }
     // Check the syntax
