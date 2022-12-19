@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #define PORT 8080
+#define THREAD_MAX 1024
 #include "pthread.h"
 
 
@@ -66,20 +67,35 @@ void *myThreadFun(void *vargp)
 	arg = (char *)vargp;
 	if (!strcmp("local", arg))
 		system ("curl http://localhost:8080");
+	else if (!strcmp("telnet", arg))
+		system ("telnet localhost 8080");
+	else if ("multi-port")
+	{
+		system ("curl http://192.168.1.140:1242");
+	}
 	else
 		system ("curl http://192.168.1.140:8080");
+	
     return NULL;
 }
   
 int main(int argc, char *argv[])
 {
-    pthread_t thread_id[100];
+    pthread_t thread_id[THREAD_MAX];
 
-	for (int i = 0; i < 100; i++)
+	(void)argc;
+	(void)argv;
+	char *test1 = "local";
+	char *test2 = "multi-port";
+
+	for (int i = 0; i < THREAD_MAX; i++)
 	{
-		pthread_create(&thread_id[i], NULL, myThreadFun, argv[argc - 1]);
+		if (i % 2 == 0)
+			pthread_create(&thread_id[i], NULL, myThreadFun,test1);
+		else
+			pthread_create(&thread_id[i], NULL, myThreadFun, test2);
 	}
-	for (int i = 0; i < 100; i++)
+	for (int i = 0; i < THREAD_MAX; i++)
 		pthread_join(thread_id[i], NULL);
 	return (0);
 }

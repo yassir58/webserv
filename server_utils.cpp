@@ -3,15 +3,18 @@
 
 
 
-void Server_instance::accept_connection (void)
+int Server_instance::accept_connection (void)
 {
     int new_connection;
     
     new_connection = accept (this->_server_fd, (sockaddr*)&this->_server_addr, (socklen_t *) &this->_addr_len);
-    if (new_connection == -1 ) 
-       throw Connection_error ("accept error");
-    FD_SET (new_connection, &fds);
+    if (new_connection == -1 )
+    {
+        std::cout << strerror (errno);
+        throw Connection_error ("accept error");
+    } 
     this->_request_count++;
+    return (new_connection);
 }
 
 void Server_instance::handle_active_sockets (int i)
@@ -28,6 +31,7 @@ void Server_instance::handle_active_sockets (int i)
                 {
                     std::cout << "accepting new connection" << std::endl;
                     this->accept_connection ();
+                    std::cout << "connections count " << this->_request_count << std::endl;
                 }
             }
 }

@@ -16,6 +16,8 @@
 
 #define PORT 8080
 #define HEADER_MAX 8000
+#define MAX_CONNECT 8000
+#define POLL_TIMEOUT 5000
 #define BUFFER_SIZE 10
 #define BACK_LOG_MAX 5 // * max size permitted by most systems 
 #define ACK_MESSAGE "\e[0;33m acknowledgement message \e[0m"
@@ -61,9 +63,11 @@ class Server_instance
         Server_instance &operator= (const Server_instance &assign);
         void bind_socket (void);
         int establish_connection (void);
-        void accept_connection (void);
+        int accept_connection (void);
         void handle_request (int conn_fd);
         void handle_active_sockets (int i);
+        int getSocketFd (void) const;
+        int getRequestCount (void) const;
 };
 
 class connection_state

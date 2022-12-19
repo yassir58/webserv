@@ -40,24 +40,25 @@ Server_instance::Server_instance (int port, std::string name)
 
 int Server_instance::establish_connection (void)
 {
+    this->bind_socket ();
     err_check = listen (this->_server_fd, BACK_LOG_MAX);     
     if (err_check == -1)
         throw Connection_error (strerror (errno));
     else
         std::cout << "\e[0;33mserver listen on port \e[0m" << this->_connection_port << std::endl;
-    FD_ZERO (&fds);
-    FD_SET(this->_server_fd, &fds);
-    while (this->_server_alive)
-    {
-        ready_fds = fds;
-        err_check = select(FD_SETSIZE, &ready_fds, NULL, NULL, NULL) ;
-        if ( err_check == -1)
-            throw Connection_error ("select error");
-        for (int i = this->_server_fd; i < (this->_server_fd + this->_request_count + 1); i++)
-        {
-            this->handle_active_sockets (i);
-        }
-    } 
+    // FD_ZERO (&fds);
+    // FD_SET(this->_server_fd, &fds);
+    // while (this->_server_alive)
+    // {
+    //     ready_fds = fds;
+    //     err_check = select(FD_SETSIZE, &ready_fds, NULL, NULL, NULL) ;
+    //     if ( err_check == -1)
+    //         throw Connection_error ("select error");
+    //     for (int i = this->_server_fd; i < (this->_server_fd + this->_request_count + 1); i++)
+    //     {
+    //         this->handle_active_sockets (i);
+    //     }
+    // } 
     return (0); 
 }
 
@@ -83,6 +84,16 @@ void Server_instance::bind_socket (void)
     }
 } 
 
+
+int Server_instance::getSocketFd (void) const
+{
+    return (this->_server_fd);
+}
+
+int Server_instance::getRequestCount (void) const
+{
+    return (this->_request_count);    
+}
 
 const char *Fatal_error::what () const throw ()
 {
