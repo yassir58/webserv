@@ -3,6 +3,8 @@
 #include <regex>
 #include <fstream>
 #include <istream>
+#include <vector>
+#include <algorithm>
 
 #define MAIN_CONTEXT 0
 #define HTTP_CONTEXT 1
@@ -24,7 +26,7 @@ class Server {
         std::string listen;
         std::string serverName;
         std::string root;
-        Location locations[];
+        std::vector<Location> locations;
     public:
         Server();
         ~Server();
@@ -33,7 +35,7 @@ class Server {
 class http {
     bool sendFile;
     std::string indexes;
-    Server virutalServers[];
+    std::vector<Server> servers;
 };
 
 class Config {
