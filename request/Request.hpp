@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:36 by Ma3ert            #+#    #+#             */
-/*   Updated: 2022/12/20 21:12:05 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2022/12/20 21:42:18 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,10 @@
 class Request
 {
 	private:
-		t_start					startLine;
-		std::list<headerField>	headerFields;
-		int						errorCode;
+		t_start						startLine;
+		std::list<headerField>		headerFields;
+		std::vector<std::string>	body;
+		int							errorCode;
 	public:
 		Request(std::ifstream &file);
 		~Request();
@@ -33,6 +34,7 @@ class Request
 		int	checkVersion(void);
 		int parseFirstLine(std::string line);
 		int parseHeaderField(std::list<headerField> &list, std::string line);
+		int	parseBody(std::string line);
 		void	printResult(void);
 		t_start &getStartLine(void);
 		std::list<headerField> &getHeaderField(void);

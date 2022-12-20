@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2022/12/20 21:16:47 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2022/12/20 21:49:38 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,16 +26,23 @@ Request::Request(std::ifstream &file)
 		errorCode = 0;
 	}
 	if (!checkMethod())
-		errorCode = 100;
+		errorCode = 400;
 	if (!checkRequestTarget())
-		errorCode = 200;
+		errorCode = 400;
 	if (!checkVersion())
-		errorCode = 300;
+		errorCode = 400;
 	while (getline(file, line) && !line.empty())
 	{
 		if (!parseHeaderField(headerFields, line))
 			errorCode = 400;
 		
+	}
+	while (getline(file, line))
+	{
+		if (parseBody(line))
+			errorCode = 400;
+		if (file.eof())
+			break ;
 	}
 }
 
@@ -68,6 +75,7 @@ int Request::checkMethod()
 		startLine.method = "DELETE";
 		return (1);
 	}
+	errorCode = 405;
 	return (0);
 }
 
@@ -128,7 +136,10 @@ int Request::checkVersion()
 	std::string protocol = startLine.httpVersion.substr(0, pos);
 	std::string ver = startLine.httpVersion.substr(pos + 1, std::string::npos);
 	if ((protocol.compare("http") || protocol.compare("HTTP")) && ver.compare("1.1") )
+	{
+		errorCode = 505;
 		return (0);
+	}
 	startLine.httpVersion = startLine.httpVersion;
 	return (1);
 }
@@ -147,18 +158,32 @@ int Request::parseHeaderField(std::list<headerField> &list, std::string line)
 	return (1);
 }
 
+int	Request::parseBody(std::string line)
+{
+	body.push_back(line);
+	body.push_back("\n");
+	return (1);
+}
+
 void	Request::printResult(void)
 {
 	std::cout << "method: " << startLine.method << std::endl;
 	std::cout << "tartget: " << startLine.requestTarget << std::endl;
 	std::cout << "http version: " << startLine.httpVersion << std::endl;
-	std::cout << std::endl;
+	std::cout << "\n===============this headerField===============\n" << std::endl;
 	std::list<headerField>::iterator end = headerFields.end();
 	std::list<headerField>::iterator begin = headerFields.begin();
 	for (; begin != end; ++begin)
 	{
 		std::cout << "key: " << begin->key << std::endl;
 		std::cout << "value: " << begin->value << std::endl;
+	}
+	std::cout << "\n=============this body field===============\n";
+	std::vector<std::string>::iterator vend = body.end();
+	std::vector<std::string>::iterator vbegin = body.begin();
+	for (; vbegin != vend; ++vbegin)
+	{
+		std::cout << *vbegin;
 	}
 }
 
