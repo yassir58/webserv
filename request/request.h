@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/14 16:01:13 by Ma3ert            #+#    #+#             */
-/*   Updated: 2022/12/19 18:27:01 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2022/12/20 20:39:02 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ typedef struct start
 {
 	std::string method;
 	std::string httpVersion;
-	std::string	requestTraget;
+	std::string	requestTarget;
 	std::string	hostName;
 } t_start;
 
