@@ -1,18 +1,13 @@
 #include "Server_instance.hpp"
 
 
-
-
 int Server_instance::accept_connection (void)
 {
     int new_connection;
     
     new_connection = accept (this->_server_fd, (sockaddr*)&this->_server_addr, (socklen_t *) &this->_addr_len);
     if (new_connection == -1 )
-    {
-        std::cout << strerror (errno);
-        throw Connection_error ("accept error");
-    } 
+        handle_error (ACCEPTERR);
     this->_request_count++;
     return (new_connection);
 }
@@ -49,4 +44,14 @@ void Server_instance::handle_request (int i)
     FD_CLR (i, &fds);
     close (i);
     bzero (this->_buffer, HEADER_MAX);
+}
+
+void Server_instance::setServerName (std::string name)
+{
+    this->_server_name = name;
+}
+
+void Server_instance::setServerPort (int port)
+{
+    this->_connection_port = port;
 }

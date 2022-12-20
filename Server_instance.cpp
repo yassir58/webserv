@@ -45,20 +45,7 @@ int Server_instance::establish_connection (void)
     if (err_check == -1)
         throw Connection_error (strerror (errno));
     else
-        std::cout << "\e[0;33mserver listen on port \e[0m" << this->_connection_port << std::endl;
-    // FD_ZERO (&fds);
-    // FD_SET(this->_server_fd, &fds);
-    // while (this->_server_alive)
-    // {
-    //     ready_fds = fds;
-    //     err_check = select(FD_SETSIZE, &ready_fds, NULL, NULL, NULL) ;
-    //     if ( err_check == -1)
-    //         throw Connection_error ("select error");
-    //     for (int i = this->_server_fd; i < (this->_server_fd + this->_request_count + 1); i++)
-    //     {
-    //         this->handle_active_sockets (i);
-    //     }
-    // } 
+        std::cout << this->_server_name << "\e[0;33m listen on port \e[0m" << this->_connection_port << std::endl;
     return (0); 
 }
 

@@ -16,9 +16,18 @@
 
 #define PORT 8080
 #define HEADER_MAX 8000
-#define MAX_CONNECT 8000
+#define MAX_CONNECT 1024
 #define POLL_TIMEOUT 5000
 #define BUFFER_SIZE 10
+#define POST_LIMIT 100000
+#define GET8LIMIT 100000
+#define READERR 1
+#define ACCEPTERR 2
+#define LISTENERR 3
+#define BINDERR 4
+#define POLLERROR 5
+#define WRITEERR 6
+#define POLL_INF -1
 #define BACK_LOG_MAX 5 // * max size permitted by most systems 
 #define ACK_MESSAGE "\e[0;33m acknowledgement message \e[0m"
 
@@ -68,6 +77,42 @@ class Server_instance
         void handle_active_sockets (int i);
         int getSocketFd (void) const;
         int getRequestCount (void) const;
+        void setServerName (std::string name);
+        void setServerPort (int port);
+};
+
+class Http_application 
+{
+    private:
+        pollfd *connection_pool;
+        int err;
+        int server_count;
+        int connection_count;
+        int server_range_start;
+        int server_range_end;
+        int return_value;
+        int indx;
+        char buffer [HEADER_MAX];
+        Server_instance *server_list;
+        std::string default_error_page;
+        int client_max_body_size;
+    public:
+        Http_application ();
+        Http_application (int servers_n);
+        Http_application (const Http_application &copy);
+        ~Http_application ();
+        void setServerList (Server_instance *list);
+        int getServerCount (void) const;
+        int getServerRangeStart (void) const;
+        int getServerRangeEnd (void) const;
+        int getConnectionCount (void) const;
+        void connectServers (void);
+        void initServers (void);
+        void handleNewConnection (int server_indx);
+        void handleReadyConnection (int client_indx);
+        pollfd *getConnectionPool (void) const;
+        Server_instance *getServerList (void) const;
+        void setConnectionPool (pollfd *fd_pool);
 };
 
 class connection_state
@@ -79,5 +124,8 @@ class request
 {
 
 };
+
+void handle_error (int err);
+void initServers (Server_instance *serv_list);
 
 #endif
