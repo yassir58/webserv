@@ -63,16 +63,13 @@ void *thread_executor (void *test)
 
 void *myThreadFun(void *vargp)
 {
-	char **arg;
-	int i = 1;
+	int *arg;
+	// int i = 1;
 	// char *cmd;
 
-	arg = (char **)vargp;
+	arg = (int*)vargp;
 	(void)arg;
-	system ("curl http://192.168.1.140:1234");
-	system ("curl http://192.168.1.140:1235");
-	system ("curl http://192.168.1.140:1236");
-		i++;	
+	system ("curl --verbose http://192.168.1.140:5000 ; curl --verbose http://192.168.1.140:1200 ; curl --verbose http://192.168.1.140:8080"); 
     return NULL;
 }
   
@@ -85,7 +82,7 @@ int main(int argc, char *argv[])
 
 	for (int i = 0; i < THREAD_MAX; i++)
 	{
-		pthread_create(&thread_id[i], NULL, myThreadFun,argv);
+		pthread_create(&thread_id[i], NULL, myThreadFun,&i);
 	}
 	for (int i = 0; i < THREAD_MAX; i++)
 		pthread_join(thread_id[i], NULL);

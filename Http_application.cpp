@@ -89,14 +89,15 @@ void Http_application::handleReadyConnection (int client_fd)
 {
     return_value = read(client_fd, buffer, HEADER_MAX);
     if (return_value == -1)
-        handle_error (READERR);
+        std::cout << "\e[0;31m failed to read from \e[0m" << client_fd << std::endl;
     if (return_value == 0)
         std::cerr << "\e[0;31m NOTHING TO READ \e[0m" << std::endl;
     std::cout << "\e[0;33m message sent by client :\e[0m" << std::endl;
     std::cout << buffer << std::endl;
-    send (client_fd, ACK_MESSAGE, strlen (ACK_MESSAGE), 0);
-    close (client_fd);
-    indx--;
+    //send (client_fd, ACK_MESSAGE, strlen (ACK_MESSAGE), 0);
+    return_value = close (client_fd);
+        if (return_value)
+            std::cout << "\e[0;31m close error \e[0m" << std::endl;
     bzero (buffer, HEADER_MAX);
 }
 
@@ -109,13 +110,14 @@ void initServers (Server_instance *serv_list)
 {
     std::string serv_names[3] ;
     int init_port = 1234;
+    int ports[3];
     
-    serv_names[0] = "serv1";
-    serv_names[1] = "serv2";
-    serv_names[2] = "serv3"; 
+    serv_names[0] = "serv1", ports[0] = 1200;
+    serv_names[1] = "serv2", ports[1] = 8080;
+    serv_names[2] = "serv3", ports[2] = 5000; 
     for (int i = 0; i < 3; i++)
     {
         serv_list[i].setServerName (serv_names[i]);
-        serv_list[i].setServerPort (init_port++);
+        serv_list[i].setServerPort (ports[i]);
     }
 }

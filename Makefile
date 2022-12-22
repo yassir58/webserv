@@ -2,7 +2,7 @@ SDIR=tcp
 CFLAGS=-Wall -Wextra -Werror
 CCP=c++
 CC=gcc
-SRCS= main.cpp  server_utils.cpp Server_instance.cpp err_handling.cpp Http_application.cpp
+SRCS= main.cpp  server_utils.cpp Server_instance.cpp log_utils.cpp err_handling.cpp Http_application.cpp
 OBJS= $(SRCS:.cpp=.o)
 HEADERS=basic_cn_server.hpp 
 
