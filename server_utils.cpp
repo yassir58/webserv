@@ -56,6 +56,10 @@ void Server_instance::setServerPort (int port)
     this->_connection_port = port;
 }
 
+int Server_instance::getServerPort (void)
+{
+    return (this->_connection_port);
+}
 std::string Server_instance::getServerName (void) const
 {
     return (this->_server_name);

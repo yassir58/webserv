@@ -31,7 +31,8 @@
 #define BACK_LOG_MAX 5 // * max size permitted by most systems
 #define ACK_MESSAGE "\e[0;33m acknowledgement message \e[0m"
 #define RESPONSE_LINES 7
-
+// for testing purpos
+#define HTTP_RESPONSE_EXAMPLE "HTTP/1.1 200 OK\r\nServer: WebServer\r\nContent-Type: text/html\r\nContent-Length: 42\r\nConnection: close\r\n\r\nhello world</br><p>this is a paragraph</p>"
 class Fatal_error : public std::exception
 {
     const char *what() const throw();
@@ -82,24 +83,26 @@ public:
     std::string getServerName (void) const;
     void setServerName(std::string name);
     void setServerPort(int port);
+    int getServerPort (void);
   
 };
 
 class Http_application
 {
-private:
-    pollfd *connection_pool;
-    int err;
-    int server_count;
-    int connection_count;
-    int server_range_start;
-    int server_range_end;
-    int return_value;
-    int indx;
-    char buffer[HEADER_MAX];
-    Server_instance *server_list;
-    std::string default_error_page;
-    int client_max_body_size;
+    private:
+        pollfd *fd_pool;
+        int err_value;
+        int server_count;
+        int connection_count;
+        int server_range_start;
+        int server_range_end;
+        int return_value;
+        int indx;
+        char buffer[HEADER_MAX];
+        Server_instance *server_list;
+        std::string default_error_page;
+        int client_max_body_size;
+        std::ofstream log_file;
 
 public:
     Http_application();
@@ -114,10 +117,15 @@ public:
     void connectServers(void);
     void initServers(void);
     void handleNewConnection(int server_indx);
-    void handleReadyConnection(int client_indx);
+    void handleReadyConnection(int indx);
     pollfd *getConnectionPool(void) const;
     Server_instance *getServerList(void) const;
     void setConnectionPool(pollfd *fd_pool);
+    void allocate_servers (void);
+    void checkReadySockets (void);
+    void handleHttpRequest (int client_indx);
+    int getConnectionIndx (void);
+
 };
 
 class connection_state

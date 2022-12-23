@@ -10,7 +10,7 @@ cd /home/yassir/Documents/CURSES/WEBSERV && `./server`
 fi
 
 
-echo "\e[0;33m testing servers on ports 8080 1200 5000 ..."
+echo -e "\e[0;32m testing servers on ports 8080 1200 5000 ...\e[0m"
 
 curl http://192.168.1.140:1200?[1-1024] ; curl http://192.168.1.140:8080?[1-1024] ; curl http://192.168.1.140:5000?[1-1024]
 
