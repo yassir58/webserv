@@ -33,5 +33,5 @@ void    Config::parseConfig()
 
 void    Config::parseDirective(std::vector<std::string> config, int line)
 {
-    
+    // This will be responsible for parsing each directive
 }
