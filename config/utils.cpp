@@ -1,10 +1,10 @@
 #include "config.hpp"
 
-void	validate_extension(const char *path, char *ext)
+void	validate_extension(const char *path, const char *ext)
 {
 	int	size;
 
-	size = strlen(path) - 4;
+	size = strlen(path) - 5;
     //.. Comparing the last 4 characters to see if its matches the extension
 	if (strcmp(ext, path + size))
     {
@@ -15,18 +15,25 @@ void	validate_extension(const char *path, char *ext)
 
 std::vector<std::string> split(std::string line)
 {
-    std::istringstream ss(line);
- 
-    std::string word; // for storing each word
- 
-    // Traverse through all words
-    // while loop till we get
-    // strings to store in string word
-    while (ss >> word)
+    std::vector<std::string> splitted;
+    int i = 0;
+    int j = 0;
+
+    while (i < line.length())
     {
-        // print the read word
-        std::cout << word << "\n";
+        while (line[i] && std::isspace(line[i]))
+            i++;
+        if (line[i] && !std::isspace(line[i]))
+        {
+            while (line[i + j] && !std::isspace(line[i + j]))
+                j++;
+            splitted.push_back(line.substr(i, j));
+            i += j;
+            j = 0;
+        }
+        i++;
     }
+    return (splitted);
 }
 
 void    validate_file_content(std::ifstream & configFile)
@@ -50,12 +57,14 @@ std::string getLine(std::string &line) {
 
 std::vector<std::string>   read_config_file(std::string & path)
 {
-    validate_extension(path.c_str(), ".conf");
+    std::string ext;
     std::ifstream config;
     std::string line;
     std::vector<std::string> configFile;
 
+    ext = ".conf";
     //.. Openning the the config file
+    validate_extension(path.c_str(), ext.c_str());
     config.open(path);
     //.. Checking if its open
     if (config.is_open())
@@ -82,9 +91,8 @@ void    check_brackets(std::string filename)
     {
         while (getline(file, line))
         {
-            int openBrackets = std::count(line.begin(), line.end(), '{');
-            int closedBrackets = std::count(line.begin(), line.end(), '}');
-            bracketsLevel = closedBrackets - openBrackets;
+            bracketsLevel += std::count(line.begin(), line.end(), '{');
+            bracketsLevel -= std::count(line.begin(), line.end(), '}');
         }
     }
     //.. Checking that the currly brackets have been closed in a correct way.
@@ -95,3 +103,16 @@ void    check_brackets(std::string filename)
     }
 }
 
+void    checkDirective(std::vector<std::string> line)
+{
+    if (line.size() < 2)
+    {
+        std::cout << "Syntax Error: Directive must be listed as key : value pattern" << std::endl;
+        exit(1);
+    }
+    if (strcmp(line[line.size() - 1].c_str(), ";"))
+    {
+        std::cout << "Syntax Error: Directive must end with ;" << std::endl;
+        exit(1);
+    }
+}

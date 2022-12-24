@@ -11,6 +11,27 @@
 #define SERVER_CONTEXT 2
 #define LOCATION_CONTEXT 3
 
+const char * httpContext[] = {
+    	"default_page",
+	    "send_file"
+};
+
+const char * serverContext[] = {
+    	"listen",
+        "server_name",
+		"root",
+		"keepalive_timeout",
+        "error_log",
+        "access_log"
+};
+
+const char * locationContext[] = {
+        "root",
+        "send_file",
+        "index",
+        "upload_path"
+};
+
 struct errorPages {
     std::string path_not_found;
     std::string path_forbidden;
@@ -43,6 +64,7 @@ class Server {
         std::vector<Location> locations;
     public:
         void    parseServer(std::vector<std::string> configFile, int line);
+        void    parseDirective(std::vector<std::string> config, int line);
         Server();
         ~Server();
 };
@@ -53,7 +75,9 @@ class Http {
         errorPages pages;
         std::vector<Server> servers;
     public:
-
+        void    parseDirective(std::vector<std::string> config, int line);
+        void    parseHttpContext(std::vector<std::string> & configFile, int line);
+        void    parseErrorPages(std::string line);
         Http();
         ~Http();
 };
@@ -64,6 +88,7 @@ class Config {
         Config(std::string path);
         ~Config();
         void    parseConfig();
+        void    parseDirective(std::vector<std::string> config, int line);
     private:
         std::vector<std::string> configContent;
         std::string pid_path;
