@@ -103,7 +103,7 @@ void    check_brackets(std::string filename)
     }
 }
 
-void    checkDirective(std::vector<std::string> line)
+void    checkDirective(std::vector<std::string> line, int context)
 {
     if (line.size() < 2)
     {
@@ -115,4 +115,48 @@ void    checkDirective(std::vector<std::string> line)
         std::cout << "Syntax Error: Directive must end with ;" << std::endl;
         exit(1);
     }
+    if (!checkValidDirectives(line[0], context))
+    {
+        std::cout << "Config Error: Invalid Directive name" << std::endl;
+        exit(1);
+    }
+}
+
+bool checkValidDirectives(std::string line, int context)
+{
+    if (context == MAIN_CONTEXT)
+    {
+        if (strcmp(line.c_str(), "pid"))
+            return (false);
+    }
+    else if (context == HTTP_CONTEXT)
+    {
+        if (!checkDirectiveKey(line, httpContext))
+            return (false);
+    }
+    else if (context == SERVER_CONTEXT)
+    {
+        if (!checkDirectiveKey(line, serverContext))
+            return (false);
+    }
+    else if (context == LOCATION_CONTEXT)
+    {
+        if (!checkDirectiveKey(line, locationContext))
+            return (false);
+    }
+    return (true);
+}
+
+bool checkDirectiveKey(std::string directiveName,const char **directivesTable)
+{
+    unsigned int i;
+
+    i = 0;
+    while (directivesTable[i])
+    {
+        if (strcmp(directiveName.c_str(), directivesTable[i]) == 0)
+            return (true);
+        i++;
+    }  
+    return (false);
 }

@@ -103,3 +103,6 @@ std::string getLine(std::string &line);
 std::vector<std::string>   read_config_file(std::string & path);
 void    check_brackets(std::string filename);
 std::vector<std::string> split(std::string line);
+void    checkDirective(std::vector<std::string> line, int context);
+bool checkDirectiveKey(std::string directiveName,const char **directivesTable);
+bool checkValidDirectives(std::string line, int context);

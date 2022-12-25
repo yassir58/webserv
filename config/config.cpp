@@ -33,5 +33,9 @@ void    Config::parseConfig()
 
 void    Config::parseDirective(std::vector<std::string> config, int line)
 {
-    // This will be responsible for parsing each directive
+    std::vector<std::string> splittedLine;
+    
+    splittedLine = split(config[line]);
+    checkDirective(splittedLine, MAIN_CONTEXT);
+    // check if that path file exists if not create it.
 }
