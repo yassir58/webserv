@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2022/12/25 22:19:46 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2022/12/25 22:38:40 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,32 +18,32 @@
 
 Request::Request(std::string fileString)
 {
-	// std::string line;
+	std::string line;
 	setFileString(fileString);
-	// getCRLF(line, (char *)"\r\n");
-	// if (parseFirstLine(line))
-	// {
-	// 	std::cout << "error while parsing check the startup line\n";
-	// 	errorCode = 0;
-	// }
-	// if (!checkMethod())
-	// 	errorCode = 400;
-	// if (!checkRequestTarget())
-	// 	errorCode = 400;
-	// if (!checkVersion())
-	// 	errorCode = 400;
-	// while (!getCRLF(line, (char *)"\r\n"))
-	// {
-	// 	std::cout << "second: " << line << std::endl;
-	// 	if (!parseHeaderField(headerFields, line))
-	// 		errorCode = 400;
-	// }
-	// while (!getCRLF(line, (char *)"\n"))
-	// {
-	// 	std::cout << "last: " << line << std::endl;
-	// 	if (parseBody(line))
-	// 		errorCode = 400;
-	// }
+	getCRLF(line, (char *)"\r\n");
+	if (parseFirstLine(line))
+	{
+		std::cout << "error while parsing check the startup line\n";
+		errorCode = 0;
+	}
+	if (!checkMethod())
+		errorCode = 400;
+	if (!checkRequestTarget())
+		errorCode = 400;
+	if (!checkVersion())
+		errorCode = 400;
+	while (!getCRLF(line, (char *)"\r\n"))
+	{
+		std::cout << "second: " << line << std::endl;
+		if (!parseHeaderField(headerFields, line))
+			errorCode = 400;
+	}
+	while (!getCRLF(line, (char *)"\n"))
+	{
+		std::cout << "last: " << line << std::endl;
+		if (parseBody(line))
+			errorCode = 400;
+	}
 }
 
 /*
@@ -62,14 +62,20 @@ int	Request::getCRLF(std::string &newLine, char *delim)
 {
 	static size_t pos;
 	static size_t start;
+	if (start == fileString.length())
+	{
+		newLine = "";
+		return (1);
+	}
 	pos = fileString.find(delim, start);
 	newLine = fileString.substr(start, pos - start);
-	if (pos != std::string::npos)
+	if (pos == std::string::npos)
 	{
-		start = pos + strlen(delim);
-		start = fileString.length();
-		std::cout << "I got here\n";
+		pos = fileString.length();
+		start = pos;
 	}
+	else
+		start = pos + strlen(delim);
 	return (newLine.empty());
 }
 
