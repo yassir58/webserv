@@ -11,6 +11,9 @@
 #define SERVER_CONTEXT 2
 #define LOCATION_CONTEXT 3
 
+#define CREATE_MODE 1
+#define CHECK_MODE 0
+
 const char * httpContext[] = {
     	"default_page",
 	    "send_file"
@@ -76,7 +79,7 @@ class Http {
         std::vector<Server> servers;
     public:
         void    parseDirective(std::vector<std::string> config, int line);
-        void    parseHttpContext(std::vector<std::string> & configFile, int line);
+        int    parseHttpContext(std::vector<std::string> & configFile, int line);
         void    parseErrorPages(std::string line);
         Http();
         ~Http();
@@ -106,3 +109,4 @@ std::vector<std::string> split(std::string line);
 void    checkDirective(std::vector<std::string> line, int context);
 bool checkDirectiveKey(std::string directiveName,const char **directivesTable);
 bool checkValidDirectives(std::string line, int context);
+void createFile(std::string path, int mode);

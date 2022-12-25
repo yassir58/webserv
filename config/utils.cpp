@@ -160,3 +160,25 @@ bool checkDirectiveKey(std::string directiveName,const char **directivesTable)
     }  
     return (false);
 }
+
+void createFile(std::string path, int mode)
+{
+    std::ifstream checkFile;
+    
+
+    checkFile.open(path);
+    if (mode == CREATE_MODE)
+    {
+        if (checkFile.is_open())
+            return;
+        std::ofstream output(path);
+    }
+    else 
+    {
+        if (!checkFile.is_open())
+        {
+            std::cout << "Syntax error: " << path << "could not be found" << std::endl;
+            exit(1);
+        }
+    }
+}
