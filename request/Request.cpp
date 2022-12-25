@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2022/12/20 21:49:38 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2022/12/25 22:19:46 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,34 +16,34 @@
 ** ------------------------------- CONSTRUCTOR --------------------------------
 */
 
-Request::Request(std::ifstream &file)
+Request::Request(std::string fileString)
 {
-	std::string line;
-	getline(file, line);
-	if (parseFirstLine(line))
-	{
-		std::cout << "error while parsing check the startup line\n";
-		errorCode = 0;
-	}
-	if (!checkMethod())
-		errorCode = 400;
-	if (!checkRequestTarget())
-		errorCode = 400;
-	if (!checkVersion())
-		errorCode = 400;
-	while (getline(file, line) && !line.empty())
-	{
-		if (!parseHeaderField(headerFields, line))
-			errorCode = 400;
-		
-	}
-	while (getline(file, line))
-	{
-		if (parseBody(line))
-			errorCode = 400;
-		if (file.eof())
-			break ;
-	}
+	// std::string line;
+	setFileString(fileString);
+	// getCRLF(line, (char *)"\r\n");
+	// if (parseFirstLine(line))
+	// {
+	// 	std::cout << "error while parsing check the startup line\n";
+	// 	errorCode = 0;
+	// }
+	// if (!checkMethod())
+	// 	errorCode = 400;
+	// if (!checkRequestTarget())
+	// 	errorCode = 400;
+	// if (!checkVersion())
+	// 	errorCode = 400;
+	// while (!getCRLF(line, (char *)"\r\n"))
+	// {
+	// 	std::cout << "second: " << line << std::endl;
+	// 	if (!parseHeaderField(headerFields, line))
+	// 		errorCode = 400;
+	// }
+	// while (!getCRLF(line, (char *)"\n"))
+	// {
+	// 	std::cout << "last: " << line << std::endl;
+	// 	if (parseBody(line))
+	// 		errorCode = 400;
+	// }
 }
 
 /*
@@ -57,6 +57,21 @@ Request::~Request()
 /*
 ** --------------------------------- METHODS ----------------------------------
 */
+
+int	Request::getCRLF(std::string &newLine, char *delim)
+{
+	static size_t pos;
+	static size_t start;
+	pos = fileString.find(delim, start);
+	newLine = fileString.substr(start, pos - start);
+	if (pos != std::string::npos)
+	{
+		start = pos + strlen(delim);
+		start = fileString.length();
+		std::cout << "I got here\n";
+	}
+	return (newLine.empty());
+}
 
 int Request::checkMethod()
 {
@@ -199,6 +214,11 @@ std::list<headerField> &Request::getHeaderField(void)
 t_start &Request::getStartLine(void)
 {
 	return (startLine);
+}
+
+void	Request::setFileString(std::string &file)
+{
+	fileString = file;
 }
 
 /* ************************************************************************** */
