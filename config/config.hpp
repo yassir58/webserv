@@ -60,13 +60,12 @@ class Server {
         int port;
         int keepAliveTimeout;
         std::string host;
-        std::string listen;
         std::string serverName;
         std::string accessLog;
         std::string errorLog;
         std::vector<Location> locations;
     public:
-        void    parseServer(std::vector<std::string> configFile, int line);
+        Server    parseServer(std::vector<std::string> configFile, int line);
         void    parseDirective(std::vector<std::string> config, int line);
         Server();
         ~Server();

@@ -105,6 +105,7 @@ void    check_brackets(std::string filename)
 
 void    checkDirective(std::vector<std::string> line, int context)
 {
+    //! In the function in need to check that am checking the last character of the last directive line array.
     if (line.size() < 2)
     {
         std::cout << "Syntax Error: Directive must be listed as key : value pattern" << std::endl;
@@ -181,4 +182,24 @@ void createFile(std::string path, int mode)
             exit(1);
         }
     }
+}
+
+void    parse_error_pages(std::vector<std::string> page, Http & httpContext)
+{
+    if (atoi(page[1].c_str()) == 400)
+        httpContext.getErrorPages().path_not_found = page[2];
+    else if (atoi(page[1].c_str()) == 403)
+        httpContext.getErrorPages().path_forbidden = page[2];
+    else if (atoi(page[1].c_str()) == 500)
+        httpContext.getErrorPages().path_internal_error = page[2];
+    else
+    {
+        std::cout << "Invalid status code page" << std::endl;
+        exit(1);
+    }
+}
+
+Pages    Http::getErrorPages()
+{
+    return (this->pages);
 }

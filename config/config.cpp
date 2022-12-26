@@ -69,6 +69,7 @@ int    Http::parseHttpContext(std::vector<std::string> & configContent, int inde
             std::cout << "Parsing Server context" << std::endl;
             //parseHttpcontext
             // this->servers.push_back()
+            // i += closingBracket();
             // should create a function that will get the location of the
             // closing bracket to add to the numbers of lines to add.
         else
@@ -77,12 +78,6 @@ int    Http::parseHttpContext(std::vector<std::string> & configContent, int inde
         i += 1;
     }
     return (i);
-}
-
-// Getter
-Pages    Http::getErrorPages()
-{
-    return (this->pages);
 }
 
 void    Http::parseDirective(std::vector<std::string> config, int line)
@@ -114,17 +109,72 @@ void    Http::parseDirective(std::vector<std::string> config, int line)
     } 
 }
 
-void    parse_error_pages(std::vector<std::string> page, Http & httpContext)
+Server Server::parseServer(std::vector<std::string> configFile, int index)
 {
-    if (atoi(page[1].c_str()) == 400)
-        httpContext.getErrorPages().path_not_found = page[2];
-    else if (atoi(page[1].c_str()) == 403)
-        httpContext.getErrorPages().path_forbidden = page[2];
-    else if (atoi(page[1].c_str()) == 500)
-        httpContext.getErrorPages().path_internal_error = page[2];
-    else
+    int size;
+    int i;
+    Server server;
+    std::vector<std::string> line;
+
+    i = 0;
+    size = configFile.size();
+    while (index < size)
     {
-        std::cout << "Invalid status code page" << std::endl;
-        exit(1);
+        line = split(configFile[index]);
+        if (line.size() == 3 && line[0] == "location" && line[2] == "{")
+            std::cout << "Parsing Location context" << std::endl;
+            // server.locations.push_back();
+            // i += closingBracket();
+            // should create a function that will get the location of the
+            // closing bracket to add to the numbers of lines to add.
+        else
+            this->parseDirective(configFile, i);
+            // Throw an exception or exit with error code.
+        index += 1;
+        i += 1;
     }
+}
+
+void    Server::parseDirective(std::vector<std::string> config, int line)
+{
+    std::vector<std::string> splittedLine;
+    
+    splittedLine = split(config[line]);
+    checkDirective(splittedLine, SERVER_CONTEXT);
+    if (splittedLine.size() == 2 && splittedLine[0] == "root")
+        createFile(splittedLine[2], CHECK_MODE);
+    else if (splittedLine.size() == 2 && splittedLine[0] == "server_name")
+        this->serverName = splittedLine[1];
+    else if (splittedLine.size() == 2 && splittedLine[0] == "keepalive_timeout")
+        this->keepAliveTimeout = atoi(splittedLine[1].c_str());
+    else if (splittedLine.size() == 3 && splittedLine[0] == "listen")
+    {
+        this->port = atoi(splittedLine[2].c_str());
+        this->host = strcmp(splittedLine[1].c_str(), "localhost") ? splittedLine[1] : "127.0.0.1";
+    }
+    else if (splittedLine.size() == 2 && splittedLine[0] == "error_log")
+    {
+        createFile(splittedLine[1], CREATE_MODE);
+        if (!this->errorLog.empty())
+        {
+            std::cout << "Error Log already exists" << std::endl;
+            exit(1);
+        }
+        this->errorLog = splittedLine[1];
+    }
+    else if (splittedLine.size() == 2 && splittedLine[0] == "access_log")
+    {
+        createFile(splittedLine[1], CREATE_MODE);
+        if (!this->accessLog.empty())
+        {
+            std::cout << "access Log already exists" << std::endl;
+            exit(1);
+        }
+        this->accessLog = splittedLine[1];
+    }
+    else {
+        //! Throw an exception
+        std::cout << "Invalid directive" << std::endl;
+        exit(1);
+    } 
 }
