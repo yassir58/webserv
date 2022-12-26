@@ -35,11 +35,11 @@ const char * locationContext[] = {
         "upload_path"
 };
 
-struct errorPages {
+typedef struct errorPages {
     std::string path_not_found;
     std::string path_forbidden;
     std::string path_internal_error;
-};
+} Pages;
 
 class Location 
 {
@@ -75,12 +75,13 @@ class Server {
 class Http {
     private:
         bool sendFile;
-        errorPages pages;
+        Pages pages;
         std::vector<Server> servers;
     public:
         void    parseDirective(std::vector<std::string> config, int line);
         int    parseHttpContext(std::vector<std::string> & configFile, int line);
         void    parseErrorPages(std::string line);
+        Pages getErrorPages();
         Http();
         ~Http();
 };
@@ -110,3 +111,4 @@ void    checkDirective(std::vector<std::string> line, int context);
 bool checkDirectiveKey(std::string directiveName,const char **directivesTable);
 bool checkValidDirectives(std::string line, int context);
 void createFile(std::string path, int mode);
+void    parse_error_pages(std::vector<std::string> page, Http & httpContext);

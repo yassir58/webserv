@@ -5,7 +5,7 @@ void	validate_extension(const char *path, const char *ext)
 	int	size;
 
 	size = strlen(path) - 5;
-    //.. Comparing the last 4 characters to see if its matches the extension
+    //.. Comparing the last 5 characters to see if its matches the extension
 	if (strcmp(ext, path + size))
     {
 		std::cout << "Usage: webserv *.conf" << std::endl;

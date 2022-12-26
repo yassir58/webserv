@@ -15,7 +15,6 @@ void    Config::parseConfig()
 {
     int size;
     int i;
-    Http http;
     std::vector<std::string> line;
 
     i = 0;
@@ -24,16 +23,11 @@ void    Config::parseConfig()
     {
         line = split(configContent[i]);
         if (line.size() > 0 && line[0] == "http" && line[1] == "{")
-            std::cout << "Parsing http context" << std::endl;
-            //parseHttpcontext 
-            //::  this function will return a value that will be added to the total
-            //number of lines that was used.
-            //:: make sure to pass i + 1;
+            this->httpContext.parseHttpContext(configContent, i + 1);
         else
             this->parseDirective(this->configContent, i);
         i++;
     }
-    this->httpContext = http;
 }
 
 void    Config::parseDirective(std::vector<std::string> config, int line)
@@ -48,7 +42,6 @@ void    Config::parseDirective(std::vector<std::string> config, int line)
         exit(1);
     }
     createFile(splittedLine[1], CREATE_MODE);
-    // check if that path file exists if not create it.
 }
 
 Http::Http() 
@@ -75,6 +68,9 @@ int    Http::parseHttpContext(std::vector<std::string> & configContent, int inde
         if (line.size() > 0 && line[0] == "server" && line[1] == "{")
             std::cout << "Parsing Server context" << std::endl;
             //parseHttpcontext
+            // this->servers.push_back()
+            // should create a function that will get the location of the
+            // closing bracket to add to the numbers of lines to add.
         else
             this->parseDirective(configContent, index);
         index += 1;
@@ -83,18 +79,22 @@ int    Http::parseHttpContext(std::vector<std::string> & configContent, int inde
     return (i);
 }
 
+// Getter
+Pages    Http::getErrorPages()
+{
+    return (this->pages);
+}
+
 void    Http::parseDirective(std::vector<std::string> config, int line)
 {
     std::vector<std::string> splittedLine;
     
     splittedLine = split(config[line]);
-    if (splittedLine.size() > 2 && splittedLine[0] == "default_page")
+    if (splittedLine.size() == 3 && splittedLine[0] == "default_page")
     {
         checkDirective(splittedLine, HTTP_CONTEXT);
         createFile(splittedLine[2], CHECK_MODE);
-        std::cout << "Default pages" << std::endl;
-        // means that i should parse the default pages.
-        // 
+        parse_error_pages(splittedLine, *this);
     }
     else if (splittedLine.size() == 2)
     {
@@ -114,7 +114,17 @@ void    Http::parseDirective(std::vector<std::string> config, int line)
     } 
 }
 
-void    parse_error_pages(std::string )
+void    parse_error_pages(std::vector<std::string> page, Http & httpContext)
 {
-    // parse error pages
+    if (atoi(page[1].c_str()) == 400)
+        httpContext.getErrorPages().path_not_found = page[2];
+    else if (atoi(page[1].c_str()) == 403)
+        httpContext.getErrorPages().path_forbidden = page[2];
+    else if (atoi(page[1].c_str()) == 500)
+        httpContext.getErrorPages().path_internal_error = page[2];
+    else
+    {
+        std::cout << "Invalid status code page" << std::endl;
+        exit(1);
+    }
 }
