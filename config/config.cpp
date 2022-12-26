@@ -23,11 +23,12 @@ void    Config::parseConfig()
     while (i < size)
     {
         line = split(configContent[i]);
-        if (line.size() > 0 && line[0] == "http")
+        if (line.size() > 0 && line[0] == "http" && line[1] == "{")
             std::cout << "Parsing http context" << std::endl;
-            //parseHttpcontext
+            //parseHttpcontext 
             //::  this function will return a value that will be added to the total
             //number of lines that was used.
+            //:: make sure to pass i + 1;
         else
             this->parseDirective(this->configContent, i);
         i++;
@@ -41,7 +42,7 @@ void    Config::parseDirective(std::vector<std::string> config, int line)
     
     splittedLine = split(config[line]);
     checkDirective(splittedLine, MAIN_CONTEXT);
-    if (this->pid_path.empty())
+    if (!this->pid_path.empty())
     {
         std::cout << "Syntax Error: Directive already exits" << std::endl;
         exit(1);
@@ -71,7 +72,7 @@ int    Http::parseHttpContext(std::vector<std::string> & configContent, int inde
     while (index < size)
     {
         line = split(configContent[index]);
-        if (line.size() > 0 && line[0] == "server")
+        if (line.size() > 0 && line[0] == "server" && line[1] == "{")
             std::cout << "Parsing Server context" << std::endl;
             //parseHttpcontext
         else
@@ -87,13 +88,33 @@ void    Http::parseDirective(std::vector<std::string> config, int line)
     std::vector<std::string> splittedLine;
     
     splittedLine = split(config[line]);
-    if (splittedLine.size() == 3)
+    if (splittedLine.size() > 2 && splittedLine[0] == "default_page")
     {
+        checkDirective(splittedLine, HTTP_CONTEXT);
+        createFile(splittedLine[2], CHECK_MODE);
         std::cout << "Default pages" << std::endl;
         // means that i should parse the default pages.
         // 
     }
-    checkDirective(splittedLine, HTTP_CONTEXT);
-    createFile(splittedLine[1], CHECK_MODE);
-    // check if that path file exists if not create it.
+    else if (splittedLine.size() == 2)
+    {
+        checkDirective(splittedLine, HTTP_CONTEXT);
+        if (splittedLine[0] == "send_file")
+        {
+            if (strcmp(splittedLine[1].c_str(), "on") == 0)
+                this->sendFile = true;
+            else if (strcmp(splittedLine[1].c_str(), "off") == 0)
+                this->sendFile = false;
+        }
+    }
+    else {
+        //! Throw an exception
+        std::cout << "Invalid directive" << std::endl;
+        exit(1);
+    } 
+}
+
+void    parse_error_pages(std::string )
+{
+    // parse error pages
 }
