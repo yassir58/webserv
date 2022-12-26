@@ -68,7 +68,7 @@ int Http_application::getConnectionCount (void) const
 
 void Http_application::connectServers (void)
 {
-    for (int i = 0; i <  3 ; i++)
+    for (int i = 0; i <  this->server_count ; i++)
     {
         this->server_list[i].establish_connection ();
         this->fd_pool[i].fd = server_list[i].getSocketFd ();
@@ -135,14 +135,15 @@ void Http_application::allocate_servers (void)
 
 void Http_application::initServers (void)
 {
-    std::string serv_names[3] ;
+    std::string serv_names[4] ;
     int init_port = 1234;
-    int ports[3];
+    int ports[4];
     
     serv_names[0] = "serv1", ports[0] = 1200;
     serv_names[1] = "serv2", ports[1] = 8080;
     serv_names[2] = "serv3", ports[2] = 5000; 
-    for (int i = 0; i < 3; i++)
+    serv_names[3] = "serv4", ports[4] =  80;
+    for (int i = 0; i < 4; i++)
     {
         this->server_list[i].setServerName (serv_names[i]);
         this->server_list[i].setServerPort (ports[i]);

@@ -32,7 +32,7 @@
 #define ACK_MESSAGE "\e[0;33m acknowledgement message \e[0m"
 #define RESPONSE_LINES 7
 // for testing purpos
-#define HTTP_RESPONSE_EXAMPLE "HTTP/1.1 200 OK\r\nServer: WebServer\r\nContent-Type: text/html\r\nContent-Length: 42\r\nConnection: close\r\n\r\nhello world</br><p>this is a paragraph</p>"
+#define HTTP_RESPONSE_EXAMPLE "HTTP/1.1 200 OK\r\nServer: WebServer\r\nContent-Type: text/html\r\nContent-Length: 109\r\nConnection: close\r\n\r\nhello world</br><p>this is a paragraph</p><img src='https://i.ytimg.com/vi/8wWBcs99hTw/hqdefault.jpg' ></img>"
 class Fatal_error : public std::exception
 {
     const char *what() const throw();
