@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2022/12/25 22:38:40 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2022/12/26 11:56:10 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -171,10 +171,13 @@ int Request::parseHeaderField(std::list<headerField> &list, std::string line)
 	headerField	field;
 	size_t		start = 0;
 	size_t		pos = line.find(':', start);
-
+	if (pos == std::string::npos)
+		return (0);
 	field.key = line.substr(start, pos);
 	start = line.find_first_not_of(' ', pos + 1);
 	field.value = line.substr(start, std::string::npos);
+	if (field.value.empty() || field.key.empty())
+		return (0);
 	list.push_back(field);
 	return (1);
 }
