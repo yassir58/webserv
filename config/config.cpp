@@ -58,6 +58,7 @@ int    Http::parseHttpContext(std::vector<std::string> & configContent, int inde
 {
     int size;
     int i;
+    Server server;
     std::vector<std::string> line;
 
     i = 0;
@@ -66,9 +67,7 @@ int    Http::parseHttpContext(std::vector<std::string> & configContent, int inde
     {
         line = split(configContent[index]);
         if (line.size() > 0 && line[0] == "server" && line[1] == "{")
-            std::cout << "Parsing Server context" << std::endl;
-            //parseHttpcontext
-            // this->servers.push_back()
+            this->servers.push_back(server.parseServer(configContent, index));
             // i += closingBracket();
             // should create a function that will get the location of the
             // closing bracket to add to the numbers of lines to add.
@@ -114,9 +113,9 @@ Server Server::parseServer(std::vector<std::string> configFile, int index)
     int size;
     int i;
     Server server;
+    Location location;
     std::vector<std::string> line;
 
-    i = 0;
     size = configFile.size();
     while (index < size)
     {
@@ -131,7 +130,6 @@ Server Server::parseServer(std::vector<std::string> configFile, int index)
             this->parseDirective(configFile, i);
             // Throw an exception or exit with error code.
         index += 1;
-        i += 1;
     }
 }
 
@@ -145,8 +143,8 @@ void    Server::parseDirective(std::vector<std::string> config, int line)
         createFile(splittedLine[2], CHECK_MODE);
     else if (splittedLine.size() == 2 && splittedLine[0] == "server_name")
         this->serverName = splittedLine[1];
-    else if (splittedLine.size() == 2 && splittedLine[0] == "keepalive_timeout")
-        this->keepAliveTimeout = atoi(splittedLine[1].c_str());
+    else if (splittedLine.size() == 2 && splittedLine[0] == "max_body_size")
+        this->maxBodySize = atoi(splittedLine[1].c_str());
     else if (splittedLine.size() == 3 && splittedLine[0] == "listen")
     {
         this->port = atoi(splittedLine[2].c_str());

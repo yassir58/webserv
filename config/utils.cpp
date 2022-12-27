@@ -199,6 +199,26 @@ void    parse_error_pages(std::vector<std::string> page, Http & httpContext)
     }
 }
 
+int getClosingBracket(std::vector<std::string> fileContent, int position)
+{
+    int i;
+    int bracketsLevel;
+    std::string line;
+
+    i = fileContent.size();
+    bracketsLevel = 1;
+    while (position < i)
+    {
+        line = fileContent[position];
+        bracketsLevel += std::count(line.begin(), line.end(), '{');
+        bracketsLevel -= std::count(line.begin(), line.end(), '}');
+        position += 1;
+        if (bracketsLevel == 0)
+            return (position);
+    }
+    return (-1);
+}
+
 Pages    Http::getErrorPages()
 {
     return (this->pages);

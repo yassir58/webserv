@@ -50,15 +50,15 @@ class Location
         std::string index;
         bool sendFile;
     public:
-        void parseLocation(std::vector<std::string> configFile, int line);
+        Location parseLocation(std::vector<std::string> configFile, int line);
         Location();
         ~Location();
 };
 
 class Server {
     private:
-        int port;
-        int keepAliveTimeout;
+        short port;
+        unsigned int maxBodySize;
         std::string host;
         std::string serverName;
         std::string accessLog;
