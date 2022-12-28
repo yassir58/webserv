@@ -5,6 +5,7 @@
 #include <istream>
 #include <vector>
 #include <algorithm>
+#include <sys/stat.h>
 
 #define MAIN_CONTEXT 0
 #define HTTP_CONTEXT 1
@@ -12,6 +13,7 @@
 #define LOCATION_CONTEXT 3
 
 #define CREATE_MODE 1
+#define DIR_MODE 2
 #define CHECK_MODE 0
 
 const char * httpContext[] = {
@@ -23,7 +25,7 @@ const char * serverContext[] = {
     	"listen",
         "server_name",
 		"root",
-		"keepalive_timeout",
+		"max_body_size",
         "error_log",
         "access_log"
 };
@@ -50,7 +52,8 @@ class Location
         std::string index;
         bool sendFile;
     public:
-        Location parseLocation(std::vector<std::string> configFile, int line);
+        Location Location::parseLocation(std::vector<std::string> configFile, std::string path, int index);
+        void    parseDirective(std::vector<std::string> line);
         Location();
         ~Location();
 };
@@ -60,6 +63,7 @@ class Server {
         short port;
         unsigned int maxBodySize;
         std::string host;
+        std::string root;
         std::string serverName;
         std::string accessLog;
         std::string errorLog;
@@ -109,5 +113,6 @@ std::vector<std::string> split(std::string line);
 void    checkDirective(std::vector<std::string> line, int context);
 bool checkDirectiveKey(std::string directiveName,const char **directivesTable);
 bool checkValidDirectives(std::string line, int context);
-void createFile(std::string path, int mode);
+void checkPath(std::string path, int mode);
 void    parse_error_pages(std::vector<std::string> page, Http & httpContext);
+bool is_number(const std::string& s);

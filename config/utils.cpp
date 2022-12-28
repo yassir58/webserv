@@ -162,10 +162,10 @@ bool checkDirectiveKey(std::string directiveName,const char **directivesTable)
     return (false);
 }
 
-void createFile(std::string path, int mode)
+void checkPath(std::string path, int mode)
 {
     std::ifstream checkFile;
-    
+    struct stat sb;
 
     checkFile.open(path);
     if (mode == CREATE_MODE)
@@ -174,12 +174,20 @@ void createFile(std::string path, int mode)
             return;
         std::ofstream output(path);
     }
-    else 
+    else if (mode == CHECK_MODE)
     {
         if (!checkFile.is_open())
         {
             std::cout << "Syntax error: " << path << "could not be found" << std::endl;
             exit(1);
+        }
+    }
+    else if (mode == DIR_MODE)
+    {
+        if (stat(path.c_str(), &sb) != 0)
+        {
+           std::cout << "Syntax error: " << path << "could not be found" << std::endl;
+           exit(1); 
         }
     }
 }
@@ -222,4 +230,11 @@ int getClosingBracket(std::vector<std::string> fileContent, int position)
 Pages    Http::getErrorPages()
 {
     return (this->pages);
+}
+
+bool is_number(const std::string& s)
+{
+    std::string::const_iterator it = s.begin();
+    while (it != s.end() && std::isdigit(*it)) ++it;
+    return !s.empty() && it == s.end();
 }
