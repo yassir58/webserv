@@ -1,4 +1,6 @@
 #pragma once
+#ifndef CONFIG_HPP
+#define CONFIG_HPP
 #include <iostream>
 #include <regex>
 #include <fstream>
@@ -115,3 +117,5 @@ void checkPath(std::string path, int mode);
 void    parse_error_pages(std::vector<std::string> page, Http & context);
 bool is_number(const std::string& s);
 int getClosingIndex(std::vector<std::string> fileContent, int position);
+
+#endif
