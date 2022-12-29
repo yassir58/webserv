@@ -103,7 +103,32 @@ void    check_brackets(std::string filename)
     }
 }
 
-void    checkDirective(std::vector<std::string> line, int context)
+// bool checkValidDirectives(std::string line, int context)
+// {
+//     if (context == MAIN)
+//     {
+//         if (strcmp(line.c_str(), "pid"))
+//             return (false);
+//     }
+//     else if (context == HTTP)
+//     {
+//         if (!checkDirectiveKey(line, httpContext))
+//             return (false);
+//     }
+//     else if (context == SERVER)
+//     {
+//         if (!checkDirectiveKey(line, serverContext))
+//             return (false);
+//     }
+//     else if (context == LOCATION)
+//     {
+//         if (!checkDirectiveKey(line, locationContext))
+//             return (false);
+//     }
+//     return (true);
+// }
+
+void    validateDirective(std::vector<std::string> line, int context)
 {
     //! In the function in need to check that am checking the last character of the last directive line array.
     if (line.size() < 2)
@@ -116,51 +141,28 @@ void    checkDirective(std::vector<std::string> line, int context)
         std::cout << "Syntax Error: Directive must end with ;" << std::endl;
         exit(1);
     }
-    if (!checkValidDirectives(line[0], context))
-    {
-        std::cout << "Config Error: Invalid Directive name" << std::endl;
-        exit(1);
-    }
+    // if (!checkValidDirectives(line[0], context))
+    // {
+    //     std::cout << "Config Error: Invalid Directive name" << std::endl;
+    //     exit(1);
+    // }
 }
 
-bool checkValidDirectives(std::string line, int context)
-{
-    if (context == MAIN_CONTEXT)
-    {
-        if (strcmp(line.c_str(), "pid"))
-            return (false);
-    }
-    else if (context == HTTP_CONTEXT)
-    {
-        if (!checkDirectiveKey(line, httpContext))
-            return (false);
-    }
-    else if (context == SERVER_CONTEXT)
-    {
-        if (!checkDirectiveKey(line, serverContext))
-            return (false);
-    }
-    else if (context == LOCATION_CONTEXT)
-    {
-        if (!checkDirectiveKey(line, locationContext))
-            return (false);
-    }
-    return (true);
-}
+// bool checkDirectiveKey(std::string directiveName,const char **directivesTable)
+// {
+//     unsigned int i;
 
-bool checkDirectiveKey(std::string directiveName,const char **directivesTable)
-{
-    unsigned int i;
+//     i = 0;
+//     while (directivesTable[i])
+//     {
+//         if (strcmp(directiveName.c_str(), directivesTable[i]) == 0)
+//             return (true);
+//         i++;
+//     }  
+//     return (false);
+// }
 
-    i = 0;
-    while (directivesTable[i])
-    {
-        if (strcmp(directiveName.c_str(), directivesTable[i]) == 0)
-            return (true);
-        i++;
-    }  
-    return (false);
-}
+
 
 void checkPath(std::string path, int mode)
 {
@@ -192,14 +194,14 @@ void checkPath(std::string path, int mode)
     }
 }
 
-void    parse_error_pages(std::vector<std::string> page, Http & httpContext)
+void    parse_error_pages(std::vector<std::string> page, Http & http)
 {
     if (atoi(page[1].c_str()) == 400)
-        httpContext.getErrorPages().path_not_found = page[2];
+        http.getErrorPages().path_not_found = page[2];
     else if (atoi(page[1].c_str()) == 403)
-        httpContext.getErrorPages().path_forbidden = page[2];
+        http.getErrorPages().path_forbidden = page[2];
     else if (atoi(page[1].c_str()) == 500)
-        httpContext.getErrorPages().path_internal_error = page[2];
+        http.getErrorPages().path_internal_error = page[2];
     else
     {
         std::cout << "Invalid status code page" << std::endl;
@@ -207,7 +209,7 @@ void    parse_error_pages(std::vector<std::string> page, Http & httpContext)
     }
 }
 
-int getClosingBracket(std::vector<std::string> fileContent, int position)
+int getClosingIndex(std::vector<std::string> fileContent, int position)
 {
     int i;
     int bracketsLevel;

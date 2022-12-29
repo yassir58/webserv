@@ -7,10 +7,10 @@
 #include <algorithm>
 #include <sys/stat.h>
 
-#define MAIN_CONTEXT 0
-#define HTTP_CONTEXT 1
-#define SERVER_CONTEXT 2
-#define LOCATION_CONTEXT 3
+#define MAIN 0
+#define HTTP 1
+#define SERVER 2
+#define LOCATION 3
 
 #define CREATE_MODE 1
 #define DIR_MODE 2
@@ -52,7 +52,7 @@ class Location
         std::string index;
         bool sendFile;
     public:
-        Location Location::parseLocation(std::vector<std::string> configFile, std::string path, int index);
+        Location parseLocation(std::vector<std::string> configFile, std::string path, int index);
         void    parseDirective(std::vector<std::string> line);
         Location();
         ~Location();
@@ -82,7 +82,7 @@ class Http {
         std::vector<Server> servers;
     public:
         void    parseDirective(std::vector<std::string> config, int line);
-        int    parseHttpContext(std::vector<std::string> & configFile, int line);
+        void    parseHttpContext(std::vector<std::string> & configFile, int line);
         void    parseErrorPages(std::string line);
         Pages getErrorPages();
         Http();
@@ -99,10 +99,8 @@ class Config {
     private:
         std::vector<std::string> configContent;
         std::string pid_path;
-        Http httpContext;
+        Http globalHttpContext;
 };
-
-//.. Util functions
 
 void	validate_extension(const char *path, char *ext);
 void    validate_file_content(std::ifstream & configFile);
@@ -110,9 +108,10 @@ std::string getLine(std::string &line);
 std::vector<std::string>   read_config_file(std::string & path);
 void    check_brackets(std::string filename);
 std::vector<std::string> split(std::string line);
-void    checkDirective(std::vector<std::string> line, int context);
+void    validateDirective(std::vector<std::string> line, int context);
 bool checkDirectiveKey(std::string directiveName,const char **directivesTable);
 bool checkValidDirectives(std::string line, int context);
 void checkPath(std::string path, int mode);
-void    parse_error_pages(std::vector<std::string> page, Http & httpContext);
+void    parse_error_pages(std::vector<std::string> page, Http & context);
 bool is_number(const std::string& s);
+int getClosingIndex(std::vector<std::string> fileContent, int position);

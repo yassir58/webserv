@@ -11,6 +11,11 @@ Config::Config(std::string path)
     check_brackets(path);
 }
 
+Config::~Config()
+{
+    std::cout << "Calling the destructor of config" << std::endl;
+}
+
 void    Config::parseConfig()
 {
     int size;
@@ -23,7 +28,10 @@ void    Config::parseConfig()
     {
         line = split(configContent[i]);
         if (line.size() > 0 && line[0] == "http" && line[1] == "{")
-            this->httpContext.parseHttpContext(configContent, i + 1);
+        {
+            this->globalHttpContext.parseHttpContext(configContent, i + 1);
+            i += getClosingIndex(this->configContent, i + 1);
+        }
         else
             this->parseDirective(this->configContent, i);
         i++;
@@ -35,7 +43,7 @@ void    Config::parseDirective(std::vector<std::string> config, int line)
     std::vector<std::string> splittedLine;
     
     splittedLine = split(config[line]);
-    checkDirective(splittedLine, MAIN_CONTEXT);
+    validateDirective(splittedLine, MAIN);
     if (!this->pid_path.empty())
     {
         std::cout << "Syntax Error: Directive already exits" << std::endl;
@@ -54,29 +62,25 @@ Http::~Http() {
     std::cout << "Http destructor called" << std::endl;
 }
 
-int    Http::parseHttpContext(std::vector<std::string> & configContent, int index)
+void    Http::parseHttpContext(std::vector<std::string> & configContent, int index)
 {
     int size;
-    int i;
     Server server;
     std::vector<std::string> line;
 
-    i = 0;
     size = configContent.size();
     while (index < size)
     {
         line = split(configContent[index]);
         if (line.size() > 0 && line[0] == "server" && line[1] == "{")
-            this->servers.push_back(server.parseServer(configContent, index));
-            // i += closingBracket();
-            // should create a function that will get the location of the
-            // closing bracket to add to the numbers of lines to add.
+        {
+            this->servers.push_back(server.parseServer(configContent, index + 1));
+            index += getClosingIndex(configContent, index + 1);
+        }
         else
             this->parseDirective(configContent, index);
         index += 1;
-        i += 1;
     }
-    return (i);
 }
 
 void    Http::parseDirective(std::vector<std::string> config, int line)
@@ -84,7 +88,7 @@ void    Http::parseDirective(std::vector<std::string> config, int line)
     std::vector<std::string> splittedLine;
     
     splittedLine = split(config[line]);
-    checkDirective(splittedLine, HTTP_CONTEXT);
+    validateDirective(splittedLine, HTTP);
     if (splittedLine.size() == 3 && splittedLine[0] == "default_page")
     {
         checkPath(splittedLine[2], CHECK_MODE);
@@ -103,7 +107,17 @@ void    Http::parseDirective(std::vector<std::string> config, int line)
     else {
         std::cout << "Invalid directive" << std::endl;
         exit(1);
-    } 
+    }
+}
+
+Server::Server()
+{
+    std::cout << "Called the default constructor of server" << std::endl;
+}
+
+Server::~Server()
+{
+    std::cout << "Called the default destructor of server" << std::endl;
 }
 
 Server Server::parseServer(std::vector<std::string> configFile, int index)
@@ -119,10 +133,10 @@ Server Server::parseServer(std::vector<std::string> configFile, int index)
     {
         line = split(configFile[index]);
         if (line.size() == 3 && line[0] == "location" && line[2] == "{")
+        {
             server.locations.push_back(location.parseLocation(configFile, line[1], index + 1));
-            // i += closingBracket();
-            // should create a function that will get the location of the
-            // closing bracket to add to the numbers of lines to add.
+            index += getClosingIndex(configFile, index + 1);
+        }
         else
             this->parseDirective(configFile, i);
             // Throw an exception or exit with error code.
@@ -135,7 +149,7 @@ void    Server::parseDirective(std::vector<std::string> config, int line)
     std::vector<std::string> splittedLine;
     
     splittedLine = split(config[line]);
-    checkDirective(splittedLine, SERVER_CONTEXT);
+    validateDirective(splittedLine, SERVER);
     if (splittedLine.size() == 2 && splittedLine[0] == "root")
     {
         checkPath(splittedLine[2], CHECK_MODE);
@@ -221,7 +235,7 @@ Location Location::parseLocation(std::vector<std::string> configFile, std::strin
 
 void    Location::parseDirective(std::vector<std::string> line)
 {
-    checkDirective(line, LOCATION_CONTEXT);
+    validateDirective(line, LOCATION);
     if (line[0] == "send_file" && line.size() == 2)
     {
         if (strcmp(line[1].c_str(), "on") == 0)

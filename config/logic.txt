@@ -11,7 +11,7 @@ function parseConfig()
     }
 }
 
-function checkDirective(line(container), CONTEXT)
+function validateDirective(line(container), CONTEXT)
 {
     if (line.size() < 2)
     {

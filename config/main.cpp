@@ -8,8 +8,8 @@ int main(int argc, char **argv)
     int container_size;
     int i;
 
-    path = argv[1];
-    check_brackets(path);
+    Config conf("./webserv.conf");
+    std::cout << "Before the segfault" << std::endl;
     // config = read_config_file(path);
     // container_size = config.size();
     // i = 0;
