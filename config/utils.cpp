@@ -1,4 +1,5 @@
 #include "config.hpp"
+#include "utils.hpp"
 
 void	validate_extension(const char *path, const char *ext)
 {
@@ -10,6 +11,19 @@ void	validate_extension(const char *path, const char *ext)
     {
 		std::cout << "Usage: webserv *.conf" << std::endl;
         exit(1);
+    }
+}
+
+void    printContainer(std::vector<std::string> table)
+{
+    int i;
+
+    i = 0;
+
+    while (i < table.size())
+    {
+        std::cout << table.at(i) << std::endl;
+        i++;
     }
 }
 
@@ -48,8 +62,10 @@ void    validate_file_content(std::ifstream & configFile)
 
 std::string getLine(std::string &line) {
     //.. Removing whitespaces
-    line.erase(std::remove_if(line.begin(), line.end(), isspace), line.end());
+    // line.erase(std::remove_if(line.begin(), line.end(), isspace), line.end());
     //.. Checking if line contains a comment
+    if (line.find('#') != std::string::npos)
+        line.erase(0, line.find_first_not_of(" \t"));
     if (line.empty() || line[0] == '#')
         return std::string();
     return (line);
@@ -60,6 +76,7 @@ std::vector<std::string>   read_config_file(std::string & path)
     std::string ext;
     std::ifstream config;
     std::string line;
+    std::string parsedLine;
     std::vector<std::string> configFile;
 
     ext = ".conf";
@@ -72,28 +89,28 @@ std::vector<std::string>   read_config_file(std::string & path)
         validate_file_content(config);
         while (getline(config, line))
         {
-            configFile.push_back(getLine(line));
+            parsedLine = getLine(line);
+            if (!parsedLine.empty())
+                configFile.push_back(parsedLine);
         }
     }
     return (configFile);
 }
 
-void    check_brackets(std::string filename)
+void    check_brackets(std::vector<std::string> configContent)
 {
     std::string line;
-    std::ifstream file;
     int bracketsLevel;
+    int i;
 
+    i = 0;
     bracketsLevel = 0;
-    //.. Openning the config file
-    file.open(filename);
-    if (file.is_open())
+    while (i < configContent.size())
     {
-        while (getline(file, line))
-        {
-            bracketsLevel += std::count(line.begin(), line.end(), '{');
-            bracketsLevel -= std::count(line.begin(), line.end(), '}');
-        }
+        line = configContent[i];
+        bracketsLevel += std::count(line.begin(), line.end(), '{');
+        bracketsLevel -= std::count(line.begin(), line.end(), '}');
+        i++;
     }
     //.. Checking that the currly brackets have been closed in a correct way.
     if (bracketsLevel != 0)
@@ -103,65 +120,66 @@ void    check_brackets(std::string filename)
     }
 }
 
-// bool checkValidDirectives(std::string line, int context)
-// {
-//     if (context == MAIN)
-//     {
-//         if (strcmp(line.c_str(), "pid"))
-//             return (false);
-//     }
-//     else if (context == HTTP)
-//     {
-//         if (!checkDirectiveKey(line, httpContext))
-//             return (false);
-//     }
-//     else if (context == SERVER)
-//     {
-//         if (!checkDirectiveKey(line, serverContext))
-//             return (false);
-//     }
-//     else if (context == LOCATION)
-//     {
-//         if (!checkDirectiveKey(line, locationContext))
-//             return (false);
-//     }
-//     return (true);
-// }
-
-void    validateDirective(std::vector<std::string> line, int context)
+bool checkValidDirectives(std::string line, int context)
 {
-    //! In the function in need to check that am checking the last character of the last directive line array.
+    if (context == MAIN)
+    {
+        if (strcmp(line.c_str(), "pid"))
+            return (false);
+    }
+    else if (context == HTTP)
+    {
+        if (!checkDirectiveKey(line, httpContext))
+            return (false);
+    }
+    else if (context == SERVER)
+    {
+        if (!checkDirectiveKey(line, serverContext))
+            return (false);
+    }
+    else if (context == LOCATION)
+    {
+        if (!checkDirectiveKey(line, locationContext))
+            return (false);
+    }
+    return (true);
+}
+
+void    validateDirective(std::vector<std::string> & line, int context)
+{
+    std::string directiveValue;
+
+    directiveValue = line[line.size() - 1];
     if (line.size() < 2)
     {
         std::cout << "Syntax Error: Directive must be listed as key : value pattern" << std::endl;
         exit(1);
     }
-    if (strcmp(line[line.size() - 1].c_str(), ";"))
+    if (!strcmp(directiveValue.c_str(), ";") && directiveValue[directiveValue.length() - 1] != ';')
     {
         std::cout << "Syntax Error: Directive must end with ;" << std::endl;
         exit(1);
     }
-    // if (!checkValidDirectives(line[0], context))
-    // {
-    //     std::cout << "Config Error: Invalid Directive name" << std::endl;
-    //     exit(1);
-    // }
+    if (!checkValidDirectives(line[0], context))
+    {
+        std::cout << "Config Error: Invalid Directive name" << std::endl;
+        exit(1);
+    }
 }
 
-// bool checkDirectiveKey(std::string directiveName,const char **directivesTable)
-// {
-//     unsigned int i;
+bool checkDirectiveKey(std::string directiveName,const char **directivesTable)
+{
+    unsigned int i;
 
-//     i = 0;
-//     while (directivesTable[i])
-//     {
-//         if (strcmp(directiveName.c_str(), directivesTable[i]) == 0)
-//             return (true);
-//         i++;
-//     }  
-//     return (false);
-// }
-
+    i = 0;
+    while (directivesTable[i])
+    {
+        if (strcmp(directiveName.c_str(), directivesTable[i]) == 0)
+            return (true);
+        i++;
+    }  
+    return (false);
+}
 
 
 void checkPath(std::string path, int mode)
@@ -180,7 +198,7 @@ void checkPath(std::string path, int mode)
     {
         if (!checkFile.is_open())
         {
-            std::cout << "Syntax error: " << path << "could not be found" << std::endl;
+            std::cout << "Syntax error: " << path << " could not be found" << std::endl;
             exit(1);
         }
     }
@@ -188,7 +206,7 @@ void checkPath(std::string path, int mode)
     {
         if (stat(path.c_str(), &sb) != 0)
         {
-           std::cout << "Syntax error: " << path << "could not be found" << std::endl;
+           std::cout << "Syntax error: " << path << " could not be found" << std::endl;
            exit(1); 
         }
     }

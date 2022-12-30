@@ -18,27 +18,6 @@
 #define DIR_MODE 2
 #define CHECK_MODE 0
 
-const char * httpContext[] = {
-    	"default_page",
-	    "send_file"
-};
-
-const char * serverContext[] = {
-    	"listen",
-        "server_name",
-		"root",
-		"max_body_size",
-        "error_log",
-        "access_log"
-};
-
-const char * locationContext[] = {
-        "root",
-        "send_file",
-        "index",
-        "upload_path"
-};
-
 typedef struct errorPages {
     std::string path_not_found;
     std::string path_forbidden;
@@ -108,14 +87,15 @@ void	validate_extension(const char *path, char *ext);
 void    validate_file_content(std::ifstream & configFile);
 std::string getLine(std::string &line);
 std::vector<std::string>   read_config_file(std::string & path);
-void    check_brackets(std::string filename);
+void    check_brackets(std::vector<std::string> configContent);
 std::vector<std::string> split(std::string line);
-void    validateDirective(std::vector<std::string> line, int context);
+void    validateDirective(std::vector<std::string> & line, int context);
 bool checkDirectiveKey(std::string directiveName,const char **directivesTable);
 bool checkValidDirectives(std::string line, int context);
 void checkPath(std::string path, int mode);
 void    parse_error_pages(std::vector<std::string> page, Http & context);
-bool is_number(const std::string& s);
+bool is_number(const std::string & s);
 int getClosingIndex(std::vector<std::string> fileContent, int position);
+void    printContainer(std::vector<std::string> table);
 
 #endif

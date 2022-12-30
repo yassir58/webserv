@@ -2,18 +2,19 @@
 
 Config::Config()
 {
-    std::cout << "Please specify the path of the config file." << std::endl;
+    std::cout << "Config constructor called but without any params" << std::endl;
 }
 
 Config::Config(std::string path)
 {
     this->configContent = read_config_file(path);
-    check_brackets(path);
+    printContainer(this->configContent);
+    check_brackets(this->configContent);
 }
 
 Config::~Config()
 {
-    std::cout << "Calling the destructor of config" << std::endl;
+    std::cout << "Config destructor called." << std::endl;
 }
 
 void    Config::parseConfig()
@@ -29,11 +30,15 @@ void    Config::parseConfig()
         line = split(configContent[i]);
         if (line.size() > 0 && line[0] == "http" && line[1] == "{")
         {
+            std::cout << "Parsing http context" << std::endl;
             this->globalHttpContext.parseHttpContext(configContent, i + 1);
             i += getClosingIndex(this->configContent, i + 1);
         }
         else
+        {
+            std::cout << "Parsing a normal directive" << std::endl;
             this->parseDirective(this->configContent, i);
+        }
         i++;
     }
 }

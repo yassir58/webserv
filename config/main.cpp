@@ -8,8 +8,10 @@ int main(int argc, char **argv)
     int container_size;
     int i;
 
+    std::cout << "Before calling the config constructor" << std::endl;
     Config conf("./webserv.conf");
     std::cout << "Before the segfault" << std::endl;
+    conf.parseConfig();
     // config = read_config_file(path);
     // container_size = config.size();
     // i = 0;
