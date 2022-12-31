@@ -163,7 +163,9 @@ void    validateDirective(std::vector<std::string> & line, int context)
     }
     if (!checkValidDirectives(line[0], context))
     {
-        std::cout << "Config Error: Invalid Directive name" << std::endl;
+        // std::cout << line[1] << std::endl;
+        // std::cout << context << std::endl;
+        std::cout << "Config Error: Invalid Directive name: " << line[0] << std::endl;
         exit(1);
     }
 }
@@ -243,9 +245,9 @@ int getClosingIndex(std::vector<std::string> fileContent, int position)
         bracketsLevel -= std::count(line.begin(), line.end(), '}');
         position += 1;
         if (bracketsLevel == 0)
-            return (position);
+            return (position - 1);
     }
-    return (-1);
+    return (0); // Just for fun.
 }
 
 

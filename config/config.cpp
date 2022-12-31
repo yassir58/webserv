@@ -116,7 +116,8 @@ void    Http::parseHttpContext(std::vector<std::string> & configContent, int ind
         if (line.size() > 0 && line[0] == "server" && line[1] == "{")
         {
             this->servers.push_back(server.parseServer(configContent, index + 1));
-            index += getClosingIndex(configContent, index + 1);
+            index = getClosingIndex(configContent, index + 1);
+            std::cout << "Server closing end: " << index << std::endl;
         }
         else
         {
@@ -213,21 +214,23 @@ Server * Server::parseServer(std::vector<std::string> configFile, int index)
     while (index < size)
     {
         line = split(configFile[index]);
+        if (line.size() == 1 && line[0] == "}")
+            return (server);
         if (line.size() == 3 && line[0] == "location" && line[2] == "{")
         {
-            std::cout << "Parsing a location context" << std::endl;
             server->locations.push_back(location.parseLocation(configFile, line[1], index + 1));
-            index += getClosingIndex(configFile, index + 1);
+            index = getClosingIndex(configFile, index + 1);
+            std::cout << index << std::endl;
         }
         else
         {
-            std::cout << "Parsing normal directive" << std::endl;
+            std::cout << "Parsing normal directive:: server" << std::endl;
             this->parseDirective(configFile, server, index);
         }
             // Throw an exception or exit with error code.
         index += 1;
     }
-    return server;
+    return (server);
 }
 
 void    Server::parseDirective(std::vector<std::string> config, Server *instance, int line)
