@@ -52,8 +52,10 @@ class Server {
         std::string errorLog;
         std::vector<Location *> locations;
     public:
+        std::vector<Location *>    getLocations();
         Server *  parseServer(std::vector<std::string> configFile, int line);
         void    printServer();
+        void    printLocations();
         void    parseDirective(std::vector<std::string> config, Server *instance, int line);
         Server();
         ~Server();
@@ -68,7 +70,9 @@ class Http {
         void    parseDirective(std::vector<std::string> config, int line);
         void    parseHttpContext(std::vector<std::string> & configFile, int line);
         void    parseErrorPages(std::string line);
+        void    printServers();
         bool    getSendFilestatus();
+        std::vector<Server *> getServers();
         Http();
         ~Http();
 };

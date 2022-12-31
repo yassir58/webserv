@@ -19,6 +19,9 @@ Config::~Config()
 
 void    Config::printConfig()
 {
+    int i;
+
+    i = 0;
     std::cout << "====Main context:" << std::endl;
     std::cout << "PID path::: " << this->pid_path << std::endl;
     std::cout << "====Http context:" << std::endl;
@@ -27,7 +30,7 @@ void    Config::printConfig()
     std::cout << "404::: " << this->globalHttpContext.pages->path_not_found << std::endl;
     std::cout << "403::: " << this->globalHttpContext.pages->path_forbidden << std::endl;
     std::cout << "500::: " << this->globalHttpContext.pages->path_internal_error << std::endl;
-    std::cout << "====Server context:" << std::endl;
+    this->globalHttpContext.printServers();
 }
 
 void    Config::parseConfig()
@@ -86,9 +89,17 @@ Http::~Http() {
     std::cout << "Http destructor called" << std::endl;
 }
 
-bool Http::getSendFilestatus()
-{
-    return (this->sendFile);
+void    Http::printServers(){
+    int i;
+
+    i = 0;
+    std::cout << "====Server context:" << std::endl;
+    while (i < this->getServers().size())
+    {
+        this->getServers()[i]->printServer();
+        this->getServers()[i]->printLocations();
+        i++;
+    }
 }
 
 void    Http::parseHttpContext(std::vector<std::string> & configContent, int index)
@@ -140,6 +151,16 @@ void    Http::parseDirective(std::vector<std::string> config, int line)
     }
 }
 
+std::vector<Server *> Http::getServers()
+{
+    return (this->servers);
+} 
+
+bool Http::getSendFilestatus()
+{
+    return (this->sendFile);
+}
+
 Server::Server()
 {
     std::cout << "Called the default constructor of server" << std::endl;
@@ -148,6 +169,19 @@ Server::Server()
 Server::~Server()
 {
     std::cout << "Called the default destructor of server" << std::endl;
+}
+
+void    Server::printLocations()
+{
+    int i;
+    
+    i = 0;
+    std::cout << "====Location context:" << std::endl;
+    while (i < this->locations.size())
+    {
+        this->locations[i]->printLocation();
+        i++;
+    }
 }
 
 void    Server::printServer()
@@ -250,6 +284,11 @@ void    Server::parseDirective(std::vector<std::string> config, Server *instance
         std::cout << "Invalid directive" << std::endl;
         exit(1);
     } 
+}
+
+std::vector<Location *> Server::getLocations()
+{
+    return (this->locations);
 }
 
 Location::Location()
