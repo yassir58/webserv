@@ -20,6 +20,7 @@ void    printContainer(std::vector<std::string> table)
 
     i = 0;
 
+    std::cout << "------------------------------" << std::endl;
     while (i < table.size())
     {
         std::cout << table.at(i) << std::endl;
@@ -147,15 +148,15 @@ bool checkValidDirectives(std::string line, int context)
 
 void    validateDirective(std::vector<std::string> & line, int context)
 {
-    std::string directiveValue;
+    std::string directiveEnd;
 
-    directiveValue = line[line.size() - 1];
+    directiveEnd = line[line.size() - 1];
     if (line.size() < 2)
     {
         std::cout << "Syntax Error: Directive must be listed as key : value pattern" << std::endl;
         exit(1);
     }
-    if (!strcmp(directiveValue.c_str(), ";") && directiveValue[directiveValue.length() - 1] != ';')
+    if (strcmp(directiveEnd.c_str(), ";") && directiveEnd[directiveEnd.length() - 1] != ';')
     {
         std::cout << "Syntax Error: Directive must end with ;" << std::endl;
         exit(1);
@@ -212,14 +213,14 @@ void checkPath(std::string path, int mode)
     }
 }
 
-void    parse_error_pages(std::vector<std::string> page, Http & http)
+void parse_error_pages(std::vector<std::string> page, Pages * errorPages)
 {
-    if (atoi(page[1].c_str()) == 400)
-        http.getErrorPages().path_not_found = page[2];
+    if (atoi(page[1].c_str()) == 404)
+        errorPages->path_not_found = page[2];
     else if (atoi(page[1].c_str()) == 403)
-        http.getErrorPages().path_forbidden = page[2];
+        errorPages->path_forbidden = page[2];
     else if (atoi(page[1].c_str()) == 500)
-        http.getErrorPages().path_internal_error = page[2];
+        errorPages->path_internal_error = page[2];
     else
     {
         std::cout << "Invalid status code page" << std::endl;
@@ -247,10 +248,6 @@ int getClosingIndex(std::vector<std::string> fileContent, int position)
     return (-1);
 }
 
-Pages    Http::getErrorPages()
-{
-    return (this->pages);
-}
 
 bool is_number(const std::string& s)
 {

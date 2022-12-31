@@ -33,8 +33,9 @@ class Location
         std::string index;
         bool sendFile;
     public:
-        Location parseLocation(std::vector<std::string> configFile, std::string path, int index);
-        void    parseDirective(std::vector<std::string> line);
+        Location * parseLocation(std::vector<std::string> configFile, std::string path, int index);
+        void    parseDirective(std::vector<std::string> line, Location *instance);
+        Location(std::string path);
         Location();
         ~Location();
 };
@@ -48,10 +49,10 @@ class Server {
         std::string serverName;
         std::string accessLog;
         std::string errorLog;
-        std::vector<Location> locations;
+        std::vector<Location *> locations;
     public:
-        Server    parseServer(std::vector<std::string> configFile, int line);
-        void    parseDirective(std::vector<std::string> config, int line);
+        Server *  parseServer(std::vector<std::string> configFile, int line);
+        void    parseDirective(std::vector<std::string> config, Server *instance, int line);
         Server();
         ~Server();
 };
@@ -59,13 +60,12 @@ class Server {
 class Http {
     private:
         bool sendFile;
-        Pages pages;
-        std::vector<Server> servers;
+        std::vector<Server *> servers;
     public:
+        Pages *pages;
         void    parseDirective(std::vector<std::string> config, int line);
         void    parseHttpContext(std::vector<std::string> & configFile, int line);
         void    parseErrorPages(std::string line);
-        Pages getErrorPages();
         Http();
         ~Http();
 };
@@ -93,7 +93,7 @@ void    validateDirective(std::vector<std::string> & line, int context);
 bool checkDirectiveKey(std::string directiveName,const char **directivesTable);
 bool checkValidDirectives(std::string line, int context);
 void checkPath(std::string path, int mode);
-void    parse_error_pages(std::vector<std::string> page, Http & context);
+void parse_error_pages(std::vector<std::string> page, Pages * errorPages);
 bool is_number(const std::string & s);
 int getClosingIndex(std::vector<std::string> fileContent, int position);
 void    printContainer(std::vector<std::string> table);
