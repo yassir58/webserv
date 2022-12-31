@@ -17,6 +17,19 @@ Config::~Config()
     std::cout << "Config destructor called." << std::endl;
 }
 
+void    Config::printConfig()
+{
+    std::cout << "====Main context:" << std::endl;
+    std::cout << "PID path::: " << this->pid_path << std::endl;
+    std::cout << "====Http context:" << std::endl;
+    std::cout << "File upload::: " << this->globalHttpContext.getSendFilestatus() << std::endl;
+    std::cout << "Error Pages: " << std::endl;
+    std::cout << "404::: " << this->globalHttpContext.pages->path_not_found << std::endl;
+    std::cout << "403::: " << this->globalHttpContext.pages->path_forbidden << std::endl;
+    std::cout << "500::: " << this->globalHttpContext.pages->path_internal_error << std::endl;
+    std::cout << "====Server context:" << std::endl;
+}
+
 void    Config::parseConfig()
 {
     int size;
@@ -45,16 +58,22 @@ void    Config::parseConfig()
 
 void    Config::parseDirective(std::vector<std::string> config, int line)
 {
-    std::vector<std::string> splittedLine;
+    std::vector<std::string> ret;
+    int size;
+
     
-    splittedLine = split(config[line]);
-    validateDirective(splittedLine, MAIN);
+    ret = split(config[line]);
+    size = ret.size();
+
+    validateDirective(ret, MAIN);
+    ret[size - 1][ret[size - 1].length() - 1] != ';' ? ret.pop_back() : ret[size - 1].pop_back();
     if (!this->pid_path.empty())
     {
         std::cout << "Syntax Error: Directive already exits" << std::endl;
         exit(1);
     }
-    checkPath(splittedLine[1], CREATE_MODE);
+    this->pid_path = ret[1];
+    checkPath(ret[1], CREATE_MODE);
 }
 
 Http::Http() 
@@ -65,6 +84,11 @@ Http::Http()
 Http::~Http() {
     // Should free up any memeory used by the http context.
     std::cout << "Http destructor called" << std::endl;
+}
+
+bool Http::getSendFilestatus()
+{
+    return (this->sendFile);
 }
 
 void    Http::parseHttpContext(std::vector<std::string> & configContent, int index)
@@ -124,6 +148,24 @@ Server::Server()
 Server::~Server()
 {
     std::cout << "Called the default destructor of server" << std::endl;
+}
+
+void    Server::printServer()
+{
+    if (!this->host.empty())
+        std::cout << "HOST: " << this->host << std::endl;
+    else if (this->port)
+        std::cout << "PORT: " << this->port << std::endl;
+    else if (!this->serverName.empty())
+        std::cout << "SERVER NAME: " << this->serverName << std::endl;
+    else if (!this->root.empty())
+        std::cout << "ROOT: " << this->root << std::endl;
+    else if (this->maxBodySize)
+        std::cout << "MAX BODY SIZE: " << this->maxBodySize << std::endl;
+    else if (!this->errorLog.empty())
+        std::cout << "ERROR LOG: " << this->errorLog << std::endl;
+    else if (!this->accessLog.empty())
+        std::cout << "ACCESS LOG: " << this->accessLog << std::endl; 
 }
 
 Server * Server::parseServer(std::vector<std::string> configFile, int index)
@@ -227,6 +269,19 @@ Location::Location(std::string path)
     this->endPoint = path;
 }
 
+void    Location::printLocation()
+{
+    std::cout << "Location endPoint: " << this->endPoint << std::endl;
+    if (!this->root.empty())
+        std::cout << "ROOT: " << this->root << std::endl;
+    if (!this->uploadPath.empty())
+        std::cout << "UPLOAD PATH: " << this->uploadPath << std::endl;
+    if (this->sendFile)
+        std::cout << "UPLOAD ENABLED" << std::endl;
+}
+
+//TODO: I should add a method will should set the default values for the variables.
+
 Location * Location::parseLocation(std::vector<std::string> configFile, std::string path, int index)
 {
     Location *location = new Location(path);
@@ -238,10 +293,9 @@ Location * Location::parseLocation(std::vector<std::string> configFile, std::str
     while (index < size)
     {
         line = split(configFile[index]);
-        printContainer(line);
         if (configFile[index].find("}") != std::string::npos)
         {
-            if (line[0] == "}")
+            if (line.size() == 1 && line[0] == "}")
                 return (location);
             else 
             {
@@ -258,7 +312,11 @@ Location * Location::parseLocation(std::vector<std::string> configFile, std::str
 
 void    Location::parseDirective(std::vector<std::string> line, Location *instance)
 {
+    int size;
+
+    size = line.size();
     validateDirective(line, LOCATION);
+    line[size - 1][line[size - 1].length() - 1] != ';' ? line.pop_back() : line[size - 1].pop_back();
     if (line[0] == "send_file" && line.size() == 2)
     {
         if (strcmp(line[1].c_str(), "on") == 0)

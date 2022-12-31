@@ -9,8 +9,9 @@ int main(int argc, char **argv)
     int i;
 
     std::cout << "Before calling the config constructor" << std::endl;
-    Config conf("./webserv.conf");
-    conf.parseConfig();
+    Config *file = new Config("./webserv.conf");
+    file->parseConfig();
+    file->printConfig();
     // config = read_config_file(path);
     // container_size = config.size();
     // i = 0;

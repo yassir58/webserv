@@ -35,6 +35,7 @@ class Location
     public:
         Location * parseLocation(std::vector<std::string> configFile, std::string path, int index);
         void    parseDirective(std::vector<std::string> line, Location *instance);
+        void    printLocation();
         Location(std::string path);
         Location();
         ~Location();
@@ -52,6 +53,7 @@ class Server {
         std::vector<Location *> locations;
     public:
         Server *  parseServer(std::vector<std::string> configFile, int line);
+        void    printServer();
         void    parseDirective(std::vector<std::string> config, Server *instance, int line);
         Server();
         ~Server();
@@ -66,6 +68,7 @@ class Http {
         void    parseDirective(std::vector<std::string> config, int line);
         void    parseHttpContext(std::vector<std::string> & configFile, int line);
         void    parseErrorPages(std::string line);
+        bool    getSendFilestatus();
         Http();
         ~Http();
 };
@@ -76,6 +79,7 @@ class Config {
         Config(std::string path);
         ~Config();
         void    parseConfig();
+        void    printConfig();
         void    parseDirective(std::vector<std::string> config, int line);
     private:
         std::vector<std::string> configContent;
