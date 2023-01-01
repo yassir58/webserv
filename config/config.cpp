@@ -105,9 +105,12 @@ void    Http::parseHttpContext(std::vector<std::string> & configContent, int ind
 {
     int size;
     Server server;
+    Server *ptr;
     std::vector<std::string> line;
+    
     this->pages = new Pages();
 
+    ptr = NULL;
     size = configContent.size();
     while (index < size)
     {
@@ -116,7 +119,9 @@ void    Http::parseHttpContext(std::vector<std::string> & configContent, int ind
             return ;
         if (line.size() > 0 && line[0] == "server" && line[1] == "{")
         {
-            this->servers.push_back(server.parseServer(configContent, index + 1));
+            ptr = server.parseServer(configContent, index + 1);
+            ptr->printServer();
+            this->servers.push_back(ptr);
             index = getClosingIndex(configContent, index + 1);
         }
         else
@@ -164,6 +169,10 @@ bool Http::getSendFilestatus()
 
 Server::Server()
 {
+    this->maxBodySize = 0;
+    this->port = 80;
+    this->host = "127.0.0.1";
+    this->serverName = "";
     // std::cout << "Called the default constructor of server" << std::endl;
 }
 
@@ -187,18 +196,13 @@ void    Server::printLocations()
 
 void    Server::printServer()
 {
-    if (!this->host.empty())
-        std::cout << "HOST: " << this->host << std::endl;
-    else if (this->port)
-        std::cout << "PORT: " << this->port << std::endl;
-    else if (!this->serverName.empty())
-        std::cout << "SERVER NAME: " << this->serverName << std::endl;
-    else if (!this->root.empty())
-        std::cout << "ROOT: " << this->root << std::endl;
-    else if (this->maxBodySize)
-        std::cout << "MAX BODY SIZE: " << this->maxBodySize << std::endl;
-        // std::cout << "ERROR LOG: " << this->errorLog << std::endl;
-        // std::cout << "ACCESS LOG: " << this->accessLog << std::endl; 
+    std::cout << "HOST: " << this->host << std::endl;
+    std::cout << "PORT: " << this->port << std::endl;
+    std::cout << "SERVER NAME: " << this->serverName << std::endl;
+    std::cout << "ROOT: " << this->root << std::endl;
+    std::cout << "MAX BODY SIZE: " << this->maxBodySize << std::endl;
+    std::cout << "ERROR LOG: " << this->errorLog << std::endl;
+    std::cout << "ACCESS LOG: " << this->accessLog << std::endl; 
 }
 
 Server * Server::parseServer(std::vector<std::string> configFile, int index)
@@ -213,13 +217,7 @@ Server * Server::parseServer(std::vector<std::string> configFile, int index)
     {
         line = split(configFile[index]);
         if (line.size() == 1 && line[0] == "}")
-        {
-            // printf("Address of server: %p\n", &server);
-            // server->printServer();
-            std::cout << "AccessLog: " << server->host << std::endl;
-            std::cout << "ErrorLog: " << server->errorLog << std::endl;
             return (server);
-        }
         if (line.size() == 3 && line[0] == "location" && line[2] == "{")
         {
             server->locations.push_back(location.parseLocation(configFile, line[1], index + 1));
@@ -227,6 +225,7 @@ Server * Server::parseServer(std::vector<std::string> configFile, int index)
         }
         else
         {
+            // printf("First: %p\n", server);
             this->parseDirective(configFile, server, index);
         }
             // Throw an exception or exit with error code.
@@ -247,23 +246,15 @@ void    Server::parseDirective(std::vector<std::string> config, Server *instance
     ret[size - 1][ret[size - 1].length() - 1] != ';' ? ret.pop_back() : ret[size - 1].pop_back();
     if (ret.size() == 2 && ret[0] == "root")
     {
-        std::cout << "Parsing the root directive" << std::endl;
         checkPath(ret[1], CHECK_MODE);
         instance->root = ret[1];
     }
     else if (ret.size() == 2 && ret[0] == "server_name")
-    {
-        std::cout << "Parsing the server name directive" << std::endl;
         instance->serverName = ret[1];
-    }
     else if (ret.size() == 2 && ret[0] == "max_body_size")
-    {
-        std::cout << "Parsing the max body size directive" << std::endl;
         instance->maxBodySize = atoi(ret[1].c_str());
-    }
     else if (ret.size() == 3 && ret[0] == "listen" || ret.size() == 2 && ret[0] == "listen")
     {
-        std::cout << "Parsing the listen directive" << std::endl;
         if (ret.size() == 2 && is_number(ret[1]))
         {
             instance->port = atoi(ret[1].c_str());
@@ -277,7 +268,6 @@ void    Server::parseDirective(std::vector<std::string> config, Server *instance
     }
     else if (ret.size() == 2 && ret[0] == "error_log")
     {
-        std::cout << "Parsing the error_log directive" << std::endl;
         checkPath(ret[1], CREATE_MODE);
         if (!instance->errorLog.empty())
         {
@@ -288,7 +278,6 @@ void    Server::parseDirective(std::vector<std::string> config, Server *instance
     }
     else if (ret.size() == 2 && ret[0] == "access_log")
     {
-        std::cout << "Parsing the access_log directive" << std::endl;
         checkPath(ret[1], CREATE_MODE);
         if (!instance->accessLog.empty())
         {
@@ -300,7 +289,7 @@ void    Server::parseDirective(std::vector<std::string> config, Server *instance
     else {
         std::cout << "Invalid directive" << std::endl;
         exit(1);
-    } 
+    }
 }
 
 std::vector<Location *> Server::getLocations()

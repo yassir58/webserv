@@ -18,6 +18,8 @@
 #define DIR_MODE 2
 #define CHECK_MODE 0
 
+typedef std::vector<std::string> stringContainer;
+
 typedef struct errorPages {
     std::string path_not_found;
     std::string path_forbidden;
