@@ -7,6 +7,7 @@
 #include <istream>
 #include <vector>
 #include <algorithm>
+#include <exception>
 #include <sys/stat.h>
 
 #define MAIN 0
@@ -35,8 +36,8 @@ class Location
         std::string index;
         bool sendFile;
     public:
-        Location * parseLocation(std::vector<std::string> configFile, std::string path, int index);
-        void    parseDirective(std::vector<std::string> line, Location *instance);
+        Location * parseLocation(stringContainer configFile, std::string path, int index);
+        void    parseDirective(stringContainer line, Location *instance);
         void    printLocation();
         Location(std::string path);
         Location();
@@ -55,10 +56,10 @@ class Server {
         std::vector<Location *> locations;
     public:
         std::vector<Location *>    getLocations();
-        Server *  parseServer(std::vector<std::string> configFile, int line);
+        Server *  parseServer(stringContainer configFile, int line);
         void    printServer();
         void    printLocations();
-        void    parseDirective(std::vector<std::string> config, Server *instance, int line);
+        void    parseDirective(stringContainer config, Server *instance, int line);
         Server();
         ~Server();
 };
@@ -69,8 +70,8 @@ class Http {
         std::vector<Server *> servers;
     public:
         Pages *pages;
-        void    parseDirective(std::vector<std::string> config, int line);
-        void    parseHttpContext(std::vector<std::string> & configFile, int line);
+        void    parseDirective(stringContainer config, int line);
+        void    parseHttpContext(stringContainer & configFile, int line);
         void    parseErrorPages(std::string line);
         void    printServers();
         bool    getSendFilestatus();
@@ -86,26 +87,35 @@ class Config {
         ~Config();
         void    parseConfig();
         void    printConfig();
-        void    parseDirective(std::vector<std::string> config, int line);
+        void    parseDirective(stringContainer config, int line);
     private:
-        std::vector<std::string> configContent;
+        stringContainer configContent;
         std::string pid_path;
         Http globalHttpContext;
+    
+};
+
+class parseConfig: public std::runtime_error
+{
+    public:
+        parseConfig(std::string const& msg):
+            std::runtime_error(msg)
+        {}
 };
 
 void	validate_extension(const char *path, char *ext);
 void    validate_file_content(std::ifstream & configFile);
 std::string getLine(std::string &line);
-std::vector<std::string>   read_config_file(std::string & path);
-void    check_brackets(std::vector<std::string> configContent);
-std::vector<std::string> split(std::string line);
-void    validateDirective(std::vector<std::string> & line, int context);
+stringContainer   read_config_file(std::string & path);
+void    check_brackets(stringContainer configContent);
+stringContainer split(std::string line);
+void    validateDirective(stringContainer & line, int context);
 bool checkDirectiveKey(std::string directiveName,const char **directivesTable);
 bool checkValidDirectives(std::string line, int context);
 void checkPath(std::string path, int mode);
-void parse_error_pages(std::vector<std::string> page, Pages * errorPages);
+void parse_error_pages(stringContainer page, Pages * errorPages);
 bool is_number(const std::string & s);
-int getClosingIndex(std::vector<std::string> fileContent, int position);
-void    printContainer(std::vector<std::string> table);
+int getClosingIndex(stringContainer fileContent, int position);
+void    printContainer(stringContainer table);
 
 #endif

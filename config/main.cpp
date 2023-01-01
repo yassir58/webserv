@@ -4,7 +4,7 @@
 int main(int argc, char **argv)
 {
     std::string path;
-    std::vector<std::string> config;
+    stringContainer config;
     int container_size;
     int i;
 

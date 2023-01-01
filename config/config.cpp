@@ -17,6 +17,8 @@ Config::~Config()
     // std::cout << "Config destructor called." << std::endl;
 }
 
+
+
 void    Config::printConfig()
 {
     std::cout << "====Main context:" << std::endl;
@@ -35,7 +37,7 @@ void    Config::parseConfig()
 {
     int size;
     int i;
-    std::vector<std::string> line;
+    stringContainer line;
 
     i = 0;
     size = this->configContent.size();
@@ -57,24 +59,24 @@ void    Config::parseConfig()
     }
 }
 
-void    Config::parseDirective(std::vector<std::string> config, int line)
+void    Config::parseDirective(stringContainer config, int line)
 {
-    std::vector<std::string> ret;
+    stringContainer str;
     int size;
 
     
-    ret = split(config[line]);
-    size = ret.size();
+    str = split(config[line]);
+    size = str.size();
 
-    validateDirective(ret, MAIN);
-    ret[size - 1][ret[size - 1].length() - 1] != ';' ? ret.pop_back() : ret[size - 1].pop_back();
+    validateDirective(str, MAIN);
+    str[size - 1][str[size - 1].length() - 1] != ';' ? str.pop_back() : str[size - 1].pop_back();
     if (!this->pid_path.empty())
     {
         std::cout << "Syntax Error: Directive already exits" << std::endl;
         exit(1);
     }
-    this->pid_path = ret[1];
-    checkPath(ret[1], CREATE_MODE);
+    this->pid_path = str[1];
+    checkPath(str[1], CREATE_MODE);
 }
 
 Http::Http() 
@@ -101,12 +103,12 @@ void    Http::printServers(){
     }
 }
 
-void    Http::parseHttpContext(std::vector<std::string> & configContent, int index)
+void    Http::parseHttpContext(stringContainer & configContent, int index)
 {
     int size;
     Server server;
     Server *ptr;
-    std::vector<std::string> line;
+    stringContainer line;
     
     this->pages = new Pages();
 
@@ -133,26 +135,26 @@ void    Http::parseHttpContext(std::vector<std::string> & configContent, int ind
     }
 }
 
-void    Http::parseDirective(std::vector<std::string> config, int line)
+void    Http::parseDirective(stringContainer config, int line)
 {
-    std::vector<std::string> ret;
+    stringContainer str;
     int size;
     
-    ret = split(config[line]);
-    size = ret.size();
-    validateDirective(ret, HTTP);
-    ret[size - 1][ret[size - 1].length() - 1] != ';' ? ret.pop_back() : ret[size - 1].pop_back();
-    if (ret.size() == 3 && ret[0] == "default_page")
+    str = split(config[line]);
+    size = str.size();
+    validateDirective(str, HTTP);
+    str[size - 1][str[size - 1].length() - 1] != ';' ? str.pop_back() : str[size - 1].pop_back();
+    if (str.size() == 3 && str[0] == "default_page")
     {
-        checkPath(ret[2], CHECK_MODE);
-        parse_error_pages(ret, this->pages);
+        checkPath(str[2], CHECK_MODE);
+        parse_error_pages(str, this->pages);
     }
-    if (ret.size() == 2 && ret[0] == "send_file")
+    if (str.size() == 2 && str[0] == "send_file")
     {
         // ! Checking for null i can check wheather the directive is duplicated or not.
-        if (strcmp(ret[1].c_str(), "on") == 0)
+        if (strcmp(str[1].c_str(), "on") == 0)
             this->sendFile = true;
-        else if (strcmp(ret[1].c_str(), "off") == 0)
+        else if (strcmp(str[1].c_str(), "off") == 0)
             this->sendFile = false;
     }
 }
@@ -205,12 +207,12 @@ void    Server::printServer()
     std::cout << "ACCESS LOG: " << this->accessLog << std::endl; 
 }
 
-Server * Server::parseServer(std::vector<std::string> configFile, int index)
+Server * Server::parseServer(stringContainer configFile, int index)
 {
     int size;
     Server *server = new Server();
     Location location;
-    std::vector<std::string> line;
+    stringContainer line;
 
     size = configFile.size();
     while (index < size)
@@ -234,57 +236,57 @@ Server * Server::parseServer(std::vector<std::string> configFile, int index)
     return (server);
 }
 
-void    Server::parseDirective(std::vector<std::string> config, Server *instance, int line)
+void    Server::parseDirective(stringContainer config, Server *instance, int line)
 {
-    std::vector<std::string> ret;
+    stringContainer str;
     int size;
-    
-    ret = split(config[line]);
-    size = ret.size();
 
-    validateDirective(ret, SERVER);
-    ret[size - 1][ret[size - 1].length() - 1] != ';' ? ret.pop_back() : ret[size - 1].pop_back();
-    if (ret.size() == 2 && ret[0] == "root")
+    str = split(config[line]);
+    size = str.size();
+
+    validateDirective(str, SERVER);
+    str[size - 1][str[size - 1].length() - 1] != ';' ? str.pop_back() : str[size - 1].pop_back();
+    if (str.size() == 2 && str[0] == "root")
     {
-        checkPath(ret[1], CHECK_MODE);
-        instance->root = ret[1];
+        checkPath(str[1], CHECK_MODE);
+        instance->root = str[1];
     }
-    else if (ret.size() == 2 && ret[0] == "server_name")
-        instance->serverName = ret[1];
-    else if (ret.size() == 2 && ret[0] == "max_body_size")
-        instance->maxBodySize = atoi(ret[1].c_str());
-    else if (ret.size() == 3 && ret[0] == "listen" || ret.size() == 2 && ret[0] == "listen")
+    else if (str.size() == 2 && str[0] == "server_name")
+        instance->serverName = str[1];
+    else if (str.size() == 2 && str[0] == "max_body_size")
+        instance->maxBodySize = atoi(str[1].c_str());
+    else if (str.size() == 3 && str[0] == "listen" || str.size() == 2 && str[0] == "listen")
     {
-        if (ret.size() == 2 && is_number(ret[1]))
+        if (str.size() == 2 && is_number(str[1]))
         {
-            instance->port = atoi(ret[1].c_str());
+            instance->port = atoi(str[1].c_str());
             instance->host = "127.0.0.1"; //? This line could be commented, because i can set this by default on object constrution.
         }
         else
         {
             instance->port = 80;
-            instance->host = strcmp(ret[1].c_str(), "localhost") ? ret[1] : "127.0.0.1";
+            instance->host = strcmp(str[1].c_str(), "localhost") ? str[1] : "127.0.0.1";
         }
     }
-    else if (ret.size() == 2 && ret[0] == "error_log")
+    else if (str.size() == 2 && str[0] == "error_log")
     {
-        checkPath(ret[1], CREATE_MODE);
+        checkPath(str[1], CREATE_MODE);
         if (!instance->errorLog.empty())
         {
             std::cout << "Error Log already exists" << std::endl;
             exit(1);
         }
-        instance->errorLog = ret[1];
+        instance->errorLog = str[1];
     }
-    else if (ret.size() == 2 && ret[0] == "access_log")
+    else if (str.size() == 2 && str[0] == "access_log")
     {
-        checkPath(ret[1], CREATE_MODE);
+        checkPath(str[1], CREATE_MODE);
         if (!instance->accessLog.empty())
         {
             std::cout << "access Log already exists" << std::endl;
             exit(1);
         }
-        instance->accessLog = ret[1];
+        instance->accessLog = str[1];
     }
     else {
         std::cout << "Invalid directive" << std::endl;
@@ -327,10 +329,10 @@ void    Location::printLocation()
 
 //TODO: I should add a method will should set the default values for the variables.
 
-Location * Location::parseLocation(std::vector<std::string> configFile, std::string path, int index)
+Location * Location::parseLocation(stringContainer configFile, std::string path, int index)
 {
     Location *location = new Location(path);
-    std::vector<std::string> line;
+    stringContainer line;
     int size;
 
     size = configFile.size();
@@ -355,7 +357,7 @@ Location * Location::parseLocation(std::vector<std::string> configFile, std::str
     return (location);
 }
 
-void    Location::parseDirective(std::vector<std::string> line, Location *instance)
+void    Location::parseDirective(stringContainer line, Location *instance)
 {
     int size;
 
@@ -381,7 +383,7 @@ void    Location::parseDirective(std::vector<std::string> line, Location *instan
     }
     else 
     {
-        std::cout << "Syntax error: invalid directive format" << std::endl;
+        std::cout << "Error" << std::endl;
         exit(1);
     }
 }

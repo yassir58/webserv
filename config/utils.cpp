@@ -14,7 +14,7 @@ void	validate_extension(const char *path, const char *ext)
     }
 }
 
-void    printContainer(std::vector<std::string> table)
+void    printContainer(stringContainer table)
 {
     int i;
 
@@ -28,9 +28,9 @@ void    printContainer(std::vector<std::string> table)
     }
 }
 
-std::vector<std::string> split(std::string line)
+stringContainer split(std::string line)
 {
-    std::vector<std::string> splitted;
+    stringContainer splitted;
     int i = 0;
     int j = 0;
 
@@ -72,13 +72,13 @@ std::string getLine(std::string &line) {
     return (line);
 }
 
-std::vector<std::string>   read_config_file(std::string & path)
+stringContainer   read_config_file(std::string & path)
 {
     std::string ext;
     std::ifstream config;
     std::string line;
     std::string parsedLine;
-    std::vector<std::string> configFile;
+    stringContainer configFile;
 
     ext = ".conf";
     //.. Openning the the config file
@@ -98,7 +98,7 @@ std::vector<std::string>   read_config_file(std::string & path)
     return (configFile);
 }
 
-void    check_brackets(std::vector<std::string> configContent)
+void    check_brackets(stringContainer configContent)
 {
     std::string line;
     int bracketsLevel;
@@ -146,7 +146,7 @@ bool checkValidDirectives(std::string line, int context)
     return (true);
 }
 
-void    validateDirective(std::vector<std::string> & line, int context)
+void    validateDirective(stringContainer & line, int context)
 {
     std::string directiveEnd;
 
@@ -215,7 +215,7 @@ void checkPath(std::string path, int mode)
     }
 }
 
-void parse_error_pages(std::vector<std::string> page, Pages * errorPages)
+void parse_error_pages(stringContainer page, Pages * errorPages)
 {
     if (atoi(page[1].c_str()) == 404)
         errorPages->path_not_found = page[2];
@@ -230,7 +230,7 @@ void parse_error_pages(std::vector<std::string> page, Pages * errorPages)
     }
 }
 
-int getClosingIndex(std::vector<std::string> fileContent, int position)
+int getClosingIndex(stringContainer fileContent, int position)
 {
     int i;
     int bracketsLevel;
