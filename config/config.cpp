@@ -2,7 +2,7 @@
 
 Config::Config()
 {
-    std::cout << "Config constructor called but without any params" << std::endl;
+    // std::cout << "Config constructor called but without any params" << std::endl;
 }
 
 Config::Config(std::string path)
@@ -14,18 +14,16 @@ Config::Config(std::string path)
 
 Config::~Config()
 {
-    std::cout << "Config destructor called." << std::endl;
+    // std::cout << "Config destructor called." << std::endl;
 }
 
 void    Config::printConfig()
 {
-    int i;
-
-    i = 0;
     std::cout << "====Main context:" << std::endl;
     std::cout << "PID path::: " << this->pid_path << std::endl;
     std::cout << "====Http context:" << std::endl;
-    std::cout << "File upload::: " << this->globalHttpContext.getSendFilestatus() << std::endl;
+    if (this->globalHttpContext.getSendFilestatus())
+        std::cout << "File upload::: enabled" << std::endl;
     std::cout << "Error Pages: " << std::endl;
     std::cout << "404::: " << this->globalHttpContext.pages->path_not_found << std::endl;
     std::cout << "403::: " << this->globalHttpContext.pages->path_forbidden << std::endl;
@@ -48,7 +46,7 @@ void    Config::parseConfig()
         {
             std::cout << "Parsing http context" << std::endl;
             this->globalHttpContext.parseHttpContext(configContent, i + 1);
-            i += getClosingIndex(this->configContent, i + 1);
+            i = getClosingIndex(this->configContent, i + 1);
         }
         else
         {
@@ -81,23 +79,24 @@ void    Config::parseDirective(std::vector<std::string> config, int line)
 
 Http::Http() 
 {
-    std::cout << "Http default constructor called" << std::endl;
+    // std::cout << "Http default constructor called" << std::endl;
 }
 
 Http::~Http() {
     // Should free up any memeory used by the http context.
-    std::cout << "Http destructor called" << std::endl;
+    // std::cout << "Http destructor called" << std::endl;
 }
 
 void    Http::printServers(){
     int i;
 
     i = 0;
-    std::cout << "====Server context:" << std::endl;
     while (i < this->getServers().size())
     {
+        std::cout << "====Server context:" << std::endl;
         this->getServers()[i]->printServer();
-        this->getServers()[i]->printLocations();
+        if (this->getServers()[i]->getLocations().size() > 0)
+            this->getServers()[i]->printLocations();
         i++;
     }
 }
@@ -113,11 +112,12 @@ void    Http::parseHttpContext(std::vector<std::string> & configContent, int ind
     while (index < size)
     {
         line = split(configContent[index]);
+        if (line.size() == 1 && line[0] == "}")
+            return ;
         if (line.size() > 0 && line[0] == "server" && line[1] == "{")
         {
             this->servers.push_back(server.parseServer(configContent, index + 1));
             index = getClosingIndex(configContent, index + 1);
-            std::cout << "Server closing end: " << index << std::endl;
         }
         else
         {
@@ -164,12 +164,12 @@ bool Http::getSendFilestatus()
 
 Server::Server()
 {
-    std::cout << "Called the default constructor of server" << std::endl;
+    // std::cout << "Called the default constructor of server" << std::endl;
 }
 
 Server::~Server()
 {
-    std::cout << "Called the default destructor of server" << std::endl;
+    // std::cout << "Called the default destructor of server" << std::endl;
 }
 
 void    Server::printLocations()
@@ -177,9 +177,9 @@ void    Server::printLocations()
     int i;
     
     i = 0;
-    std::cout << "====Location context:" << std::endl;
     while (i < this->locations.size())
     {
+        std::cout << "====Location context:" << std::endl;
         this->locations[i]->printLocation();
         i++;
     }
@@ -197,10 +197,8 @@ void    Server::printServer()
         std::cout << "ROOT: " << this->root << std::endl;
     else if (this->maxBodySize)
         std::cout << "MAX BODY SIZE: " << this->maxBodySize << std::endl;
-    else if (!this->errorLog.empty())
-        std::cout << "ERROR LOG: " << this->errorLog << std::endl;
-    else if (!this->accessLog.empty())
-        std::cout << "ACCESS LOG: " << this->accessLog << std::endl; 
+        // std::cout << "ERROR LOG: " << this->errorLog << std::endl;
+        // std::cout << "ACCESS LOG: " << this->accessLog << std::endl; 
 }
 
 Server * Server::parseServer(std::vector<std::string> configFile, int index)
@@ -215,16 +213,20 @@ Server * Server::parseServer(std::vector<std::string> configFile, int index)
     {
         line = split(configFile[index]);
         if (line.size() == 1 && line[0] == "}")
+        {
+            // printf("Address of server: %p\n", &server);
+            // server->printServer();
+            std::cout << "AccessLog: " << server->host << std::endl;
+            std::cout << "ErrorLog: " << server->errorLog << std::endl;
             return (server);
+        }
         if (line.size() == 3 && line[0] == "location" && line[2] == "{")
         {
             server->locations.push_back(location.parseLocation(configFile, line[1], index + 1));
             index = getClosingIndex(configFile, index + 1);
-            std::cout << index << std::endl;
         }
         else
         {
-            std::cout << "Parsing normal directive:: server" << std::endl;
             this->parseDirective(configFile, server, index);
         }
             // Throw an exception or exit with error code.
@@ -245,26 +247,37 @@ void    Server::parseDirective(std::vector<std::string> config, Server *instance
     ret[size - 1][ret[size - 1].length() - 1] != ';' ? ret.pop_back() : ret[size - 1].pop_back();
     if (ret.size() == 2 && ret[0] == "root")
     {
+        std::cout << "Parsing the root directive" << std::endl;
         checkPath(ret[1], CHECK_MODE);
         instance->root = ret[1];
     }
     else if (ret.size() == 2 && ret[0] == "server_name")
-        instance->serverName = ret[1];
-    else if (ret.size() == 2 && ret[0] == "max_body_size")
-        instance->maxBodySize = atoi(ret[1].c_str());
-    else if (ret.size() == 3 || ret.size() == 2 && ret[0] == "listen")
     {
+        std::cout << "Parsing the server name directive" << std::endl;
+        instance->serverName = ret[1];
+    }
+    else if (ret.size() == 2 && ret[0] == "max_body_size")
+    {
+        std::cout << "Parsing the max body size directive" << std::endl;
+        instance->maxBodySize = atoi(ret[1].c_str());
+    }
+    else if (ret.size() == 3 && ret[0] == "listen" || ret.size() == 2 && ret[0] == "listen")
+    {
+        std::cout << "Parsing the listen directive" << std::endl;
         if (ret.size() == 2 && is_number(ret[1]))
         {
-            instance->port = atoi(ret[2].c_str());
-            instance->host = "127.0.0.1";
+            instance->port = atoi(ret[1].c_str());
+            instance->host = "127.0.0.1"; //? This line could be commented, because i can set this by default on object constrution.
         }
         else
+        {
             instance->port = 80;
-        instance->host = strcmp(ret[1].c_str(), "localhost") ? ret[1] : "127.0.0.1";
+            instance->host = strcmp(ret[1].c_str(), "localhost") ? ret[1] : "127.0.0.1";
+        }
     }
     else if (ret.size() == 2 && ret[0] == "error_log")
     {
+        std::cout << "Parsing the error_log directive" << std::endl;
         checkPath(ret[1], CREATE_MODE);
         if (!instance->errorLog.empty())
         {
@@ -275,6 +288,7 @@ void    Server::parseDirective(std::vector<std::string> config, Server *instance
     }
     else if (ret.size() == 2 && ret[0] == "access_log")
     {
+        std::cout << "Parsing the access_log directive" << std::endl;
         checkPath(ret[1], CREATE_MODE);
         if (!instance->accessLog.empty())
         {
@@ -296,18 +310,18 @@ std::vector<Location *> Server::getLocations()
 
 Location::Location()
 {
-    std::cout << "Default constructor of location called" << std::endl;
+    // std::cout << "Default constructor of location called" << std::endl;
 }
 
 Location::~Location()
 {
     // Free any allocated memory by the location object
-    std::cout << "Default destructor of location called" << std::endl;
+    // std::cout << "Default destructor of location called" << std::endl;
 }
 
 Location::Location(std::string path)
 {
-    std::cout << "Setting the location path" << std::endl;
+    // std::cout << "Setting the location path" << std::endl;
     this->endPoint = path;
 }
 

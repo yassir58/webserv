@@ -8,7 +8,6 @@ int main(int argc, char **argv)
     int container_size;
     int i;
 
-    std::cout << "Before calling the config constructor" << std::endl;
     Config *file = new Config("./webserv.conf");
     file->parseConfig();
     file->printConfig();
