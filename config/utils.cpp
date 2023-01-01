@@ -8,10 +8,8 @@ void	validate_extension(const char *path, const char *ext)
 	size = strlen(path) - 5;
     //.. Comparing the last 5 characters to see if its matches the extension
 	if (strcmp(ext, path + size))
-    {
-		std::cout << "Usage: webserv *.conf" << std::endl;
-        exit(1);
-    }
+        throw parseError("Usage: ./webserv [configFile]");
+
 }
 
 void    printContainer(stringContainer table)
@@ -55,10 +53,8 @@ void    validate_file_content(std::ifstream & configFile)
 {
     //.. Chechking that the file is not empty
     if (configFile.peek() == std::ifstream::traits_type::eof())
-    {
-        std::cout << "Config file is empty." << std::endl;
-        exit(1);
-    }
+        throw parseError("Config Error: config file is empty");
+
 }
 
 std::string getLine(std::string &line) {
@@ -115,10 +111,8 @@ void    check_brackets(stringContainer configContent)
     }
     //.. Checking that the currly brackets have been closed in a correct way.
     if (bracketsLevel != 0)
-    {
-        std::cout << "Missing {} please check the config file." << std::endl;
-        exit(1);
-    }
+        throw parseError("Syntax Error: Missing a closing bracket");
+
 }
 
 bool checkValidDirectives(std::string line, int context)
@@ -152,22 +146,11 @@ void    validateDirective(stringContainer & line, int context)
 
     directiveEnd = line[line.size() - 1];
     if (line.size() < 2)
-    {
-        std::cout << "Syntax Error: Directive must be listed as key : value pattern" << std::endl;
-        exit(1);
-    }
+        throw parseError("Syntax Error: Directive must be listed as key : value pattern");
     if (strcmp(directiveEnd.c_str(), ";") && directiveEnd[directiveEnd.length() - 1] != ';')
-    {
-        std::cout << "Syntax Error: Directive must end with ;" << std::endl;
-        exit(1);
-    }
+        throw parseError("Syntax Error: Directive must end with ;");
     if (!checkValidDirectives(line[0], context))
-    {
-        // std::cout << line[1] << std::endl;
-        // std::cout << context << std::endl;
-        std::cout << "Config Error: Invalid Directive name: " << line[0] << std::endl;
-        exit(1);
-    }
+        throw parseError("Config Error: Invalid directive name: " + line[0]);
 }
 
 bool checkDirectiveKey(std::string directiveName,const char **directivesTable)
@@ -200,18 +183,12 @@ void checkPath(std::string path, int mode)
     else if (mode == CHECK_MODE)
     {
         if (!checkFile.is_open())
-        {
-            std::cout << "Syntax error: " << path << " could not be found" << std::endl;
-            exit(1);
-        }
+           throw parseError("Syntax Error: Could not find file: " + path);
     }
     else if (mode == DIR_MODE)
     {
         if (stat(path.c_str(), &sb) != 0)
-        {
-           std::cout << "Syntax error: " << path << " could not be found" << std::endl;
-           exit(1); 
-        }
+           throw parseError("Syntax Error: Could not find directory: " + path);
     }
 }
 
@@ -224,10 +201,7 @@ void parse_error_pages(stringContainer page, Pages * errorPages)
     else if (atoi(page[1].c_str()) == 500)
         errorPages->path_internal_error = page[2];
     else
-    {
-        std::cout << "Invalid status code page" << std::endl;
-        exit(1);
-    }
+        throw parseError("Error Pages: invalid status code");
 }
 
 int getClosingIndex(stringContainer fileContent, int position)

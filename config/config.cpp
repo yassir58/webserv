@@ -17,8 +17,6 @@ Config::~Config()
     // std::cout << "Config destructor called." << std::endl;
 }
 
-
-
 void    Config::printConfig()
 {
     std::cout << "====Main context:" << std::endl;
@@ -46,15 +44,11 @@ void    Config::parseConfig()
         line = split(configContent[i]);
         if (line.size() > 0 && line[0] == "http" && line[1] == "{")
         {
-            std::cout << "Parsing http context" << std::endl;
             this->globalHttpContext.parseHttpContext(configContent, i + 1);
             i = getClosingIndex(this->configContent, i + 1);
         }
         else
-        {
-            std::cout << "Parsing a normal directive" << std::endl;
             this->parseDirective(this->configContent, i);
-        }
         i++;
     }
 }
@@ -71,10 +65,7 @@ void    Config::parseDirective(stringContainer config, int line)
     validateDirective(str, MAIN);
     str[size - 1][str[size - 1].length() - 1] != ';' ? str.pop_back() : str[size - 1].pop_back();
     if (!this->pid_path.empty())
-    {
-        std::cout << "Syntax Error: Directive already exits" << std::endl;
-        exit(1);
-    }
+        throw parseError("Syntax Error: PID path file already is set.");
     this->pid_path = str[1];
     checkPath(str[1], CREATE_MODE);
 }
@@ -107,12 +98,10 @@ void    Http::parseHttpContext(stringContainer & configContent, int index)
 {
     int size;
     Server server;
-    Server *ptr;
     stringContainer line;
     
     this->pages = new Pages();
 
-    ptr = NULL;
     size = configContent.size();
     while (index < size)
     {
@@ -121,9 +110,7 @@ void    Http::parseHttpContext(stringContainer & configContent, int index)
             return ;
         if (line.size() > 0 && line[0] == "server" && line[1] == "{")
         {
-            ptr = server.parseServer(configContent, index + 1);
-            ptr->printServer();
-            this->servers.push_back(ptr);
+            this->servers.push_back(server.parseServer(configContent, index + 1));
             index = getClosingIndex(configContent, index + 1);
         }
         else
@@ -226,11 +213,7 @@ Server * Server::parseServer(stringContainer configFile, int index)
             index = getClosingIndex(configFile, index + 1);
         }
         else
-        {
-            // printf("First: %p\n", server);
             this->parseDirective(configFile, server, index);
-        }
-            // Throw an exception or exit with error code.
         index += 1;
     }
     return (server);
@@ -258,10 +241,7 @@ void    Server::parseDirective(stringContainer config, Server *instance, int lin
     else if (str.size() == 3 && str[0] == "listen" || str.size() == 2 && str[0] == "listen")
     {
         if (str.size() == 2 && is_number(str[1]))
-        {
             instance->port = atoi(str[1].c_str());
-            instance->host = "127.0.0.1"; //? This line could be commented, because i can set this by default on object constrution.
-        }
         else
         {
             instance->port = 80;
@@ -272,26 +252,18 @@ void    Server::parseDirective(stringContainer config, Server *instance, int lin
     {
         checkPath(str[1], CREATE_MODE);
         if (!instance->errorLog.empty())
-        {
-            std::cout << "Error Log already exists" << std::endl;
-            exit(1);
-        }
+            throw parseError("Config Error: Error log path already set");
         instance->errorLog = str[1];
     }
     else if (str.size() == 2 && str[0] == "access_log")
     {
         checkPath(str[1], CREATE_MODE);
         if (!instance->accessLog.empty())
-        {
-            std::cout << "access Log already exists" << std::endl;
-            exit(1);
-        }
+            throw parseError("Config Error: Access log path already set");
         instance->accessLog = str[1];
     }
-    else {
-        std::cout << "Invalid directive" << std::endl;
-        exit(1);
-    }
+    else 
+        throw parseError("Syntax Error: Invalid Directive");
 }
 
 std::vector<Location *> Server::getLocations()
@@ -327,8 +299,6 @@ void    Location::printLocation()
         std::cout << "UPLOAD ENABLED" << std::endl;
 }
 
-//TODO: I should add a method will should set the default values for the variables.
-
 Location * Location::parseLocation(stringContainer configFile, std::string path, int index)
 {
     Location *location = new Location(path);
@@ -336,7 +306,6 @@ Location * Location::parseLocation(stringContainer configFile, std::string path,
     int size;
 
     size = configFile.size();
-    //TODO: This should be changed to the number of lines that the context contains.
     while (index < size)
     {
         line = split(configFile[index]);
@@ -344,11 +313,8 @@ Location * Location::parseLocation(stringContainer configFile, std::string path,
         {
             if (line.size() == 1 && line[0] == "}")
                 return (location);
-            else 
-            {
-                std::cout << "Systanx Error: can't join closing bracket with directive";
-                exit(1);
-            }
+            else
+                throw parseError("Syntax Error: Can't join closing bracket with directive");
         }
         else
             location->parseDirective(line, location);
@@ -382,8 +348,5 @@ void    Location::parseDirective(stringContainer line, Location *instance)
         instance->uploadPath = line[1];
     }
     else 
-    {
-        std::cout << "Error" << std::endl;
-        exit(1);
-    }
+        throw parseError("Syntax Error: Invalid directive");
 }

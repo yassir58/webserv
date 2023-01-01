@@ -95,10 +95,10 @@ class Config {
     
 };
 
-class parseConfig: public std::runtime_error
+class parseError: public std::runtime_error
 {
     public:
-        parseConfig(std::string const& msg):
+        parseError(std::string const& msg):
             std::runtime_error(msg)
         {}
 };
