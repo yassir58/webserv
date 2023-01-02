@@ -33,7 +33,6 @@ class Location
         std::string endPoint;
         std::string root;
         std::string uploadPath;
-        std::string index;
         bool sendFile;
     public:
         Location * parseLocation(stringContainer configFile, std::string path, int index);

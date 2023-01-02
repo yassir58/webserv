@@ -114,10 +114,7 @@ void    Http::parseHttpContext(stringContainer & configContent, int index)
             index = getClosingIndex(configContent, index + 1);
         }
         else
-        {
-            std::cout << "Parsing normal directive" << std::endl;
             this->parseDirective(configContent, index);
-        }
         index += 1;
     }
 }
@@ -273,7 +270,10 @@ std::vector<Location *> Server::getLocations()
 
 Location::Location()
 {
-    // std::cout << "Default constructor of location called" << std::endl;
+    this->endPoint = "";
+    this->root = "";
+    this->sendFile = false;
+    this->uploadPath = "";
 }
 
 Location::~Location()
