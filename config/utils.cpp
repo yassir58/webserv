@@ -12,6 +12,26 @@ void	validate_extension(const char *path, const char *ext)
 
 }
 
+bool    validate_host(std::string ipAddress)
+{
+    int index;
+    int size;
+    stringContainer ip;
+
+    if (std::count(ipAddress.begin(), ipAddress.end(), '.') != 3)
+        return (false);
+    index = 0;
+    ip = splitSeparator(ipAddress, '.');
+    size = ip.size();
+    while (index < size)
+    {
+        if (!is_number(ip.at(index)) || atoi(ip.at(index).c_str()) > 255)
+            return (false);
+        index++;
+    }
+    return (true);
+}
+
 void    printContainer(stringContainer table)
 {
     int i;
@@ -28,7 +48,7 @@ void    printContainer(stringContainer table)
 
 stringContainer split(std::string line)
 {
-    stringContainer splitted;
+    stringContainer result;
     int i = 0;
     int j = 0;
 
@@ -40,13 +60,36 @@ stringContainer split(std::string line)
         {
             while (line[i + j] && !std::isspace(line[i + j]))
                 j++;
-            splitted.push_back(line.substr(i, j));
+            result.push_back(line.substr(i, j));
             i += j;
             j = 0;
         }
         i++;
     }
-    return (splitted);
+    return (result);
+}
+
+stringContainer splitSeparator(std::string line, char c)
+{
+    stringContainer result;
+    int i = 0;
+    int j = 0;
+
+    while (i < line.length())
+    {
+        while (line[i] && line[i] == c)
+            i++;
+        if (line[i] && line[i] != c)
+        {
+            while (line[i + j] && line[i + j] != c)
+                j++;
+            result.push_back(line.substr(i, j));
+            i += j;
+            j = 0;
+        }
+        i++;
+    }
+    return (result);
 }
 
 void    validate_file_content(std::ifstream & configFile)

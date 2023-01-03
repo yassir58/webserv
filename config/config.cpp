@@ -241,6 +241,8 @@ void    Server::parseDirective(stringContainer config, Server *instance, int lin
             instance->port = atoi(str[1].c_str());
         else
         {
+            if (str[1] != "localhost" && !validate_host(str[1]))
+                throw parseError("Syntax Error: invalid ip address format: " + str[1]);
             instance->port = 80;
             instance->host = strcmp(str[1].c_str(), "localhost") ? str[1] : "127.0.0.1";
         }

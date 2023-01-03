@@ -108,6 +108,7 @@ std::string getLine(std::string &line);
 stringContainer   read_config_file(std::string & path);
 void    check_brackets(stringContainer configContent);
 stringContainer split(std::string line);
+stringContainer splitSeparator(std::string line, char c);
 void    validateDirective(stringContainer & line, int context);
 bool checkDirectiveKey(std::string directiveName,const char **directivesTable);
 bool checkValidDirectives(std::string line, int context);
@@ -116,5 +117,6 @@ void parse_error_pages(stringContainer page, Pages * errorPages);
 bool is_number(const std::string & s);
 int getClosingIndex(stringContainer fileContent, int position);
 void    printContainer(stringContainer table);
+bool    validate_host(std::string ipAddress);
 
 #endif
