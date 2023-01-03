@@ -8,13 +8,31 @@ void	validate_extension(const char *path, const char *ext)
 	size = strlen(path) - 5;
     //.. Comparing the last 5 characters to see if its matches the extension
 	if (strcmp(ext, path + size))
-    {
-		std::cout << "Usage: webserv *.conf" << std::endl;
-        exit(1);
-    }
+        throw parseError("Usage: ./webserv [configFile]");
+
 }
 
-void    printContainer(std::vector<std::string> table)
+bool    validate_host(std::string ipAddress)
+{
+    int index;
+    int size;
+    stringContainer ip;
+
+    if (std::count(ipAddress.begin(), ipAddress.end(), '.') != 3)
+        return (false);
+    index = 0;
+    ip = splitSeparator(ipAddress, '.');
+    size = ip.size();
+    while (index < size)
+    {
+        if (!is_number(ip.at(index)) || atoi(ip.at(index).c_str()) > 255)
+            return (false);
+        index++;
+    }
+    return (true);
+}
+
+void    printContainer(stringContainer table)
 {
     int i;
 
@@ -28,9 +46,9 @@ void    printContainer(std::vector<std::string> table)
     }
 }
 
-std::vector<std::string> split(std::string line)
+stringContainer split(std::string line)
 {
-    std::vector<std::string> splitted;
+    stringContainer result;
     int i = 0;
     int j = 0;
 
@@ -42,23 +60,44 @@ std::vector<std::string> split(std::string line)
         {
             while (line[i + j] && !std::isspace(line[i + j]))
                 j++;
-            splitted.push_back(line.substr(i, j));
+            result.push_back(line.substr(i, j));
             i += j;
             j = 0;
         }
         i++;
     }
-    return (splitted);
+    return (result);
+}
+
+stringContainer splitSeparator(std::string line, char c)
+{
+    stringContainer result;
+    int i = 0;
+    int j = 0;
+
+    while (i < line.length())
+    {
+        while (line[i] && line[i] == c)
+            i++;
+        if (line[i] && line[i] != c)
+        {
+            while (line[i + j] && line[i + j] != c)
+                j++;
+            result.push_back(line.substr(i, j));
+            i += j;
+            j = 0;
+        }
+        i++;
+    }
+    return (result);
 }
 
 void    validate_file_content(std::ifstream & configFile)
 {
     //.. Chechking that the file is not empty
     if (configFile.peek() == std::ifstream::traits_type::eof())
-    {
-        std::cout << "Config file is empty." << std::endl;
-        exit(1);
-    }
+        throw parseError("Config Error: config file is empty");
+
 }
 
 std::string getLine(std::string &line) {
@@ -72,13 +111,13 @@ std::string getLine(std::string &line) {
     return (line);
 }
 
-std::vector<std::string>   read_config_file(std::string & path)
+stringContainer   read_config_file(std::string & path)
 {
     std::string ext;
     std::ifstream config;
     std::string line;
     std::string parsedLine;
-    std::vector<std::string> configFile;
+    stringContainer configFile;
 
     ext = ".conf";
     //.. Openning the the config file
@@ -98,7 +137,7 @@ std::vector<std::string>   read_config_file(std::string & path)
     return (configFile);
 }
 
-void    check_brackets(std::vector<std::string> configContent)
+void    check_brackets(stringContainer configContent)
 {
     std::string line;
     int bracketsLevel;
@@ -115,10 +154,8 @@ void    check_brackets(std::vector<std::string> configContent)
     }
     //.. Checking that the currly brackets have been closed in a correct way.
     if (bracketsLevel != 0)
-    {
-        std::cout << "Missing {} please check the config file." << std::endl;
-        exit(1);
-    }
+        throw parseError("Syntax Error: Missing a closing bracket");
+
 }
 
 bool checkValidDirectives(std::string line, int context)
@@ -146,28 +183,17 @@ bool checkValidDirectives(std::string line, int context)
     return (true);
 }
 
-void    validateDirective(std::vector<std::string> & line, int context)
+void    validateDirective(stringContainer & line, int context)
 {
     std::string directiveEnd;
 
     directiveEnd = line[line.size() - 1];
     if (line.size() < 2)
-    {
-        std::cout << "Syntax Error: Directive must be listed as key : value pattern" << std::endl;
-        exit(1);
-    }
+        throw parseError("Syntax Error: Directive must be listed as key : value pattern");
     if (strcmp(directiveEnd.c_str(), ";") && directiveEnd[directiveEnd.length() - 1] != ';')
-    {
-        std::cout << "Syntax Error: Directive must end with ;" << std::endl;
-        exit(1);
-    }
+        throw parseError("Syntax Error: Directive must end with ;");
     if (!checkValidDirectives(line[0], context))
-    {
-        // std::cout << line[1] << std::endl;
-        // std::cout << context << std::endl;
-        std::cout << "Config Error: Invalid Directive name: " << line[0] << std::endl;
-        exit(1);
-    }
+        throw parseError("Config Error: Invalid directive name: " + line[0]);
 }
 
 bool checkDirectiveKey(std::string directiveName,const char **directivesTable)
@@ -200,37 +226,44 @@ void checkPath(std::string path, int mode)
     else if (mode == CHECK_MODE)
     {
         if (!checkFile.is_open())
-        {
-            std::cout << "Syntax error: " << path << " could not be found" << std::endl;
-            exit(1);
-        }
+           throw parseError("Syntax Error: Could not find file: " + path);
     }
     else if (mode == DIR_MODE)
     {
         if (stat(path.c_str(), &sb) != 0)
-        {
-           std::cout << "Syntax error: " << path << " could not be found" << std::endl;
-           exit(1); 
-        }
+           throw parseError("Syntax Error: Could not find directory: " + path);
     }
 }
 
-void parse_error_pages(std::vector<std::string> page, Pages * errorPages)
+void parse_error_pages(stringContainer page, Pages * errorPages)
 {
     if (atoi(page[1].c_str()) == 404)
-        errorPages->path_not_found = page[2];
-    else if (atoi(page[1].c_str()) == 403)
-        errorPages->path_forbidden = page[2];
-    else if (atoi(page[1].c_str()) == 500)
-        errorPages->path_internal_error = page[2];
-    else
     {
-        std::cout << "Invalid status code page" << std::endl;
-        exit(1);
+        if (errorPages->path_not_found.length() == 0)
+            errorPages->path_not_found = page[2];
+        else
+            throw parseError("Error Pages: status code page 404 is duplicated");
     }
+    else if (atoi(page[1].c_str()) == 403)
+    {
+        if (errorPages->path_forbidden.length() == 0)
+            errorPages->path_forbidden = page[2];
+        else
+            throw parseError("Error Pages: status code page 403 is duplicated");
+
+    }
+    else if (atoi(page[1].c_str()) == 500)
+    {
+        if (errorPages->path_internal_error.length() == 0)
+            errorPages->path_internal_error = page[2];
+        else
+            throw parseError("Error Pages: status code page 500 is duplicated");
+    }
+    else
+        throw parseError("Error Pages: invalid status code");
 }
 
-int getClosingIndex(std::vector<std::string> fileContent, int position)
+int getClosingIndex(stringContainer fileContent, int position)
 {
     int i;
     int bracketsLevel;
