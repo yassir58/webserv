@@ -280,7 +280,7 @@ int getClosingIndex(stringContainer fileContent, int position)
         if (bracketsLevel == 0)
             return (position - 1);
     }
-    return (0); // Just for fun.
+    return (0);
 }
 
 

@@ -174,7 +174,7 @@ void    Server::printLocations()
     i = 0;
     while (i < this->locations.size())
     {
-        std::cout << "====Location context:" << std::endl;
+        printf("====Location context [%d]\n", i);
         this->locations[i]->printLocation();
         i++;
     }
@@ -274,8 +274,11 @@ Location::Location()
 {
     this->endPoint = "";
     this->root = "";
-    this->sendFile = false;
     this->uploadPath = "";
+    this->cgiExtension = "";
+    this->cgiDefault = "";
+    this->sendFile = false;
+    this->cgiEnable = false;
 }
 
 Location::~Location()
@@ -299,6 +302,12 @@ void    Location::printLocation()
         std::cout << "UPLOAD PATH: " << this->uploadPath << std::endl;
     if (this->sendFile)
         std::cout << "UPLOAD ENABLED" << std::endl;
+    if (!this->cgiDefault.empty())
+        std::cout << "CGI DEFAULT: " << this->cgiDefault << std::endl;
+    if (!this->cgiExtension.empty())
+        std::cout << "CGI EXTENSION: " << this->cgiExtension << std::endl;
+    if (this->cgiEnable)
+        std::cout << "CGI ENABLED" << std::endl;
 }
 
 Location * Location::parseLocation(stringContainer configFile, std::string path, int index)
@@ -349,6 +358,20 @@ void    Location::parseDirective(stringContainer line, Location *instance)
         checkPath(line[1], CHECK_MODE);
         instance->uploadPath = line[1];
     }
+    else if (line[0] == "cgi_enable" && line.size() == 2)
+    {
+        if (strcmp(line[1].c_str(), "on") == 0)
+            instance->cgiEnable = true;
+        else if (strcmp(line[1].c_str(), "off") == 0)
+            instance->cgiEnable = false;
+    }
+    else if (line[0] == "cgi_default" && line.size() == 2)
+    {
+        checkPath(line[1], DIR_MODE);
+        instance->cgiDefault = line[1];
+    }
+    else if (line[0] == "cgi_extension" && line.size() == 2)
+        instance->cgiExtension = line[1];
     else 
         throw parseError("Syntax Error: Invalid directive");
 }

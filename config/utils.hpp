@@ -20,7 +20,10 @@ const char * locationContext[] = {
         "root",
         "send_file",
         "index",
-        "upload_path"
+        "upload_path",
+        "cgi_enable",
+        "cgi_default",
+        "cgi_extension"
 };
 
 #endif
