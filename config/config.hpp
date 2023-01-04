@@ -38,9 +38,11 @@ class Location
         bool cgiEnable;
         bool sendFile;
     public:
+
         Location * parseLocation(stringContainer configFile, std::string path, int index);
         void    parseDirective(stringContainer line, Location *instance);
         void    printLocation();
+        // Constructors
         Location(std::string path);
         Location();
         ~Location();

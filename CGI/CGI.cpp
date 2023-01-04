@@ -1,8 +1,10 @@
 #include "CGI.hpp"
 
-CGIHandler::CGIHandler()
+CGIHandler::CGIHandler(Location location, Server server, Request request)
 {
-    std::cout << "Default constructor" << std::endl;
+    this->location = location;
+    this->server = server;
+    this->request = request;
 }
 
 CGIHandler::~CGIHandler()
