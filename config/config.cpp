@@ -25,9 +25,9 @@ void    Config::printConfig()
     if (this->globalHttpContext.getSendFilestatus())
         std::cout << "File upload::: enabled" << std::endl;
     std::cout << "Error Pages: " << std::endl;
-    std::cout << "404::: " << this->globalHttpContext.pages->path_not_found << std::endl;
-    std::cout << "403::: " << this->globalHttpContext.pages->path_forbidden << std::endl;
-    std::cout << "500::: " << this->globalHttpContext.pages->path_internal_error << std::endl;
+    std::cout << "404::: " << this->globalHttpContext.getErrorPages()->path_not_found << std::endl;
+    std::cout << "403::: " << this->globalHttpContext.getErrorPages()->path_forbidden << std::endl;
+    std::cout << "500::: " << this->globalHttpContext.getErrorPages()->path_internal_error << std::endl;
     this->globalHttpContext.printServers();
 }
 
@@ -131,7 +131,7 @@ void    Http::parseDirective(stringContainer config, int line)
     if (str.size() == 3 && str[0] == "default_page")
     {
         checkPath(str[2], CHECK_MODE);
-        parse_error_pages(str, this->pages);
+        this->parseErrorPages(str);
     }
     if (str.size() == 2 && str[0] == "send_file")
     {
@@ -141,6 +141,39 @@ void    Http::parseDirective(stringContainer config, int line)
         else if (strcmp(str[1].c_str(), "off") == 0)
             this->sendFile = false;
     }
+}
+
+void    Http::parseErrorPages(stringContainer page)
+{
+    if (atoi(page[1].c_str()) == 404)
+    {
+        if (this->pages->path_not_found.length() == 0)
+            this->pages->path_not_found = page[2];
+        else
+            throw parseError("Error Pages: status code page 404 is duplicated");
+    }
+    else if (atoi(page[1].c_str()) == 403)
+    {
+        if (this->pages->path_forbidden.length() == 0)
+            this->pages->path_forbidden = page[2];
+        else
+            throw parseError("Error Pages: status code page 403 is duplicated");
+
+    }
+    else if (atoi(page[1].c_str()) == 500)
+    {
+        if (this->pages->path_internal_error.length() == 0)
+            this->pages->path_internal_error = page[2];
+        else
+            throw parseError("Error Pages: status code page 500 is duplicated");
+    }
+    else
+        throw parseError("Error Pages: invalid status code");
+}
+
+Pages * Http::getErrorPages()
+{
+    return (this->pages);
 }
 
 std::vector<Server *> Http::getServers()

@@ -235,34 +235,6 @@ void checkPath(std::string path, int mode)
     }
 }
 
-void parse_error_pages(stringContainer page, Pages * errorPages)
-{
-    if (atoi(page[1].c_str()) == 404)
-    {
-        if (errorPages->path_not_found.length() == 0)
-            errorPages->path_not_found = page[2];
-        else
-            throw parseError("Error Pages: status code page 404 is duplicated");
-    }
-    else if (atoi(page[1].c_str()) == 403)
-    {
-        if (errorPages->path_forbidden.length() == 0)
-            errorPages->path_forbidden = page[2];
-        else
-            throw parseError("Error Pages: status code page 403 is duplicated");
-
-    }
-    else if (atoi(page[1].c_str()) == 500)
-    {
-        if (errorPages->path_internal_error.length() == 0)
-            errorPages->path_internal_error = page[2];
-        else
-            throw parseError("Error Pages: status code page 500 is duplicated");
-    }
-    else
-        throw parseError("Error Pages: invalid status code");
-}
-
 int getClosingIndex(stringContainer fileContent, int position)
 {
     int i;
