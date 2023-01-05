@@ -303,6 +303,36 @@ std::vector<Location *> Server::getLocations()
     return (this->locations);
 }
 
+std::string Server::getHost()
+{
+    return (this->host);
+}
+
+std::string Server::getRoot()
+{
+    return (this->root);
+}
+
+std::string Server::getServerName()
+{
+    return (this->serverName);
+}
+
+std::string Server::getAccessLog()
+{
+    return (this->accessLog);
+}
+
+std::string Server::getErrorLog()
+{
+    return (this->errorLog);
+}
+
+short Server::getPort()
+{
+    return (this->port);
+}
+
 Location::Location()
 {
     this->endPoint = "";
@@ -407,4 +437,39 @@ void    Location::parseDirective(stringContainer line, Location *instance)
         instance->cgiExtension = line[1];
     else 
         throw parseError("Syntax Error: Invalid directive");
+}
+
+std::string Location::getEndPoint()
+{
+    return (this->endPoint);
+}
+
+std::string Location::getRoot()
+{
+    return (this->root);
+}
+
+std::string Location::getUploadPath()
+{
+    return (this->uploadPath);
+}
+
+std::string Location::getCGIDefault()
+{
+    return (this->cgiDefault);
+}
+
+std::string Location::getCGIExtension()
+{
+    return (this->cgiExtension);
+}
+
+bool Location::getUploadStatus()
+{
+    return (this->sendFile);
+}
+
+bool Location::getCGIStatus()
+{
+    return (this->cgiEnable);
 }

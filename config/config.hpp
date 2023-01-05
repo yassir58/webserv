@@ -44,6 +44,8 @@ class Location
         std::string getUploadPath();
         std::string getCGIDefault();
         std::string getCGIExtension();
+        bool getCGIStatus();
+        bool getUploadStatus();
 
         Location * parseLocation(stringContainer configFile, std::string path, int index);
         void    parseDirective(stringContainer line, Location *instance);

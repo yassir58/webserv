@@ -8,6 +8,10 @@ class Request {
         std::string port;
 };
 
+#define SERVER_SOFTWARE_VERSION "Webserv/1.0"
+#define CGI_INTERFACE "CGI/1.1"
+#define HTTP_PROTOCOL "HTTP/1.1"
+
 class CGIHandler 
 {
     private:
@@ -16,11 +20,14 @@ class CGIHandler
         Server server;
         Request request;
         Config *configFile;
-        // I need the request struct or class here
-        stringContainer     parseQuery();
+        std::string         getScriptName();
+        std::string         getQuery();
+        std::string         getFilePath();
         stringContainer     createEnvList();
+        char **             convertEnvList();
     public:
         CGIHandler(Location location, Server server, Request request);
         ~CGIHandler();
         std::string    execute();
 };
+
