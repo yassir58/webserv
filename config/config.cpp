@@ -22,13 +22,13 @@ void    Config::printConfig()
     std::cout << "====Main context:" << std::endl;
     std::cout << "PID path::: " << this->pid_path << std::endl;
     std::cout << "====Http context:" << std::endl;
-    if (this->globalHttpContext.getSendFilestatus())
+    if (this->getHttpContext()->getSendFilestatus())
         std::cout << "File upload::: enabled" << std::endl;
     std::cout << "Error Pages: " << std::endl;
-    std::cout << "404::: " << this->globalHttpContext.getErrorPages()->path_not_found << std::endl;
-    std::cout << "403::: " << this->globalHttpContext.getErrorPages()->path_forbidden << std::endl;
-    std::cout << "500::: " << this->globalHttpContext.getErrorPages()->path_internal_error << std::endl;
-    this->globalHttpContext.printServers();
+    std::cout << "404::: " << this->getHttpContext()->getErrorPages()->path_not_found << std::endl;
+    std::cout << "403::: " << this->getHttpContext()->getErrorPages()->path_forbidden << std::endl;
+    std::cout << "500::: " << this->getHttpContext()->getErrorPages()->path_internal_error << std::endl;
+    this->getHttpContext()->printServers();
 }
 
 void    Config::parseConfig()
@@ -36,6 +36,7 @@ void    Config::parseConfig()
     int size;
     int i;
     stringContainer line;
+    this->mainHttpContext = new Http();
 
     i = 0;
     size = this->configContent.size();
@@ -44,7 +45,7 @@ void    Config::parseConfig()
         line = split(configContent[i]);
         if (line.size() > 0 && line[0] == "http" && line[1] == "{")
         {
-            this->globalHttpContext.parseHttpContext(configContent, i + 1);
+            this->mainHttpContext->parseHttpContext(configContent, i + 1);
             i = getClosingIndex(this->configContent, i + 1);
         }
         else
@@ -68,6 +69,11 @@ void    Config::parseDirective(stringContainer config, int line)
         throw parseError("Syntax Error: PID path file already is set.");
     this->pid_path = str[1];
     checkPath(str[1], CREATE_MODE);
+}
+
+Http * Config::getHttpContext()
+{
+    return (this->mainHttpContext);
 }
 
 Http::Http() 

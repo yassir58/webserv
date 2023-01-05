@@ -111,10 +111,11 @@ class Config {
         void    parseConfig();
         void    printConfig();
         void    parseDirective(stringContainer config, int line);
+        Http    *getHttpContext();
     private:
         stringContainer configContent;
         std::string pid_path;
-        Http globalHttpContext;
+        Http *mainHttpContext;
     
 };
 

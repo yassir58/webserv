@@ -22,7 +22,8 @@ int main(int argc, char **argv)
     {
         Config *file = new Config("./webserv.conf");
         file->parseConfig();
-        file->printConfig();
+        std::cout << "Server Error Log: " << file->getHttpContext()->getServers()[0]->getErrorLog() << std::endl;
+        std::cout << "Server Error Log: " << file->getHttpContext()->getServers()[0]->getHost() << std::endl;
     }
     catch(std::exception &e)
     {
