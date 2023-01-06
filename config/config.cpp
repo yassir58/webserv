@@ -22,20 +22,21 @@ void    Config::printConfig()
     std::cout << "====Main context:" << std::endl;
     std::cout << "PID path::: " << this->pid_path << std::endl;
     std::cout << "====Http context:" << std::endl;
-    if (this->globalHttpContext.getSendFilestatus())
+    if (this->getHttpContext()->getSendFilestatus())
         std::cout << "File upload::: enabled" << std::endl;
     std::cout << "Error Pages: " << std::endl;
-    std::cout << "404::: " << this->globalHttpContext.pages->path_not_found << std::endl;
-    std::cout << "403::: " << this->globalHttpContext.pages->path_forbidden << std::endl;
-    std::cout << "500::: " << this->globalHttpContext.pages->path_internal_error << std::endl;
-    this->globalHttpContext.printServers();
+    std::cout << "404::: " << this->getHttpContext()->getErrorPages()->path_not_found << std::endl;
+    std::cout << "403::: " << this->getHttpContext()->getErrorPages()->path_forbidden << std::endl;
+    std::cout << "500::: " << this->getHttpContext()->getErrorPages()->path_internal_error << std::endl;
+    this->getHttpContext()->printServers();
 }
 
 void    Config::parseConfig()
 {
-    int size;
-    int i;
+    unsigned int size;
+    unsigned int i;
     stringContainer line;
+    this->mainHttpContext = new Http();
 
     i = 0;
     size = this->configContent.size();
@@ -44,7 +45,7 @@ void    Config::parseConfig()
         line = split(configContent[i]);
         if (line.size() > 0 && line[0] == "http" && line[1] == "{")
         {
-            this->globalHttpContext.parseHttpContext(configContent, i + 1);
+            this->mainHttpContext->parseHttpContext(configContent, i + 1);
             i = getClosingIndex(this->configContent, i + 1);
         }
         else
@@ -56,7 +57,7 @@ void    Config::parseConfig()
 void    Config::parseDirective(stringContainer config, int line)
 {
     stringContainer str;
-    int size;
+    unsigned int size;
 
     
     str = split(config[line]);
@@ -70,6 +71,11 @@ void    Config::parseDirective(stringContainer config, int line)
     checkPath(str[1], CREATE_MODE);
 }
 
+Http * Config::getHttpContext()
+{
+    return (this->mainHttpContext);
+}
+
 Http::Http() 
 {
     // std::cout << "Http default constructor called" << std::endl;
@@ -81,7 +87,7 @@ Http::~Http() {
 }
 
 void    Http::printServers(){
-    int i;
+    unsigned int i;
 
     i = 0;
     while (i < this->getServers().size())
@@ -131,7 +137,7 @@ void    Http::parseDirective(stringContainer config, int line)
     if (str.size() == 3 && str[0] == "default_page")
     {
         checkPath(str[2], CHECK_MODE);
-        parse_error_pages(str, this->pages);
+        this->parseErrorPages(str);
     }
     if (str.size() == 2 && str[0] == "send_file")
     {
@@ -141,6 +147,39 @@ void    Http::parseDirective(stringContainer config, int line)
         else if (strcmp(str[1].c_str(), "off") == 0)
             this->sendFile = false;
     }
+}
+
+void    Http::parseErrorPages(stringContainer page)
+{
+    if (atoi(page[1].c_str()) == 404)
+    {
+        if (this->pages->path_not_found.length() == 0)
+            this->pages->path_not_found = page[2];
+        else
+            throw parseError("Error Pages: status code page 404 is duplicated");
+    }
+    else if (atoi(page[1].c_str()) == 403)
+    {
+        if (this->pages->path_forbidden.length() == 0)
+            this->pages->path_forbidden = page[2];
+        else
+            throw parseError("Error Pages: status code page 403 is duplicated");
+
+    }
+    else if (atoi(page[1].c_str()) == 500)
+    {
+        if (this->pages->path_internal_error.length() == 0)
+            this->pages->path_internal_error = page[2];
+        else
+            throw parseError("Error Pages: status code page 500 is duplicated");
+    }
+    else
+        throw parseError("Error Pages: invalid status code");
+}
+
+Pages * Http::getErrorPages()
+{
+    return (this->pages);
 }
 
 std::vector<Server *> Http::getServers()
@@ -169,12 +208,12 @@ Server::~Server()
 
 void    Server::printLocations()
 {
-    int i;
+    unsigned int i;
     
     i = 0;
     while (i < this->locations.size())
     {
-        std::cout << "====Location context:" << std::endl;
+        printf("====Location context [%d]\n", i);
         this->locations[i]->printLocation();
         i++;
     }
@@ -235,10 +274,12 @@ void    Server::parseDirective(stringContainer config, Server *instance, int lin
         instance->serverName = str[1];
     else if (str.size() == 2 && str[0] == "max_body_size")
         instance->maxBodySize = atoi(str[1].c_str());
-    else if (str.size() == 3 && str[0] == "listen" || str.size() == 2 && str[0] == "listen")
+    else if ((str[0] == "listen" && str.size() == 3) || (str[0] == "listen" && str.size() == 2))
     {
         if (str.size() == 2 && is_number(str[1]))
             instance->port = atoi(str[1].c_str());
+        else if (str.size() == 3 && is_number(str[2]))
+            instance->port = atoi(str[2].c_str());
         else
         {
             if (str[1] != "localhost" && !validate_host(str[1]))
@@ -270,12 +311,45 @@ std::vector<Location *> Server::getLocations()
     return (this->locations);
 }
 
+std::string Server::getHost()
+{
+    return (this->host);
+}
+
+std::string Server::getRoot()
+{
+    return (this->root);
+}
+
+std::string Server::getServerName()
+{
+    return (this->serverName);
+}
+
+std::string Server::getAccessLog()
+{
+    return (this->accessLog);
+}
+
+std::string Server::getErrorLog()
+{
+    return (this->errorLog);
+}
+
+short Server::getPort()
+{
+    return (this->port);
+}
+
 Location::Location()
 {
     this->endPoint = "";
     this->root = "";
-    this->sendFile = false;
     this->uploadPath = "";
+    this->cgiExtension = "";
+    this->cgiDefault = "";
+    this->sendFile = false;
+    this->cgiEnable = false;
 }
 
 Location::~Location()
@@ -299,6 +373,12 @@ void    Location::printLocation()
         std::cout << "UPLOAD PATH: " << this->uploadPath << std::endl;
     if (this->sendFile)
         std::cout << "UPLOAD ENABLED" << std::endl;
+    if (!this->cgiDefault.empty())
+        std::cout << "CGI DEFAULT: " << this->cgiDefault << std::endl;
+    if (!this->cgiExtension.empty())
+        std::cout << "CGI EXTENSION: " << this->cgiExtension << std::endl;
+    if (this->cgiEnable)
+        std::cout << "CGI ENABLED" << std::endl;
 }
 
 Location * Location::parseLocation(stringContainer configFile, std::string path, int index)
@@ -349,6 +429,55 @@ void    Location::parseDirective(stringContainer line, Location *instance)
         checkPath(line[1], CHECK_MODE);
         instance->uploadPath = line[1];
     }
+    else if (line[0] == "cgi_enable" && line.size() == 2)
+    {
+        if (strcmp(line[1].c_str(), "on") == 0)
+            instance->cgiEnable = true;
+        else if (strcmp(line[1].c_str(), "off") == 0)
+            instance->cgiEnable = false;
+    }
+    else if (line[0] == "cgi_default" && line.size() == 2)
+    {
+        checkPath(line[1], DIR_MODE);
+        instance->cgiDefault = line[1];
+    }
+    else if (line[0] == "cgi_extension" && line.size() == 2)
+        instance->cgiExtension = line[1];
     else 
         throw parseError("Syntax Error: Invalid directive");
+}
+
+std::string Location::getEndPoint()
+{
+    return (this->endPoint);
+}
+
+std::string Location::getRoot()
+{
+    return (this->root);
+}
+
+std::string Location::getUploadPath()
+{
+    return (this->uploadPath);
+}
+
+std::string Location::getCGIDefault()
+{
+    return (this->cgiDefault);
+}
+
+std::string Location::getCGIExtension()
+{
+    return (this->cgiExtension);
+}
+
+bool Location::getUploadStatus()
+{
+    return (this->sendFile);
+}
+
+bool Location::getCGIStatus()
+{
+    return (this->cgiEnable);
 }

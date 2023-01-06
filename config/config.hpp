@@ -33,11 +33,24 @@ class Location
         std::string endPoint;
         std::string root;
         std::string uploadPath;
+        std::string cgiDefault;
+        std::string cgiExtension;
+        bool cgiEnable;
         bool sendFile;
     public:
+        // Getters
+        std::string getEndPoint();
+        std::string getRoot();
+        std::string getUploadPath();
+        std::string getCGIDefault();
+        std::string getCGIExtension();
+        bool getCGIStatus();
+        bool getUploadStatus();
+
         Location * parseLocation(stringContainer configFile, std::string path, int index);
         void    parseDirective(stringContainer line, Location *instance);
         void    printLocation();
+        // Constructors
         Location(std::string path);
         Location();
         ~Location();
@@ -54,26 +67,37 @@ class Server {
         std::string errorLog;
         std::vector<Location *> locations;
     public:
+        // Getters
+        short getPort();
+        unsigned int getMaxBodySize();
+        std::string getHost();
+        std::string getRoot();
+        std::string getServerName();
+        std::string getAccessLog();
+        std::string getErrorLog();
+        
         std::vector<Location *>    getLocations();
         Server *  parseServer(stringContainer configFile, int line);
         void    printServer();
         void    printLocations();
         void    parseDirective(stringContainer config, Server *instance, int line);
+        // Constructors
         Server();
         ~Server();
 };
 
 class Http {
     private:
+        Pages *pages;
         bool sendFile;
         std::vector<Server *> servers;
     public:
-        Pages *pages;
         void    parseDirective(stringContainer config, int line);
         void    parseHttpContext(stringContainer & configFile, int line);
-        void    parseErrorPages(std::string line);
+        void    parseErrorPages(stringContainer page);
         void    printServers();
         bool    getSendFilestatus();
+        Pages   *getErrorPages();
         std::vector<Server *> getServers();
         Http();
         ~Http();
@@ -87,10 +111,11 @@ class Config {
         void    parseConfig();
         void    printConfig();
         void    parseDirective(stringContainer config, int line);
+        Http    *getHttpContext();
     private:
         stringContainer configContent;
         std::string pid_path;
-        Http globalHttpContext;
+        Http *mainHttpContext;
     
 };
 
@@ -113,9 +138,8 @@ void    validateDirective(stringContainer & line, int context);
 bool checkDirectiveKey(std::string directiveName,const char **directivesTable);
 bool checkValidDirectives(std::string line, int context);
 void checkPath(std::string path, int mode);
-void parse_error_pages(stringContainer page, Pages * errorPages);
 bool is_number(const std::string & s);
-int getClosingIndex(stringContainer fileContent, int position);
+int getClosingIndex(stringContainer fileContent, unsigned int position);
 void    printContainer(stringContainer table);
 bool    validate_host(std::string ipAddress);
 
