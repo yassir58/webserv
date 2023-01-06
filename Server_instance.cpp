@@ -9,7 +9,6 @@ Server_instance::Server_instance (void)
     this->_connection_port = 0;
 }
 
-
 Server_instance::~Server_instance (void)
 {
     std::cout << "\e[0;31m shutdown server \e[0m" << std::endl;
@@ -24,7 +23,7 @@ Server_instance::Server_instance (const Server_instance &copy)
 
 Server_instance &Server_instance::operator= (const Server_instance &assign)
 {
-     this->_server_name = assign._server_name;
+    this->_server_name = assign._server_name;
     this->_connection_port = assign._connection_port;
     return (*this);
 }
@@ -43,7 +42,10 @@ int Server_instance::establish_connection (void)
     this->bind_socket ();
     err_check = listen (this->_server_fd, BACK_LOG_MAX);     
     if (err_check == -1)
+    {
+        handleError (LISTENERR);
         throw Connection_error (strerror (errno));
+    }
     else
         std::cout << this->_server_name << "\e[0;33m listen on port \e[0m" << this->_connection_port << std::endl;
     return (0); 
@@ -51,24 +53,47 @@ int Server_instance::establish_connection (void)
 
 void Server_instance::bind_socket (void)
 {
-    this->_server_fd = socket (AF_INET, SOCK_STREAM, 0);
+    struct addrinfo initAddr;
+    struct addrinfo  *servAddr;
+
+    memset (&initAddr, 0 , sizeof (initAddr));
+    initAddr.ai_family = AF_INET6; // this need to be modified
+    initAddr.ai_socktype = SOCK_STREAM;
+    initAddr.ai_flags = AI_PASSIVE; // this flag make the getaddreinfo info return wildcard address
+    err_check = getaddrinfo (0, std::to_string(this->_connection_port).c_str(), &initAddr, &servAddr);
+    if (err_check == -1)
+    {
+        std::cout << "context : getaddrinfo" << std::endl;
+        throw Connection_error (strerror (errno));
+    }
+    this->_server_fd = socket (servAddr->ai_family, servAddr->ai_socktype, servAddr->ai_protocol);
+    if (this->_server_fd < 0)
+    {
+         std::cout << "context : socket" << std::endl;
+        throw Connection_error (strerror (errno));
+    }
+    this->err_check =  setsockopt (this->_server_fd, SOL_SOCKET, SO_REUSEADDR, &this->enable, sizeof (int));
+    if (this->err_check == -1)
+    {
+        std::cout << "context : setsocketopt" << std::endl;
+        throw  Connection_error (strerror (errno));
+    }
     fcntl (this->_server_fd, F_SETFL, O_NONBLOCK);
     bzero (this->_buffer, HEADER_MAX);
-    if (this->_server_fd == -1)
-        throw  Fatal_error();
-    else
+    int option = 0;
+    err_check = setsockopt (this->_server_fd, IPPROTO_IPV6, IPV6_V6ONLY, (void *)&option, sizeof (option));
+    if (err_check == -1)
     {
-        this->err_check =  setsockopt (this->_server_fd, SOL_SOCKET, SO_REUSEADDR, &this->enable, sizeof (int));
-        if (this->err_check == -1)
-            throw  Fatal_error();
-        this->_server_addr.sin_family = AF_INET; 
-        this->_server_addr.sin_addr.s_addr = INADDR_ANY;
-        if (this->_connection_port > 0)
-            this->_server_addr.sin_port = htons( this->_connection_port);
-        this->err_check = bind (this->_server_fd, (struct sockaddr*) &this->_server_addr, sizeof (this->_server_addr)) ;
-        if (this->err_check == -1)
-            throw  Fatal_error();
+        std::cout << "context : setsocketopt" << std::endl;
+        throw  Connection_error (strerror (errno));
     }
+    this->err_check = bind (this->_server_fd, servAddr->ai_addr, servAddr->ai_addrlen) ;
+    if (this->err_check == -1)
+    {
+        handleError (BINDERR);
+        throw  Connection_error (strerror (errno));
+    }
+    freeaddrinfo(servAddr);
 } 
 
 

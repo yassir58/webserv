@@ -1,0 +1,18 @@
+--> handle error = too many open files (accept) []
+--> handle connection timeout []
+--> handle buffer_size problems []
+--> reimplement the connections algorithm using the epoll or kqueue sys call and using a list of fds instead of an array [x]
+--> handle server overload (server out of memory or out of fds) []
+--> integrate config parse with webserv core []
+--> handle multiple server instances listening on the same port []
+--> add support for ipv6 [x]
+**
+
+read list
+
+the difference between host-name and server-name []
+how nginx handle multiple server instances []
+read about virtual hosts (server blocks) []:
+- https://www.keycdn.com/support/nginx-virtual-host
+- https://en.wikipedia.org/wiki/Virtual_hosting
+what is server_name and how it works []

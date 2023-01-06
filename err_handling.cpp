@@ -1,6 +1,6 @@
 #include "Server_instance.hpp"
 
-void handle_error (int err)
+void handleError (int err)
 {
     switch (err)
     {
@@ -18,10 +18,15 @@ void handle_error (int err)
         break;
         case POLLERR:
             std::cerr << "\e[0;31mcontext : \e[0m" << "poll" << std::endl;
+        break;
         case WRITEERR:
             std::cerr << "\e[0;31mcontext : \e[0m" << "write" << std::endl;
         break;
+        case CLOSEERR:
+            std::cerr << "\e[0;31mcontext : \e[0m" << "close" << std::endl;
+        break;
         default:
+             std::cerr << "\e[0;31mcontext : \e[0m" << "close" << std::endl;
             break;
     }
     throw Connection_error (strerror (errno));

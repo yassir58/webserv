@@ -4,7 +4,7 @@ CCP=c++
 CC=gcc
 SRCS= main.cpp  server_utils.cpp Server_instance.cpp log_utils.cpp err_handling.cpp Http_application.cpp
 OBJS= $(SRCS:.cpp=.o)
-HEADERS=basic_cn_server.hpp 
+HEADERS=Server_instance.hpp 
 
 all:server
 
@@ -13,7 +13,7 @@ all:server
 %.o : %.c $(HEADERS)
 	$(CC) $(CFLAGS) -c $< -o $@ 
 
-server:$(OBJS)
+server:$(OBJS) 
 	$(CCP) $(CFLAGS) $(OBJS) -o server 
 
 # client:	basic_cn_client.o

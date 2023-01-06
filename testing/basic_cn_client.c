@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #define PORT 8080
-#define THREAD_MAX 100
+#define THREAD_MAX 1024
 #include "pthread.h"
 #include <string.h>
 
@@ -69,7 +69,7 @@ void *myThreadFun(void *vargp)
 
 	arg = (int*)vargp;
 	(void)arg;
-	system ("curl --verbose http://192.168.1.140:5000 ; curl --verbose http://192.168.1.140:1200 ; curl --verbose http://192.168.1.140:8080"); 
+	system ("telnet localhost 80"); 
     return NULL;
 }
   

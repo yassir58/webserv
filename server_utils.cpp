@@ -5,30 +5,35 @@ int Server_instance::accept_connection (void)
 {
     int new_connection;
     
-    new_connection = accept (this->_server_fd, (sockaddr*)&this->_server_addr, (socklen_t *) &this->_addr_len);
+    struct sockaddr_storage clientAddr;
+    socklen_t clientLen = sizeof (clientAddr);
+    new_connection = accept (this->_server_fd, (sockaddr *)&clientAddr, (socklen_t *) &clientLen);
     if (new_connection == -1 )
-        handle_error (ACCEPTERR);
+    {
+        handleError (ACCEPTERR);
+        throw Connection_error (strerror (errno));
+    }
     this->_request_count++;
     return (new_connection);
 }
 
 void Server_instance::handle_active_sockets (int i)
 {
-     if (FD_ISSET (i, &ready_fds))
-            {
-                std::cout << "disc is ready for reading " << i << std::endl;
-                if (i != this->_server_fd)
-                {
-                    if (i != this->_server_fd)
-                        this->handle_request (i);
-                }
-                else
-                {
-                    std::cout << "accepting new connection" << std::endl;
-                    this->accept_connection ();
-                    std::cout << "connections count " << this->_request_count << std::endl;
-                }
-            }
+    if (FD_ISSET (i, &ready_fds))
+    {
+        std::cout << "disc is ready for reading " << i << std::endl;
+        if (i != this->_server_fd)
+        {
+            if (i != this->_server_fd)
+                this->handle_request (i);
+        }
+        else
+        {
+            std::cout << "accepting new connection" << std::endl;
+            this->accept_connection ();
+            std::cout << "connections count " << this->_request_count << std::endl;
+        }
+    }
 }
 
 void Server_instance::handle_request (int i)
@@ -63,4 +68,20 @@ int Server_instance::getServerPort (void)
 std::string Server_instance::getServerName (void) const
 {
     return (this->_server_name);
+}
+
+void Connection::setFd (int)
+{
+    this->fd = fd ;
+}
+
+void Connection::initFdSet (int fd)
+{
+    FD_ZERO (&this->timeOutSet);
+    FD_SET (fd, &this->timeOutSet);
+}
+
+void Connection::setFdType (int type)
+{
+    this->fd_type = type ;
 }

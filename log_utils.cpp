@@ -12,3 +12,12 @@ const std::string currentDateTime() {
 
     return buf;
 }
+
+
+void Http_application::serverLog (int serverIndx)
+{
+    logFile << "connection count : "<< connectionCount  << " ";
+    logFile <<  "\e[0;32mserver name: \e[0m: " <<     serverList[serverIndx].getServerName () << " ";
+    logFile << "\e[0;32mserver port: \e[0m:" << serverList[serverIndx].getServerPort () << " ";
+    logFile << " " << currentDateTime ()  <<  std::endl;
+}
