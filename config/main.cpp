@@ -1,12 +1,12 @@
 #include "config.hpp"
 
 
-int main(int argc, char **argv)
+int main(void)
 {
-    std::string path;
-    stringContainer config;
-    int container_size;
-    int i;
+    // std::string path;
+    // stringContainer config;
+    // int container_size;
+    // int i;
 
     // path = "  12.6 .12   .6";
     // config = splitSeparator(path, '.');
@@ -22,8 +22,10 @@ int main(int argc, char **argv)
     {
         Config *file = new Config("./webserv.conf");
         file->parseConfig();
-        std::cout << "Server Error Log: " << file->getHttpContext()->getServers()[0]->getErrorLog() << std::endl;
-        std::cout << "Server Error Log: " << file->getHttpContext()->getServers()[0]->getHost() << std::endl;
+        std::cout << "Server [0] Port: " << file->getHttpContext()->getServers()[0]->getPort() << std::endl;
+        std::cout << "Server [1] Port: " << file->getHttpContext()->getServers()[1]->getPort() << std::endl;
+        std::cout << "Server [0] Port: " << file->getHttpContext()->getServers()[0]->getServerName() << std::endl;
+        std::cout << "Server [1] Port: " << file->getHttpContext()->getServers()[1]->getServerName() << std::endl;
     }
     catch(std::exception &e)
     {

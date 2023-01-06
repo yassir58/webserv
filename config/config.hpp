@@ -139,7 +139,7 @@ bool checkDirectiveKey(std::string directiveName,const char **directivesTable);
 bool checkValidDirectives(std::string line, int context);
 void checkPath(std::string path, int mode);
 bool is_number(const std::string & s);
-int getClosingIndex(stringContainer fileContent, int position);
+int getClosingIndex(stringContainer fileContent, unsigned int position);
 void    printContainer(stringContainer table);
 bool    validate_host(std::string ipAddress);
 

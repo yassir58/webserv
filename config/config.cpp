@@ -33,8 +33,8 @@ void    Config::printConfig()
 
 void    Config::parseConfig()
 {
-    int size;
-    int i;
+    unsigned int size;
+    unsigned int i;
     stringContainer line;
     this->mainHttpContext = new Http();
 
@@ -57,7 +57,7 @@ void    Config::parseConfig()
 void    Config::parseDirective(stringContainer config, int line)
 {
     stringContainer str;
-    int size;
+    unsigned int size;
 
     
     str = split(config[line]);
@@ -87,7 +87,7 @@ Http::~Http() {
 }
 
 void    Http::printServers(){
-    int i;
+    unsigned int i;
 
     i = 0;
     while (i < this->getServers().size())
@@ -208,7 +208,7 @@ Server::~Server()
 
 void    Server::printLocations()
 {
-    int i;
+    unsigned int i;
     
     i = 0;
     while (i < this->locations.size())
@@ -274,10 +274,12 @@ void    Server::parseDirective(stringContainer config, Server *instance, int lin
         instance->serverName = str[1];
     else if (str.size() == 2 && str[0] == "max_body_size")
         instance->maxBodySize = atoi(str[1].c_str());
-    else if (str.size() == 3 && str[0] == "listen" || str.size() == 2 && str[0] == "listen")
+    else if ((str[0] == "listen" && str.size() == 3) || (str[0] == "listen" && str.size() == 2))
     {
         if (str.size() == 2 && is_number(str[1]))
             instance->port = atoi(str[1].c_str());
+        else if (str.size() == 3 && is_number(str[2]))
+            instance->port = atoi(str[2].c_str());
         else
         {
             if (str[1] != "localhost" && !validate_host(str[1]))

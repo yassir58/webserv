@@ -3,7 +3,7 @@
 
 void	validate_extension(const char *path, const char *ext)
 {
-	int	size;
+	int size;
 
 	size = strlen(path) - 5;
     //.. Comparing the last 5 characters to see if its matches the extension
@@ -14,8 +14,8 @@ void	validate_extension(const char *path, const char *ext)
 
 bool    validate_host(std::string ipAddress)
 {
-    int index;
-    int size;
+    unsigned int index;
+    unsigned int size;
     stringContainer ip;
 
     if (std::count(ipAddress.begin(), ipAddress.end(), '.') != 3)
@@ -34,7 +34,7 @@ bool    validate_host(std::string ipAddress)
 
 void    printContainer(stringContainer table)
 {
-    int i;
+    unsigned int i;
 
     i = 0;
 
@@ -49,8 +49,8 @@ void    printContainer(stringContainer table)
 stringContainer split(std::string line)
 {
     stringContainer result;
-    int i = 0;
-    int j = 0;
+    unsigned int i = 0;
+    unsigned int j = 0;
 
     while (i < line.length())
     {
@@ -72,8 +72,8 @@ stringContainer split(std::string line)
 stringContainer splitSeparator(std::string line, char c)
 {
     stringContainer result;
-    int i = 0;
-    int j = 0;
+    unsigned int i = 0;
+    unsigned int j = 0;
 
     while (i < line.length())
     {
@@ -140,8 +140,8 @@ stringContainer   read_config_file(std::string & path)
 void    check_brackets(stringContainer configContent)
 {
     std::string line;
-    int bracketsLevel;
-    int i;
+    unsigned int bracketsLevel;
+    unsigned int i;
 
     i = 0;
     bracketsLevel = 0;
@@ -235,10 +235,10 @@ void checkPath(std::string path, int mode)
     }
 }
 
-int getClosingIndex(stringContainer fileContent, int position)
+int getClosingIndex(stringContainer fileContent, unsigned int position)
 {
-    int i;
-    int bracketsLevel;
+    unsigned int i;
+    unsigned int bracketsLevel;
     std::string line;
 
     i = fileContent.size();
