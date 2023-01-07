@@ -13,7 +13,7 @@ CGIHandler::~CGIHandler()
     std::cout << "Default destructor" << std::endl;
 }
 
-stringContainer CGIHandler::createEnvList()
+void    CGIHandler::createEnvList()
 {
     stringContainer envList;
     std::string line;
@@ -24,7 +24,40 @@ stringContainer CGIHandler::createEnvList()
     envList.push_back(line.append(HTTP_PROTOCOL));
     line = "GATEWAY_INTERFACE=";
     envList.push_back(line.append(CGI_INTERFACE));
-    return (envList);
+    this->envList = envList;
+}
+
+char ** CGIHandler::convertEnvList()
+{
+    char **table;
+    int size;
+    int i;
+
+    i = 0;
+    size = this->envList.size();
+    table = (char **)malloc(sizeof(char *) * size);
+    if (!table)
+        return (NULL);
+    while (i < size)
+    {
+        table[i] = strdup(this->envList[i].c_str());
+        i++;
+    }
+    table[i] = NULL;
+    return (table);
+}
+
+std::string CGIHandler::getScriptName()
+{
+    int i = 0;
+    stringContainer container;
+    std::string urlExample = "http://localhost/php-cgi/index.php/tv/home?season=5&episode=62";
+    container = splitSeparator(urlExample, '/');
+    while (i < container.size())
+    {
+        std::cout << container[i] << std::endl;
+        i++;
+    }
 }
 
 //Query Example: http://localhost/php-cgi/index.php/tv/home?season=5&episode=62

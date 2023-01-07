@@ -127,20 +127,22 @@ class parseError: public std::runtime_error
         {}
 };
 
-void	validate_extension(const char *path, char *ext);
-void    validate_file_content(std::ifstream & configFile);
+void	validateExtension(const char *path, char *ext);
+void    checkFileEmpty(std::ifstream & configFile);
 std::string getLine(std::string &line);
 stringContainer   read_config_file(std::string & path);
-void    check_brackets(stringContainer configContent);
+void    checkBrackets(stringContainer configContent);
 stringContainer split(std::string line);
 stringContainer splitSeparator(std::string line, char c);
 void    validateDirective(stringContainer & line, int context);
 bool checkDirectiveKey(std::string directiveName,const char **directivesTable);
 bool checkValidDirectives(std::string line, int context);
 void checkPath(std::string path, int mode);
-bool is_number(const std::string & s);
+bool isNumber(const std::string & s);
 int getClosingIndex(stringContainer fileContent, unsigned int position);
 void    printContainer(stringContainer table);
-bool    validate_host(std::string ipAddress);
+bool    validateHost(std::string ipAddress);
+bool checkSpaces(std::string string);
+stringContainer   stripSemiColon(stringContainer str);
 
 #endif
