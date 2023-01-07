@@ -69,7 +69,7 @@ void *myThreadFun(void *vargp)
 
 	arg = (int*)vargp;
 	(void)arg;
-	system ("telnet localhost 80"); 
+	system ("telnet localhost 8080"); 
     return NULL;
 }
   

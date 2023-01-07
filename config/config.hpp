@@ -2,13 +2,14 @@
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
 #include <iostream>
-#include <regex>
+// #include <regex>
 #include <fstream>
 #include <istream>
 #include <vector>
 #include <algorithm>
 #include <exception>
 #include <sys/stat.h>
+#include <cstring>
 
 #define MAIN 0
 #define HTTP 1

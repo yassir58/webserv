@@ -60,7 +60,7 @@ void Server_instance::bind_socket (void)
     initAddr.ai_family = AF_INET6; // this need to be modified
     initAddr.ai_socktype = SOCK_STREAM;
     initAddr.ai_flags = AI_PASSIVE; // this flag make the getaddreinfo info return wildcard address
-    err_check = getaddrinfo (0, std::to_string(this->_connection_port).c_str(), &initAddr, &servAddr);
+    err_check = getaddrinfo (0, _service.c_str (), &initAddr, &servAddr);
     if (err_check == -1)
     {
         std::cout << "context : getaddrinfo" << std::endl;
@@ -120,5 +120,15 @@ const char * Connection_error::what () const throw (){
     return (this->err_description);
 }
 
+void Server_instance::setService (int port)
+{
+    std::stringstream strs;
 
+    strs << port ;
+    strs >> _service;
+}
 
+void Server_instance::setService (std::string service)
+{
+    _service = service;
+}

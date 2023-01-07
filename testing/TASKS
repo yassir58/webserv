@@ -1,14 +1,25 @@
+
+TASKS :
 --> handle error = too many open files (accept) []
 --> handle connection timeout []
 --> handle buffer_size problems []
 --> reimplement the connections algorithm using the epoll or kqueue sys call and using a list of fds instead of an array [x]
 --> handle server overload (server out of memory or out of fds) []
---> integrate config parse with webserv core []
---> handle multiple server instances listening on the same port []
+--> integrate config parse with webserv core [x]
+--> handle multiple server instances listening on the same port the first server block will bind to port and the others will be ignored []
 --> add support for ipv6 [x]
+--> handle errors -1 and 0 for send and recieve []
 **
+TESTS :
 
-read list
+test server responsivness using curl to fetch large files 
+test server load using siege -b -t{for test tile} -c{for concurrent users}
+test server response time using [ab]
+test server's large file handling using httperf 
+
+
+
+READ LIST :
 
 the difference between host-name and server-name []
 how nginx handle multiple server instances []
@@ -16,3 +27,8 @@ read about virtual hosts (server blocks) []:
 - https://www.keycdn.com/support/nginx-virtual-host
 - https://en.wikipedia.org/wiki/Virtual_hosting
 what is server_name and how it works []
+
+
+INFO :
+
+using SO_REUSADDR to prevent bind () error after server crash , because the socket goes to TIME_WAIT state before the operating system claim it back.

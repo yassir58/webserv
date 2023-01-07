@@ -1,25 +1,26 @@
 #include "Server_instance.hpp"
-
+#include "config/config.hpp"
 
 Http_application::Http_application ()
 {
     serverCount = 1;
     connectionCount = 0;
-    clientMaxBodySize = POST_LIMIT;
     epollInstance = epoll_create (MAX_CONNECT);
-    bzero (buffer, HEADER_MAX);
+    if (epollInstance == -1)
+        throw Fatal_error ();
     logFile.open ("server_log", std::ios_base::app);
     indx = serverCount;
 
 }
 
-Http_application::Http_application (int servers_n)
+Http_application::Http_application (std::vector <Server *> serverConfigs)
 {
-    serverCount = servers_n;
+    servConfigs = serverConfigs;
+    serverCount = serverConfigs.size ();
     connectionCount= 0;
-    clientMaxBodySize = POST_LIMIT;
     epollInstance = epoll_create (MAX_CONNECT);
-    bzero (buffer, HEADER_MAX);
+    if (epollInstance == -1)
+        throw Fatal_error ();
     logFile.open ("server_log", std::ios_base::app);
     indx = serverCount;
 }
@@ -64,7 +65,6 @@ Server_instance *Http_application::getServerList (void) const
 
 void Http_application::checkReadySockets (void)
 {
-    struct epoll_event event;
     int fd;
     int server_indx;
     std::vector<int>::iterator it;
@@ -78,23 +78,15 @@ void Http_application::checkReadySockets (void)
     {
         for (int i = 0; i < nfds; i++)
         {
-            if (this->readySockets[i].events & POLLIN)
+            if (this->readySockets[i].events & POLLIN 
+                || this->readySockets[i].events & POLLOUT)
             {
                 fd = this->readySockets[i].data.fd;
                 it = std::find (this->serverFds.begin (), this->serverFds.end (), fd);
                 if (it != serverFds.end ())
                 {
-                    // handle server's socket
                     server_indx = it - this->serverFds.begin ();
-                    std::cout << server_indx << std::endl;
-                    fd = serverList[server_indx].accept_connection ();
-                    event.data.fd = fd;
-                    event.events = POLLIN | POLLOUT;
-                    errValue = epoll_ctl(this->epollInstance, EPOLL_CTL_ADD, fd, &event);
-                    if (errValue == -1)
-                        handleError (POLLERR);
-                    connectionCount++;
-                    serverLog (server_indx);
+                    handleNewConnection (server_indx);
                 }
                 else
                 {
@@ -113,15 +105,20 @@ void Http_application::checkReadySockets (void)
     }
 }
 
-// void Http_application::handleNewConnection (int server_indx)
-// {
-//     fd_pool[indx].fd = serverList[server_indx].accept_connection();
-//     fd_pool[indx].events = POLLIN;
-//     setConnectionFd (fd_pool[indx].fd, CLIENT);
-//     indx++;
-//     
-//     connectionCount++;
-// }
+void Http_application::handleNewConnection (int server_indx)
+{
+    int clientSocket ;
+    struct epoll_event event;
+    
+    clientSocket = serverList[server_indx].accept_connection ();
+    event.data.fd = clientSocket;
+    event.events = POLLIN | POLLOUT;
+    errValue = epoll_ctl(this->epollInstance, EPOLL_CTL_ADD, clientSocket, &event);
+    if (errValue == -1)
+        handleError (POLLERR);
+    connectionCount++;
+    serverLog (server_indx);
+}
 
 // void Http_application::handleReadyConnection (int indx)
 // {
@@ -156,20 +153,17 @@ void Http_application::allocate_servers (void)
 
 }
 
-void Http_application::initServers (void)
+void Http_application::initServers (std::vector<Server*> serverList)
 {
-    // for testing purpose
-    std::string serv_names[4];
-    int ports[4];
-    
-    serv_names[0] = "serv1", ports[0] = 1200;
-    serv_names[1] = "serv2", ports[1] = 8080;
-    serv_names[2] = "serv3", ports[2] = 5000; 
-    serv_names[3] = "serv4", ports[4] =  6446;
-    for (int i = 0; i < 4; i++)
+    std::vector<Server*>::iterator bg;
+    int indx = 0;
+
+    for (bg = serverList.begin ();bg != serverList.end (); bg++)
     {
-        this->serverList[i].setServerName (serv_names[i]);
-        this->serverList[i].setServerPort (ports[i]);
+        this->serverList[indx].setServerName ((*(*bg)).getServerName ());
+        this->serverList[indx].setServerPort ((*(*bg)).getPort ());
+        this->serverList[indx].setService ((*(*bg)).getPort ());
+        indx++;
     }
 }
 
@@ -189,19 +183,6 @@ void Http_application::handleHttpRequest (int fd)
     return_value = send (fd, HTTP_RESPONSE_EXAMPLE, strlen (HTTP_RESPONSE_EXAMPLE), 0);
     logFile << "\e[0;33mbyte sent : \e[0m" << return_value << " \e[0;33mexpected : \e[0m" <<  strlen (HTTP_RESPONSE_EXAMPLE) << std::endl;
 }
-
-
-// void Http_application::setConnectionFd (int fd, int type)
-// {
-//     Connection newConnection;
-
-//     newConnection.setFd (fd);
-//     newConnection.initFdSet (fd);
-//     newConnection.setFdType (type);
-//     this->watchedFds.push_back (newConnection);
-// }
-
-
 
 int Http_application::getConnectionIndx (void)
 {

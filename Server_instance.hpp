@@ -1,3 +1,4 @@
+#pragma once
 #ifndef SERVER_INSTANCE_HPP
 #define SERVER_INSTANCE_HPP
 
@@ -6,7 +7,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <cstring>
 #include <netinet/in.h>
 #include <iostream>
 #include <sys/select.h>
@@ -16,10 +16,16 @@
 #include <fstream>
 #include <vector>
 #include <list>
+#include <string> 
 #include <algorithm>
 #include <sys/types.h>
 #include <netdb.h>
+#include "config/config.hpp"
+#include <sstream>
+#include <cstring>
 
+#define SSTR( x ) static_cast< std::ostringstream & >( \
+        ( std::ostringstream() << std::dec << x ) ).str()
 // MACROS
 #define PORT 8080
 #define HEADER_MAX 8000
@@ -39,8 +45,6 @@
 #define BACK_LOG_MAX 5 // * max size permitted by most systems
 #define ACK_MESSAGE "\e[0;33m acknowledgement message \e[0m"
 #define RESPONSE_LINES 7
-#define SERVER 0
-#define CLIENT 1
 
 // for testing purpos
 #define HTTP_RESPONSE_EXAMPLE "HTTP/1.1 200 OK\r\nServer: WebServer\r\nContent-Type: text/html\r\nContent-Length: 109\r\nConnection: close\r\n\r\nhello world</br><p>this is a paragraph</p><img src='https://i.ytimg.com/vi/8wWBcs99hTw/hqdefault.jpg' ></img>"
@@ -107,6 +111,8 @@ public:
     void setServerName(std::string name);
     void setServerPort(int port);
     int getServerPort (void);
+    void setService (int port);
+    void setService (std::string service);
 
   
 };
@@ -129,18 +135,20 @@ class Http_application
         std::ofstream logFile;
         std::list<int> watchedFds;
         std::vector<int> serverFds;
+        std::vector <Server*> servConfigs;
+      
 
 
 public:
     Http_application();
-    Http_application(int servers_n);
+    Http_application(std::vector <Server *> serverConfigs);
     Http_application(const Http_application &copy);
     ~Http_application();
     void setServerList(Server_instance *list);
     int getServerCount(void) const;
     int getConnectionCount(void) const;
     void connectServers(void);
-    void initServers(void);
+    void initServers(std::vector<Server*> serverList);
     void handleNewConnection(int server_indx);
     void handleReadyConnection(int indx);
     pollfd *getConnectionPool(void) const;
