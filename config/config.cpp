@@ -9,7 +9,7 @@ Config::Config(std::string path)
 {
     this->configContent = read_config_file(path);
     // printContainer(this->configContent);
-    check_brackets(this->configContent);
+    checkBrackets(this->configContent);
 }
 
 Config::~Config()
@@ -43,7 +43,7 @@ void    Config::parseConfig()
     while (i < size)
     {
         line = split(configContent[i]);
-        if (line.size() > 0 && line[0] == "http" && line[1] == "{")
+        if (line.size() > 1 && line[0] == "http" && line[1] == "{")
         {
             this->mainHttpContext->parseHttpContext(configContent, i + 1);
             i = getClosingIndex(this->configContent, i + 1);
@@ -57,14 +57,10 @@ void    Config::parseConfig()
 void    Config::parseDirective(stringContainer config, int line)
 {
     stringContainer str;
-    unsigned int size;
 
-    
     str = split(config[line]);
-    size = str.size();
-
     validateDirective(str, MAIN);
-    str[size - 1][str[size - 1].length() - 1] != ';' ? str.pop_back() : str[size - 1].pop_back();
+    str = stripSemiColon(str);
     if (!this->pid_path.empty())
         throw parseError("Syntax Error: PID path file already is set.");
     this->pid_path = str[1];
@@ -114,7 +110,7 @@ void    Http::parseHttpContext(stringContainer & configContent, int index)
         line = split(configContent[index]);
         if (line.size() == 1 && line[0] == "}")
             return ;
-        if (line.size() > 0 && line[0] == "server" && line[1] == "{")
+        if (line.size() > 1 && line[0] == "server" && line[1] == "{")
         {
             this->servers.push_back(server.parseServer(configContent, index + 1));
             index = getClosingIndex(configContent, index + 1);
@@ -128,12 +124,10 @@ void    Http::parseHttpContext(stringContainer & configContent, int index)
 void    Http::parseDirective(stringContainer config, int line)
 {
     stringContainer str;
-    int size;
     
     str = split(config[line]);
-    size = str.size();
     validateDirective(str, HTTP);
-    str[size - 1][str[size - 1].length() - 1] != ';' ? str.pop_back() : str[size - 1].pop_back();
+    str = stripSemiColon(str);
     if (str.size() == 3 && str[0] == "default_page")
     {
         checkPath(str[2], CHECK_MODE);
@@ -146,6 +140,8 @@ void    Http::parseDirective(stringContainer config, int line)
             this->sendFile = true;
         else if (strcmp(str[1].c_str(), "off") == 0)
             this->sendFile = false;
+        else
+            throw parseError("Syntax Error: send_file [off|on]");
     }
 }
 
@@ -258,13 +254,10 @@ Server * Server::parseServer(stringContainer configFile, int index)
 void    Server::parseDirective(stringContainer config, Server *instance, int line)
 {
     stringContainer str;
-    int size;
 
     str = split(config[line]);
-    size = str.size();
-
     validateDirective(str, SERVER);
-    str[size - 1][str[size - 1].length() - 1] != ';' ? str.pop_back() : str[size - 1].pop_back();
+    str = stripSemiColon(str);
     if (str.size() == 2 && str[0] == "root")
     {
         checkPath(str[1], CHECK_MODE);
@@ -276,13 +269,13 @@ void    Server::parseDirective(stringContainer config, Server *instance, int lin
         instance->maxBodySize = atoi(str[1].c_str());
     else if ((str[0] == "listen" && str.size() == 3) || (str[0] == "listen" && str.size() == 2))
     {
-        if (str.size() == 2 && is_number(str[1]))
+        if (str.size() == 2 && isNumber(str[1]))
             instance->port = atoi(str[1].c_str());
-        else if (str.size() == 3 && is_number(str[2]))
+        else if (str.size() == 3 && isNumber(str[2]))
             instance->port = atoi(str[2].c_str());
         else
         {
-            if (str[1] != "localhost" && !validate_host(str[1]))
+            if (str[1] != "localhost" && !validateHost(str[1]))
                 throw parseError("Syntax Error: invalid ip address format: " + str[1]);
             instance->port = 80;
             instance->host = strcmp(str[1].c_str(), "localhost") ? str[1] : "127.0.0.1";
@@ -302,8 +295,8 @@ void    Server::parseDirective(stringContainer config, Server *instance, int lin
             throw parseError("Config Error: Access log path already set");
         instance->accessLog = str[1];
     }
-    else 
-        throw parseError("Syntax Error: Invalid Directive");
+    else
+        throw parseError("Syntax Error: invalid directive format: Server");
 }
 
 std::vector<Location *> Server::getLocations()
@@ -407,17 +400,16 @@ Location * Location::parseLocation(stringContainer configFile, std::string path,
 
 void    Location::parseDirective(stringContainer line, Location *instance)
 {
-    int size;
-
-    size = line.size();
     validateDirective(line, LOCATION);
-    line[size - 1][line[size - 1].length() - 1] != ';' ? line.pop_back() : line[size - 1].pop_back();
+    line = stripSemiColon(line);
     if (line[0] == "send_file" && line.size() == 2)
     {
         if (strcmp(line[1].c_str(), "on") == 0)
             instance->sendFile = true;
         else if (strcmp(line[1].c_str(), "off") == 0)
             instance->sendFile = false;
+        else
+            throw parseError("Syntax Error: send_file [off|on]");
     }
     else if (line[0] == "root" && line.size() == 2)
     {
@@ -435,6 +427,8 @@ void    Location::parseDirective(stringContainer line, Location *instance)
             instance->cgiEnable = true;
         else if (strcmp(line[1].c_str(), "off") == 0)
             instance->cgiEnable = false;
+        else
+            throw parseError("Syntax Error: cgi_enable [off|on]");
     }
     else if (line[0] == "cgi_default" && line.size() == 2)
     {
@@ -443,8 +437,10 @@ void    Location::parseDirective(stringContainer line, Location *instance)
     }
     else if (line[0] == "cgi_extension" && line.size() == 2)
         instance->cgiExtension = line[1];
-    else 
-        throw parseError("Syntax Error: Invalid directive");
+    else
+    {
+        throw parseError("Syntax Error: invalid directive format: Location: " + this->endPoint);
+    }
 }
 
 std::string Location::getEndPoint()
