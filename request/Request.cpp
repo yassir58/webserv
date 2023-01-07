@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2022/12/26 11:56:10 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/07 10:10:03 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,14 +34,12 @@ Request::Request(std::string fileString)
 		errorCode = 400;
 	while (!getCRLF(line, (char *)"\r\n"))
 	{
-		std::cout << "second: " << line << std::endl;
 		if (!parseHeaderField(headerFields, line))
 			errorCode = 400;
 	}
 	while (!getCRLF(line, (char *)"\n"))
 	{
-		std::cout << "last: " << line << std::endl;
-		if (parseBody(line))
+		if (!parseBody(line))
 			errorCode = 400;
 	}
 }
@@ -228,6 +226,15 @@ t_start &Request::getStartLine(void)
 void	Request::setFileString(std::string &file)
 {
 	fileString = file;
+}
+
+std::string		Request::getErrorCode(void)
+{
+	std::stringstream	ss;
+	std::string			toReturn;
+	ss << errorCode;
+	ss >> toReturn;
+	return (toReturn);
 }
 
 /* ************************************************************************** */
