@@ -6,6 +6,8 @@ class Request {
     private:
         std::string host;
         std::string port;
+    public:
+        std::string getUrl();
 };
 
 #define SERVER_SOFTWARE_VERSION "Webserv/1.0"
@@ -20,10 +22,11 @@ class CGIHandler
         Server server;
         Request request;
         Config *configFile;
+        stringContainer envList;
         std::string         getScriptName();
         std::string         getQuery();
         std::string         getFilePath();
-        stringContainer     createEnvList();
+        void                createEnvList();
         char **             convertEnvList();
     public:
         CGIHandler(Location location, Server server, Request request);
