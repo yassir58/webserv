@@ -58,13 +58,12 @@ class Location
 
 class Server {
     private:
+        Pages *pages;
         short port;
         unsigned int maxBodySize;
         std::string host;
         std::string root;
         std::string serverName;
-        std::string accessLog;
-        std::string errorLog;
         std::vector<Location *> locations;
     public:
         // Getters
@@ -73,14 +72,15 @@ class Server {
         std::string getHost();
         std::string getRoot();
         std::string getServerName();
-        std::string getAccessLog();
-        std::string getErrorLog();
+
         
         std::vector<Location *>    getLocations();
         Server *  parseServer(stringContainer configFile, int line);
+        Pages   *getErrorPages();
         void    printServer();
         void    printLocations();
         void    parseDirective(stringContainer config, Server *instance, int line);
+        void    parseErrorPages(stringContainer page);
         // Constructors
         Server();
         ~Server();
@@ -88,16 +88,17 @@ class Server {
 
 class Http {
     private:
-        Pages *pages;
         bool sendFile;
+        std::string accessLog;
+        std::string errorLog;
         std::vector<Server *> servers;
     public:
         void    parseDirective(stringContainer config, int line);
         void    parseHttpContext(stringContainer & configFile, int line);
-        void    parseErrorPages(stringContainer page);
         void    printServers();
         bool    getSendFilestatus();
-        Pages   *getErrorPages();
+        std::string getAccessLog();
+        std::string getErrorLog();
         std::vector<Server *> getServers();
         Http();
         ~Http();

@@ -3,8 +3,9 @@
 #define UTILS_HPP
 
 const char * httpContext[] = {
-    	"default_page",
-	    "send_file"
+	    "send_file",
+        "error_log",
+        "access_log"
 };
 
 const char * serverContext[] = {
@@ -12,8 +13,7 @@ const char * serverContext[] = {
         "server_name",
 		"root",
 		"max_body_size",
-        "error_log",
-        "access_log"
+        "error_page"
 };
 
 const char * locationContext[] = {
@@ -21,6 +21,7 @@ const char * locationContext[] = {
         "send_file",
         "index",
         "upload_path",
+        "allowed_methods",
         "cgi_enable",
         "cgi_default",
         "cgi_extension"
