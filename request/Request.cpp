@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/07 10:10:03 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/09 14:58:47 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,28 +19,28 @@
 Request::Request(std::string fileString)
 {
 	std::string line;
+	setStatusCode(0);
 	setFileString(fileString);
 	getCRLF(line, (char *)"\r\n");
-	if (parseFirstLine(line))
+	if (!parseFirstLine(line))
 	{
-		std::cout << "error while parsing check the startup line\n";
-		errorCode = 0;
+		statusCode = BAD_REQUEST;
+		return ;
 	}
-	if (!checkMethod())
-		errorCode = 400;
-	if (!checkRequestTarget())
-		errorCode = 400;
-	if (!checkVersion())
-		errorCode = 400;
+	if (!checkContentParsed())
+		return ;
 	while (!getCRLF(line, (char *)"\r\n"))
 	{
 		if (!parseHeaderField(headerFields, line))
-			errorCode = 400;
+			statusCode = BAD_REQUEST;
 	}
-	while (!getCRLF(line, (char *)"\n"))
+	if (startLine.method == "POST")
 	{
-		if (!parseBody(line))
-			errorCode = 400;
+		while (!getCRLF(line, (char *)"\n"))
+		{
+			if (!parseBody(line))
+				statusCode = BAD_REQUEST;
+		}
 	}
 }
 
@@ -55,6 +55,26 @@ Request::~Request()
 /*
 ** --------------------------------- METHODS ----------------------------------
 */
+
+int	Request::checkContentParsed()
+{
+	if (!checkMethod())
+	{
+		statusCode = NOT_IMPLENTED;
+		return (0);
+	}
+	if (!checkRequestTarget())
+	{
+		statusCode = BAD_REQUEST;
+		return (0);
+	}
+	if (!checkVersion())
+	{
+		statusCode = HTTP_VERSION;
+		return (0);
+	}
+	return (1);
+}
 
 int	Request::getCRLF(std::string &newLine, char *delim)
 {
@@ -94,7 +114,6 @@ int Request::checkMethod()
 		startLine.method = "DELETE";
 		return (1);
 	}
-	errorCode = 405;
 	return (0);
 }
 
@@ -114,13 +133,25 @@ int	Request::treatAbsoluteURI()
 
 int Request::treatAbsolutePath()
 {
+	// if (access(startLine.requestTarget, F_OK))
+	// {
+	// 	statusCode = 404;
+	// }
+	// if (startLine.method == "POST" && access(startLine.requestTarget, W_OK))
+	// {
+	// 	statusCode = 405;
+	// }
+	// if (startLine.method == "GET" && access(startLine.requestTarget, R_OK))
+	// {
+	// 	statusCode = 405;
+	// }
+	statusCode = 204;
 	return (1);
 }
 
 int Request::checkRequestTarget()
 {
-	if (treatAbsoluteURI())
-		return (1);
+	treatAbsoluteURI();
 	if (treatAbsolutePath())
 		return (1);
 	return (0);
@@ -128,25 +159,25 @@ int Request::checkRequestTarget()
 
 int Request::parseFirstLine(std::string line)
 {
+	/*----------------method----------------------*/
 	size_t start = 0;
 	size_t pos = line.find(' ', start);
 	startLine.method = line.substr(start, pos);
 	if (startLine.method.empty())
-		return (1);
-
+		return (0);
+	/*----------------request target--------------*/
 	start = pos + 1;
 	pos = line.find(' ', start);
 	startLine.requestTarget = line.substr(start, pos - start);
 	if (startLine.requestTarget.empty())
-		return (2);
-
+		return (0);
+	/*----------------HTTP version---------------*/
 	start = pos + 1;
 	pos = line.find(' ', start);
 	startLine.httpVersion = line.substr(start, pos);
 	if (startLine.httpVersion.empty())
-		return (3);
-
-	return (0);
+		return (0);
+	return (1);
 }
 
 int Request::checkVersion()
@@ -155,14 +186,10 @@ int Request::checkVersion()
 	std::string protocol = startLine.httpVersion.substr(0, pos);
 	std::string ver = startLine.httpVersion.substr(pos + 1, std::string::npos);
 	if ((protocol.compare("http") || protocol.compare("HTTP")) && ver.compare("1.1") )
-	{
-		errorCode = 505;
 		return (0);
-	}
 	startLine.httpVersion = startLine.httpVersion;
 	return (1);
 }
-
 
 int Request::parseHeaderField(std::list<headerField> &list, std::string line)
 {
@@ -228,13 +255,38 @@ void	Request::setFileString(std::string &file)
 	fileString = file;
 }
 
+void	Request::setStatusCode(int newStatusCode)
+{
+	statusCode = newStatusCode;
+}
+
 std::string		Request::getErrorCode(void)
 {
 	std::stringstream	ss;
 	std::string			toReturn;
-	ss << errorCode;
+	ss << statusCode;
 	ss >> toReturn;
 	return (toReturn);
+}
+
+std::string		Request::getMethod(void)
+{
+	return (startLine.method);
+}
+
+std::string		Request::getHTTPVersion(void)
+{
+	return (startLine.httpVersion);
+}
+
+std::string		Request::getRequestTarget(void)
+{
+	return (startLine.requestTarget);
+}
+
+int Request::getStatusCode(void)
+{
+	return (statusCode);
 }
 
 /* ************************************************************************** */

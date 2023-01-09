@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/06 18:13:39 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/09 14:07:08 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 Response::Response(Request &request, std::string &responseBody)
 {
 	setRequest(&request);
+	statusIndex = getStatusCode();
 	responseToSend.push_back(generateStatusLine());
 	stringContainer headerFields = generateHeaderFields(responseBody);
 	responseToSend.insert(responseToSend.begin() + 1, headerFields.begin(), headerFields.end());
@@ -39,14 +40,18 @@ Response::~Response() {}
 ** --------------------------------- METHODS ----------------------------------
 */
 
-// std::string	&Response::getStatusCode(void)
-// {
-	
-// }
+int	Response::getStatusCode(void)
+{
+	size_t index = 0;
+	int		code = request->getStatusCode();
+	while (code != status[index].code)
+		++index;
+	return (index);
+}
 
 std::string Response::generateStatusLine(void)
 {
-	std::string	toReturn = "HTTP/1.1 " + request->getErrorCode() + " " + "OK" + "\r\n";
+	std::string	toReturn = "HTTP/1.1 " + request->getErrorCode() + " " + status[statusIndex].status + "\r\n";
 	return (toReturn);
 }
 
@@ -101,6 +106,17 @@ stringContainer Response::generateHeaderFields(std::string &responseBody)
 void	Response::setRequest(Request *request)
 {
 	this->request = request;
+	size_t	index = 0;
+	status[index].code = OK; status[index++].status = "OK";
+	status[index].code = CREATED; status[index++].status = "CREATED";
+	status[index].code = NO_CONTENT; status[index++].status = "NO_CONTENT";
+	status[index].code = BAD_REQUEST; status[index++].status = "BAD_REQUEST";
+	status[index].code = FORBIDDEN; status[index++].status = "FORBIDDEN";
+	status[index].code = NOT_FOUND; status[index++].status = "NOT_FOUND";
+	status[index].code = NOT_ALLOWED; status[index++].status = "NOT_ALLOWED";
+	status[index].code = NOT_IMPLENTED; status[index++].status = "NOT_IMPLENTED";
+	status[index].code = SERVER_ERROR; status[index++].status = "SERVER_ERROR";
+	status[index].code = HTTP_VERSION; status[index++].status = "HTTP_VERSION";
 }
 
 /* ************************************************************************** */
