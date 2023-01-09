@@ -1,5 +1,5 @@
 #include "ServerInstance.hpp"
-#include "config/config.hpp"
+#include "../config/config.hpp"
 
 Http_application::Http_application ()
 {

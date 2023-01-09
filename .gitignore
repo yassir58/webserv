@@ -1,0 +1,5 @@
+*.o
+*.log
+*.out
+.vscode
+**/.DS_Store

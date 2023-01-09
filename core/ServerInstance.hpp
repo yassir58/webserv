@@ -20,7 +20,7 @@
 #include <algorithm>
 #include <sys/types.h>
 #include <netdb.h>
-#include "config/config.hpp"
+#include "../config/config.hpp"
 #include <sstream>
 #include <cstring>
 

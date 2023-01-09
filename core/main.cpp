@@ -1,5 +1,5 @@
 #include "ServerInstance.hpp"
-#include "config/config.hpp"
+#include "../config/config.hpp"
 
 int main (int argc , char *argv[])
 {
