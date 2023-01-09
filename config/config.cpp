@@ -50,6 +50,8 @@ void    Config::parseConfig()
             this->mainHttpContext->parseHttpContext(configContent, i + 1);
             i = getClosingIndex(this->configContent, i + 1);
         }
+        else if (line.size() > 1 && line[0] == "server" && line[1] == "{")
+            throw parseError("Syntax Error: Server context must be wrapped inside http context");
         else
             this->parseDirective(this->configContent, i);
         i++;
@@ -72,6 +74,11 @@ void    Config::parseDirective(stringContainer config, int line)
 Http * Config::getHttpContext()
 {
     return (this->mainHttpContext);
+}
+
+std::string Config::getPidPath()
+{
+    return (this->pid_path);
 }
 
 Http::Http() 
@@ -104,8 +111,7 @@ void    Http::parseHttpContext(stringContainer & configContent, int index)
     Server server;
     stringContainer line;
     
-
-
+    
     size = configContent.size();
     while (index < size)
     {
@@ -117,6 +123,8 @@ void    Http::parseHttpContext(stringContainer & configContent, int index)
             this->servers.push_back(server.parseServer(configContent, index + 1));
             index = getClosingIndex(configContent, index + 1);
         }
+        else if (line.size() > 1 && line[0] == "location" && line[2] == "{")
+            throw parseError("Syntax Error: location context must be wrapped in server context");
         else
             this->parseDirective(configContent, index);
         index += 1;
