@@ -7,7 +7,6 @@ Config::Config()
     // std::cout << "Config constructor called but without any params" << std::endl;
 }
 
-
 Config::Config(std::string path)
 {
     this->configContent = read_config_file(path);
@@ -212,7 +211,7 @@ Server * Server::parseServer(stringContainer configFile, int index)
     Location location;
     stringContainer line;
 
-    this->pages = new Pages();
+    server->pages = new Pages();
     size = configFile.size();
     while (index < size)
     {
@@ -247,7 +246,7 @@ void    Server::parseDirective(stringContainer config, Server *instance, int lin
     else if (str.size() == 3 && str[0] == "error_page")
     {
         checkPath(str[2], CHECK_MODE);
-        this->parseErrorPages(str);
+        instance->parseErrorPages(str);
     }
     else if (str.size() == 2 && str[0] == "server_name")
         instance->serverName = str[1];
@@ -348,6 +347,7 @@ Location::Location()
     this->cgiDefault = "";
     this->sendFile = false;
     this->cgiEnable = false;
+    this->listDirectory = true;
 }
 
 Location::~Location()
@@ -360,6 +360,7 @@ Location::Location(std::string path)
 {
     // std::cout << "Setting the location path" << std::endl;
     this->endPoint = path;
+    this->redirectLink = "";
 }
 
 void    Location::printLocation()
@@ -416,10 +417,17 @@ void    Location::parseDirective(stringContainer line, Location *instance)
         else
             throw parseError("Syntax Error: send_file [off|on]");
     }
-    else if (line.size() > 2)
+    else if (line[0] == "directory_listing" && line.size() == 2)
     {
-        std::cout << "Parsing allowed methods directive" << std::endl;
+        if (strcmp(line[1].c_str(), "on") == 0)
+            instance->listDirectory = true;
+        else if (strcmp(line[1].c_str(), "off") == 0)
+            instance->listDirectory = false;
+        else
+            throw parseError("Syntax Error: directory_listing [off|on]");
     }
+    else if (line[0] == "allowed_methods" && line.size() >= 2)
+        this->parseMethods(line);
     else if (line[0] == "root" && line.size() == 2)
     {
         checkPath(line[1], CHECK_MODE);
@@ -430,6 +438,8 @@ void    Location::parseDirective(stringContainer line, Location *instance)
         checkPath(line[1], CHECK_MODE);
         instance->uploadPath = line[1];
     }
+    else if (line[0] == "redirect" && line.size() == 2)
+        instance->redirectLink = line[1];
     else if (line[0] == "cgi_enable" && line.size() == 2)
     {
         if (strcmp(line[1].c_str(), "on") == 0)
@@ -448,8 +458,30 @@ void    Location::parseDirective(stringContainer line, Location *instance)
         instance->cgiExtension = line[1];
     else
     {
+        printContainer(line);
         throw parseError("Syntax Error: invalid directive format: Location: " + this->endPoint);
     }
+}
+
+void    Location::parseMethods(stringContainer methods)
+{
+    int i;
+    const char * allowedMethods[] = { "POST", "GET", "DELETE", NULL };
+
+    i = 1;
+    while (i < methods.size())
+    {
+        if (keyExistsInTable(methods[i].c_str(), allowedMethods))
+            this->methods.push_back(methods[i].c_str());
+        else
+            throw parseError("Syntax Error: invalid Method: " + methods[i]);
+        i++;
+    }
+}
+
+stringContainer Location::getMethods()
+{
+    return (this->methods);
 }
 
 std::string Location::getEndPoint()
@@ -477,6 +509,11 @@ std::string Location::getCGIExtension()
     return (this->cgiExtension);
 }
 
+std::string Location::getRedirectLink()
+{
+    return (this->redirectLink);
+}
+
 bool Location::getUploadStatus()
 {
     return (this->sendFile);
@@ -485,4 +522,9 @@ bool Location::getUploadStatus()
 bool Location::getCGIStatus()
 {
     return (this->cgiEnable);
+}
+
+bool Location::getListingStatus()
+{
+    return (this->listDirectory);
 }

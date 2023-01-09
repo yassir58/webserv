@@ -35,8 +35,11 @@ class Location
         std::string uploadPath;
         std::string cgiDefault;
         std::string cgiExtension;
+        std::string redirectLink;
+        stringContainer methods;
         bool cgiEnable;
         bool sendFile;
+        bool listDirectory;
     public:
         // Getters
         std::string getEndPoint();
@@ -44,9 +47,13 @@ class Location
         std::string getUploadPath();
         std::string getCGIDefault();
         std::string getCGIExtension();
+        std::string getRedirectLink();
         bool getCGIStatus();
         bool getUploadStatus();
+        bool getListingStatus();
 
+        stringContainer getMethods();
+        void    parseMethods(stringContainer methods);
         Location * parseLocation(stringContainer configFile, std::string path, int index);
         void    parseDirective(stringContainer line, Location *instance);
         void    printLocation();
@@ -72,11 +79,11 @@ class Server {
         std::string getHost();
         std::string getRoot();
         std::string getServerName();
+        Pages   *getErrorPages();
 
         
         std::vector<Location *>    getLocations();
         Server *  parseServer(stringContainer configFile, int line);
-        Pages   *getErrorPages();
         void    printServer();
         void    printLocations();
         void    parseDirective(stringContainer config, Server *instance, int line);
@@ -136,7 +143,7 @@ void    checkBrackets(stringContainer configContent);
 stringContainer split(std::string line);
 stringContainer splitSeparator(std::string line, char c);
 void    validateDirective(stringContainer & line, int context);
-bool checkDirectiveKey(std::string directiveName,const char **directivesTable);
+bool keyExistsInTable(std::string key, const char **table);
 bool checkValidDirectives(std::string line, int context);
 void checkPath(std::string path, int mode);
 bool isNumber(const std::string & s);
