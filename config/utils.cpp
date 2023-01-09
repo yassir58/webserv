@@ -166,17 +166,17 @@ bool checkValidDirectives(std::string line, int context)
     }
     else if (context == HTTP)
     {
-        if (!checkDirectiveKey(line, httpContext))
+        if (!keyExistsInTable(line, httpContext))
             return (false);
     }
     else if (context == SERVER)
     {
-        if (!checkDirectiveKey(line, serverContext))
+        if (!keyExistsInTable(line, serverContext))
             return (false);
     }
     else if (context == LOCATION)
     {
-        if (!checkDirectiveKey(line, locationContext))
+        if (!keyExistsInTable(line, locationContext))
             return (false);
     }
     return (true);
@@ -197,14 +197,14 @@ void    validateDirective(stringContainer & line, int context)
         throw parseError("Config Error: Invalid directive name: " + line[0]);
 }
 
-bool checkDirectiveKey(std::string directiveName,const char **directivesTable)
+bool keyExistsInTable(std::string key,const char **table)
 {
     unsigned int i;
 
     i = 0;
-    while (directivesTable[i])
+    while (table[i])
     {
-        if (strcmp(directiveName.c_str(), directivesTable[i]) == 0)
+        if (strcmp(key.c_str(), table[i]) == 0)
             return (true);
         i++;
     }  
