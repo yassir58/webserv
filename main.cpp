@@ -1,51 +1,46 @@
-#include "Server_instance.hpp"
+#include "ServerInstance.hpp"
 #include "config/config.hpp"
 
 int main (int argc , char *argv[])
 {
-    Config *configFile ;
-    if (argc == 1)
-    {
-        try
-        {
-            configFile = new Config ("./default.conf");
-        }
-        catch (std::exception &ex) 
-        {
-            std::cout << ex.what () << std::endl;
-        }
+    Http_application app;
 
-    }
-    else 
+    try 
     {
-        try
-        {
-            configFile = new Config (argv[argc -1]);
-        }
-        catch (std::exception &ex) 
-        {
-            std::cout << ex.what () << std::endl;
-        }
+        app.handleConfig (argc, argv);
     }
+    catch (std::exception &exc)
+    {
+        std::cout << exc.what () << std::endl;
+        exit (EXIT_FAILURE);
+    }
+    
     try
     {
-        configFile->parseConfig ();
-        std::vector<Server*> servList = configFile->getHttpContext ()->getServers ();
-        Http_application app (servList);
-        app.allocate_servers ();
-        app.initServers (configFile->getHttpContext()->getServers ());
+        app.setupAppResources ();
+        app.allocateServers ();
         app.connectServers ();
         while (1)
         {
-            app.checkReadySockets ();
-        }
+            try 
+            {
+                app.checkForConnection ();
+            }
+            catch (Fatal_error &exc)
+            {
+                std::cout << exc.what () << std::endl;
+                exit (EXIT_FAILURE);
+            }
+            catch (std::exception &exc)
+            {
+                 std::cout << exc.what () << std::endl;
+            }
+        }    
     }
     catch (std::exception &ex) 
     {
         std::cout << ex.what () << std::endl;
+        exit (EXIT_FAILURE);
     }
-
-    delete configFile ;    
-    
     return (0);
 }

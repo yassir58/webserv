@@ -3,10 +3,10 @@ CFLAGS=-Wall -Wextra -Werror  -g #-std=c++98
 CCP=c++
 CC=gcc
 CONF_SRCS = config.cpp utils.cpp
-SRCS= main.cpp  server_utils.cpp Server_instance.cpp log_utils.cpp err_handling.cpp Http_application.cpp $(addprefix ./config/, $(CONF_SRCS))
+SRCS= main.cpp  server_utils.cpp ServerInstance.cpp log_utils.cpp err_handling.cpp Http_application.cpp $(addprefix ./config/, $(CONF_SRCS))
 OBJS= $(SRCS:.cpp=.o)
 CONF_HEADERS= config.hpp utils.hpp
-HEADERS=Server_instance.hpp $(addprefix ./config/, $(CONF_HEADERS))
+HEADERS=ServerInstance.hpp $(addprefix ./config/, $(CONF_HEADERS))
 
 all:server
 

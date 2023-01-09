@@ -45,21 +45,33 @@
 #define BACK_LOG_MAX 5 // * max size permitted by most systems
 #define ACK_MESSAGE "\e[0;33m acknowledgement message \e[0m"
 #define RESPONSE_LINES 7
+#define DEFAULT_PORT 8080
+#define DEFAULT_SERVER_NAME "default"
 
 // for testing purpos
 #define HTTP_RESPONSE_EXAMPLE "HTTP/1.1 200 OK\r\nServer: WebServer\r\nContent-Type: text/html\r\nContent-Length: 109\r\nConnection: close\r\n\r\nhello world</br><p>this is a paragraph</p><img src='https://i.ytimg.com/vi/8wWBcs99hTw/hqdefault.jpg' ></img>"
 class Fatal_error : public std::exception
 {
-    const char *what() const throw();
+    const char *err_description ;
+    public:
+        virtual const char *what() const throw();
+        Fatal_error (const char* desc);
+};
+
+class Parse_error : public std::exception
+{
+    const char *err_description ;
+    public:
+        virtual const char *what() const throw();
+        Parse_error (const char *desc);
 };
 
 class Connection_error : public std::exception
 {
-    const char *what() const throw();
-    const char *err_description;
-
-public:
-    Connection_error(const char *desc);
+        const char *err_description;
+    public:
+        virtual const char *what() const throw();
+        Connection_error(const char *desc);
 };
 
 class Connection
@@ -74,7 +86,7 @@ class Connection
         void setFdType (int type);
 };
 
-class Server_instance
+class ServerInstance
 {
     private:
         std::string _server_name;
@@ -92,14 +104,12 @@ class Server_instance
         char _buffer[HEADER_MAX];
         int err_check;
         int enable;
-        Fatal_error f_err;
-
 public:
-    Server_instance(void);                       // init server with random port number
-    Server_instance(int port, std::string name); // init server with the given port
-    ~Server_instance();
-    Server_instance(const Server_instance &copy);
-    Server_instance &operator=(const Server_instance &assign);
+    ServerInstance(void);                       // init server with random port number
+    ServerInstance(int port, std::string name); // init server with the given port
+    ~ServerInstance();
+    ServerInstance(const ServerInstance &copy);
+    ServerInstance &operator=(const ServerInstance &assign);
     void bind_socket(void);
     int establish_connection(void);
     int accept_connection(void);
@@ -129,53 +139,58 @@ class Http_application
         int return_value;
         int indx;
         char buffer[HEADER_MAX];
-        Server_instance *serverList;
+        std::vector <ServerInstance*> serverList;
         std::string defaultErrorPage;
         int clientMaxBodySize;
         std::ofstream logFile;
         std::list<int> watchedFds;
         std::vector<int> serverFds;
         std::vector <Server*> servConfigs;
+        Config *config;
       
 
 
 public:
     Http_application();
-    Http_application(std::vector <Server *> serverConfigs);
     Http_application(const Http_application &copy);
     ~Http_application();
-    void setServerList(Server_instance *list);
     int getServerCount(void) const;
     int getConnectionCount(void) const;
     void connectServers(void);
-    void initServers(std::vector<Server*> serverList);
+    void setupAppResources (void);
     void handleNewConnection(int server_indx);
-    void handleReadyConnection(int indx);
+    void handleConfig (int argc, char *argv[]);
     pollfd *getConnectionPool(void) const;
-    Server_instance *getServerList(void) const;
-    void setConnectionPool(pollfd *fd_pool);
-    void allocate_servers (void);
-    void checkReadySockets (void);
+    ServerInstance *getServerList(void) const;
+    // void setConnectionPool(pollfd *fd_pool);
+    void allocateServers (void);
+    void checkForConnection (void);
     void handleHttpRequest (int fd);
     int getConnectionIndx (void);
     int getConnectionCount (void);
-    void setConnectionFd (int fd, int type);
-    void unsetConnectionFd (int fd);
-    int chechTimeOut (int fd);
-    int getFdType (int fd);
+    // void setConnectionFd (int fd, int type);
+    // void unsetConnectionFd (int fd);
+    // int chechTimeOut (int fd);
+    // int getFdType (int fd);
     void serverLog (int serverIndx);
+    void printServerInfo (void);
 
 
 };
 
 
+class Client {
+    private:
+        int clientSocket;
+    public:
+};
 
 class request
 {
 };
 
 void handleError(int err);
-void initServers(Server_instance *serv_list);
+void initServers(ServerInstance *serv_list);
 const std::string currentDateTime();
 
 

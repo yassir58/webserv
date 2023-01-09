@@ -1,7 +1,7 @@
-#include "Server_instance.hpp"
+#include "ServerInstance.hpp"
 
 
-Server_instance::Server_instance (void)
+ServerInstance::ServerInstance (void)
 {
     this->_server_alive = 1;
     this->enable = 1;
@@ -9,26 +9,26 @@ Server_instance::Server_instance (void)
     this->_connection_port = 0;
 }
 
-Server_instance::~Server_instance (void)
+ServerInstance::~ServerInstance (void)
 {
     std::cout << "\e[0;31m shutdown server \e[0m" << std::endl;
     close (this->_server_fd);
 }
 
-Server_instance::Server_instance (const Server_instance &copy)
+ServerInstance::ServerInstance (const ServerInstance &copy)
 {
     this->_server_name = copy._server_name;
     this->_connection_port = copy._connection_port;
 }
 
-Server_instance &Server_instance::operator= (const Server_instance &assign)
+ServerInstance &ServerInstance::operator= (const ServerInstance &assign)
 {
     this->_server_name = assign._server_name;
     this->_connection_port = assign._connection_port;
     return (*this);
 }
 
-Server_instance::Server_instance (int port, std::string name)
+ServerInstance::ServerInstance (int port, std::string name)
 {
     this->_connection_port = port;
     this->_server_alive = 1;
@@ -37,7 +37,7 @@ Server_instance::Server_instance (int port, std::string name)
     this->enable = 1;
 }
 
-int Server_instance::establish_connection (void)
+int ServerInstance::establish_connection (void)
 {
     this->bind_socket ();
     err_check = listen (this->_server_fd, BACK_LOG_MAX);     
@@ -51,7 +51,7 @@ int Server_instance::establish_connection (void)
     return (0); 
 }
 
-void Server_instance::bind_socket (void)
+void ServerInstance::bind_socket (void)
 {
     struct addrinfo initAddr;
     struct addrinfo  *servAddr;
@@ -97,30 +97,43 @@ void Server_instance::bind_socket (void)
 } 
 
 
-int Server_instance::getSocketFd (void) const
+int ServerInstance::getSocketFd (void) const
 {
     return (this->_server_fd);
 }
 
-int Server_instance::getRequestCount (void) const
+int ServerInstance::getRequestCount (void) const
 {
     return (this->_request_count);    
 }
 
+
+Fatal_error::Fatal_error (const char *desc):err_description (desc)
+{}
+
 const char *Fatal_error::what () const throw ()
 {
-    return "\e[0;31m FATAL ERROR \e[0m";
+    return err_description;
 }
 
 Connection_error::Connection_error (const char *desc): err_description (desc)
 {
 }
 
+Parse_error::Parse_error (const char *desc): err_description (desc)
+{}
+
 const char * Connection_error::what () const throw (){
     return (this->err_description);
 }
 
-void Server_instance::setService (int port)
+const char *Parse_error::what () const throw()
+{
+    return (this->err_description);
+}
+
+
+void ServerInstance::setService (int port)
 {
     std::stringstream strs;
 
@@ -128,7 +141,7 @@ void Server_instance::setService (int port)
     strs >> _service;
 }
 
-void Server_instance::setService (std::string service)
+void ServerInstance::setService (std::string service)
 {
     _service = service;
 }

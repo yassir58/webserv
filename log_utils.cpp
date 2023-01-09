@@ -1,4 +1,4 @@
-#include "Server_instance.hpp"
+#include "ServerInstance.hpp"
 
 
 const std::string currentDateTime() {
@@ -17,7 +17,7 @@ const std::string currentDateTime() {
 void Http_application::serverLog (int serverIndx)
 {
     logFile << "connection count : "<< connectionCount  << " ";
-    logFile <<  "\e[0;32mserver name: \e[0m: " <<     serverList[serverIndx].getServerName () << " ";
-    logFile << "\e[0;32mserver port: \e[0m:" << serverList[serverIndx].getServerPort () << " ";
+    logFile <<  "\e[0;32mserver name: \e[0m: " <<     serverList[serverIndx]->getServerName () << " ";
+    logFile << "\e[0;32mserver port: \e[0m:" << serverList[serverIndx]->getServerPort () << " ";
     logFile << " " << currentDateTime ()  <<  std::endl;
 }

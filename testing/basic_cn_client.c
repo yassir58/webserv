@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #define PORT 8080
-#define THREAD_MAX 1024
+#define THREAD_MAX 100
 #include "pthread.h"
 #include <string.h>
 
