@@ -481,7 +481,7 @@ void    Location::parseDirective(stringContainer line, Location *instance)
 
 void    Location::parseMethods(stringContainer methods)
 {
-    int i;
+    unsigned int i;
     const char * allowedMethods[] = { "POST", "GET", "DELETE", NULL };
 
     i = 1;
