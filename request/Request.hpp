@@ -54,10 +54,8 @@ class Request
 		void	printResult(void); // print the result produced
 		t_start &getStartLine(void); // geter of the startLine
 		headerFieldList &getHeaderField(void); // geter of the headerFields linked list
+		std::list<headerField> &getHeaderField(void); // geter of the headerFields linked list
 		void	setFileString(std::string &file); // seter of the file string
-		void	setStatusCode(int newStatusCode); // seter of the status code
-		std::string		getErrorCode(void); // geterof the error code as string (i think I should make one that return the int repre)
-		int				getStatusCode(void);
 		std::string		getMethod(void); // geter of the method
 		std::string		getHTTPVersion(void); // geter of the HTTP version
 		std::string		getRequestTarget(void); // geter of the request target
