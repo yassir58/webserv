@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:36 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/09 18:56:06 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/09 18:59:38 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 # include <string>
 # include "request.h"
 # include <sstream>
+
 # define OK			   200
 # define CREATED	   201
 # define NO_CONTENT	   204
@@ -28,14 +29,12 @@
 # define SERVER_ERROR  500
 # define HTTP_VERSION  505
 
-typedef std::vector<std::string> stringContainer;
-typedef std::list<headerField>	headerFieldList;
 class Request
 {
 	private:
 		std::string				fileString; // the string that contain the request received
 		t_start					startLine; // struct contain all the info in the first line of the request
-		headerFieldList	headerFields; // linked list store the header fields of the request
+		headerFieldList			headerFields; // linked list store the header fields of the request
 		stringContainer			body; // contain the body of the request
 		int						statusCode; // the error code or the status code
 	public:
