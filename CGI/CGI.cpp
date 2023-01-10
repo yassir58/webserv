@@ -17,6 +17,7 @@ void    CGIHandler::createEnvList()
 {
     stringContainer envList;
     std::string line;
+    char buffer[5];
 
     line = "SERVER_SOFTWARE=";
     envList.push_back(line.append(SERVER_SOFTWARE_VERSION));
@@ -24,6 +25,10 @@ void    CGIHandler::createEnvList()
     envList.push_back(line.append(HTTP_PROTOCOL));
     line = "GATEWAY_INTERFACE=";
     envList.push_back(line.append(CGI_INTERFACE));
+    line = "SERVER_PORT=";
+    envList.push_back(line.append(int2assci(this->server.getPort())));
+    line = "SERVER_NAME=";
+    envList.push_back(line.append(this->server.getServerName()));
     this->envList = envList;
 }
 
