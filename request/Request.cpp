@@ -6,11 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-<<<<<<< Updated upstream
 /*   Updated: 2023/01/09 18:55:54 by Ma3ert           ###   ########.fr       */
-=======
-/*   Updated: 2023/01/09 14:58:47 by Ma3ert           ###   ########.fr       */
->>>>>>> Stashed changes
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -195,11 +191,7 @@ int Request::checkVersion()
 	return (1);
 }
 
-<<<<<<< Updated upstream
 int Request::parseHeaderField(headerFieldList &list, std::string line)
-=======
-int Request::parseHeaderField(std::list<headerField> &list, std::string line)
->>>>>>> Stashed changes
 {
 	headerField	field;
 	size_t		start = 0;
@@ -228,13 +220,8 @@ void	Request::printResult(void)
 	std::cout << "tartget: " << startLine.requestTarget << std::endl;
 	std::cout << "http version: " << startLine.httpVersion << std::endl;
 	std::cout << "\n===============this headerField===============\n" << std::endl;
-<<<<<<< Updated upstream
 	headerFieldList::iterator end = headerFields.end();
 	headerFieldList::iterator begin = headerFields.begin();
-=======
-	std::list<headerField>::iterator end = headerFields.end();
-	std::list<headerField>::iterator begin = headerFields.begin();
->>>>>>> Stashed changes
 	for (; begin != end; ++begin)
 	{
 		std::cout << "key: " << begin->key << std::endl;
@@ -253,11 +240,7 @@ void	Request::printResult(void)
 ** --------------------------------- ACCESSOR ---------------------------------
 */
 
-<<<<<<< Updated upstream
 headerFieldList &Request::getHeaderField(void) 
-=======
-std::list<headerField> &Request::getHeaderField(void) 
->>>>>>> Stashed changes
 {
 	return (headerFields);
 }

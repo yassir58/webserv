@@ -17,7 +17,7 @@ const std::string currentDateTime() {
 void HttpApplication::serverLog (int serverIndx)
 {
     logFile << "connection count : "<< connectionCount  << " ";
-    logFile <<  "\e[0;32mserver name: \e[0m: " <<     serverList[serverIndx]->getServerName () << " ";
+    // logFile <<  "\e[0;32mserver name: \e[0m: " <<     serverList[serverIndx]->getServerName () << " ";
     logFile << "\e[0;32mserver port: \e[0m:" << serverList[serverIndx]->getServerPort () << " ";
     logFile << " " << currentDateTime ()  <<  std::endl;
 }
@@ -51,5 +51,5 @@ void handleError (int err)
              std::cerr << "\e[0;31mcontext : \e[0m" << "close" << std::endl;
             break;
     }
-    throw Connection_error (strerror (errno));
+    throw Connection_error (strerror (errno), "uknown error");
 }

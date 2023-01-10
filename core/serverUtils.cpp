@@ -10,18 +10,18 @@ int ServerInstance::accept_connection (void)
 
     new_connection = accept (this->serverSocket, (sockaddr *)&clientAddr, (socklen_t *) &clientLen);
     if (new_connection == -1 )
-        throw Connection_error (strerror (errno));
+        throw Connection_error (strerror (errno), "accept");
     this->requestCount++;
     return (new_connection);
 }
 
 
-void ServerInstance::setServerPort (int port)
+void ServerInstance::setServerPort (unsigned int port)
 {
     this->connectionPort = port;
 }
 
-int ServerInstance::getServerPort (void)
+unsigned int ServerInstance::getServerPort (void)
 {
     return (this->connectionPort);
 }

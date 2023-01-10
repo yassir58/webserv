@@ -2,7 +2,7 @@
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
 #include <iostream>
-// #include <regex>
+#include <regex>
 #include <fstream>
 #include <istream>
 #include <vector>
@@ -10,6 +10,7 @@
 #include <exception>
 #include <sys/stat.h>
 #include <cstring>
+#include <sstream>
 
 #define MAIN 0
 #define HTTP 1
@@ -19,6 +20,8 @@
 #define CREATE_MODE 1
 #define DIR_MODE 2
 #define CHECK_MODE 0
+
+#define PORT_MAX 65535
 
 typedef std::vector<std::string> stringContainer;
 
@@ -67,7 +70,7 @@ class Location
 class Server {
     private:
         Pages *pages;
-        short port;
+        unsigned int port;
         unsigned int maxBodySize;
         std::string host;
         std::string root;
@@ -75,7 +78,7 @@ class Server {
         std::vector<Location *> locations;
     public:
         // Getters
-        short getPort();
+        unsigned int getPort();
         unsigned int getMaxBodySize();
         std::string getHost();
         std::string getRoot();
@@ -121,6 +124,7 @@ class Config {
         void    printConfig();
         void    parseDirective(stringContainer config, int line);
         Http    *getHttpContext();
+        std::string getPidPath();
     private:
         stringContainer configContent;
         std::string pid_path;
@@ -153,5 +157,6 @@ void    printContainer(stringContainer table);
 bool    validateHost(std::string ipAddress);
 bool checkSpaces(std::string string);
 stringContainer   stripSemiColon(stringContainer str);
+std::string int2assci(int nb);
 
-#endif
+#endif 

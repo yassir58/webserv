@@ -75,9 +75,10 @@ class Parse_error : public std::exception
 class Connection_error : public std::exception
 {
         const char *err_description;
+        const char *context;
     public:
         virtual const char *what() const throw();
-        Connection_error(const char *desc);
+        Connection_error(const char *desc, const char *context);
 };
 
 class Connection
@@ -98,11 +99,13 @@ class ServerInstance
         std::string hostName;
         int requestCount;
         SOCKET serverSocket;
-        int connectionPort;
+        unsigned int connectionPort;
         std::string service;
         int enable;
         int errCheck;
         struct addrinfo addr;
+        int status;
+
 public:
     ServerInstance(void);                       // init server with random port number
     ServerInstance(std::string host, int port); // init server with the given port
@@ -114,12 +117,14 @@ public:
     int accept_connection(void);
     int getSocketFd(void) const;
     int getRequestCount(void) const;
-    void setServerPort(int port);
-    int getServerPort (void);
+    void setServerPort(unsigned int port);
+    unsigned int getServerPort (void);
     std::string getHostName (void);
     void setService (int port);
     void setService (std::string service);
     std::string getService (void) const;
+    void setStatus (int status);
+    int getStatus (void) const;
 };
 
 typedef std::vector <ServerInstance*> serverContainer ;
@@ -152,10 +157,10 @@ public:
     int getConnectionCount(void) const;
     void connectServers(void);
     void setupAppResources (void);
-    void handleNewConnection(int server_indx);
+    void handleNewConnection(int serverFd);
     void handleConfig (int argc, char *argv[]);
     pollfd *getConnectionPool(void) const;
-    ServerInstance *getServerList(void) const;
+    serverContainer getServerList(void) const;
     // void setConnectionPool(pollfd *fd_pool);
     void allocateServers (void);
     void checkForConnection (void);
@@ -170,6 +175,8 @@ public:
     void printServerInfo (void);
     void filterServerBlocks (void);
     int checkServerExistance (Server *block);
+    ServerInstance *findServerByFd (int serverFd);
+
 };
 
 

@@ -17,26 +17,36 @@ int main (int argc , char *argv[])
     
     try
     {
-        app.filterServerBlocks ();
+        // app.filterServerBlocks ();
         // app.setupAppResources ();
-        // app.allocateServers ();
         // app.connectServers ();
-        // while (1)
+        // serverContainer servList = app.getServerList ();
+        // for (serverContainer::iterator it = servList.begin (); it < servList.end (); it++)
         // {
-        //     try 
-        //     {
-        //         app.checkForConnection ();
-        //     }
-        //     catch (Fatal_error &exc)
-        //     {
-        //         std::cout << exc.what () << std::endl;
-        //         exit (EXIT_FAILURE);
-        //     }
-        //     catch (std::exception &exc)
-        //     {
-        //          std::cout << exc.what () << std::endl;
-        //     }
-        // }    
+        //         std::cout << "Host : " << (*it)->getHostName () << std::endl;
+        //         std::cout << "Port : " << (*it)->getServerPort () << std::endl;
+        // }
+        // while (1);
+        app.setupAppResources ();
+        app.filterServerBlocks ();
+        app.connectServers ();
+        while (1)
+        {
+            try 
+            {
+                app.checkForConnection ();
+            }
+            catch (Fatal_error &exc)
+            {
+                std::cout << exc.what () << std::endl;
+                exit (EXIT_FAILURE);
+            }
+            catch (std::exception &exc)
+            {
+                 std::cout << exc.what () << std::endl;
+                 exit (EXIT_FAILURE);
+            }
+        }    
     }
     catch (std::exception &ex) 
     {

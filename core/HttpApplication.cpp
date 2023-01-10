@@ -34,13 +34,26 @@ void HttpApplication::connectServers (void)
     
     for (bg = serverList.begin (); bg != serverList.end (); bg++)
     {
-        (*(*bg)).establish_connection ();
-        event.data.fd = (*(*bg)).getSocketFd ();
-        event.events = POLLIN | POLLOUT;
-        serverFds.push_back (event.data.fd);
-        err = epoll_ctl (this->epollInstance, EPOLL_CTL_ADD, (*(*bg)).getSocketFd(), &event);
-        if (err == -1)
-            handleError (POLLERR);
+        try
+        {
+            (*bg)->establish_connection ();
+            event.data.fd = (*bg)->getSocketFd ();
+            event.events = POLLIN | POLLOUT;
+            serverFds.push_back (event.data.fd);
+            err = epoll_ctl (this->epollInstance, EPOLL_CTL_ADD, (*bg)->getSocketFd(), &event);
+            if (err == -1)
+                throw Connection_error (strerror(errno), "epoll_ctl");
+            serverFds.push_back ((*bg)->getSocketFd ());
+            
+        }
+        catch(const std::exception& e)
+        {
+            // remove server from list
+            std::cout << "Invalid " << (*bg)->getHostName () << std::endl;
+            (*bg)->setStatus (0);
+            // serverList.erase (bg);
+            //std::cerr << e.what() << '\n';
+        }
     }
 }
 
@@ -49,59 +62,53 @@ void HttpApplication::connectServers (void)
 void HttpApplication::checkForConnection(void)
 {
     int fd;
-    int server_indx;
     std::vector<int>::iterator it;
 
     nfds = epoll_wait (this->epollInstance, this->readySockets, MAX_CONNECT, -1);
     if (nfds == -1)
-        throw Connection_error (strerror (errno));
+        throw Connection_error (strerror (errno), "epoll_wait");
     else
     {
         for (int i = 0; i < nfds; i++)
         {
-            if (this->readySockets[i].events & POLLIN 
-                || this->readySockets[i].events & POLLOUT)
+            fd = this->readySockets[i].data.fd;
+            it = std::find (this->serverFds.begin (), this->serverFds.end (), fd);
+            if (it != serverFds.end ())
+                handleNewConnection (this->readySockets[i].data.fd);
+            else
             {
-                fd = this->readySockets[i].data.fd;
-                it = std::find (this->serverFds.begin (), this->serverFds.end (), fd);
-                if (it != serverFds.end ())
+                // handle client's socket
+                if (this->readySockets[i].events & POLLOUT)
                 {
-                    server_indx = it - this->serverFds.begin ();
-                    handleNewConnection (server_indx);
+                    handleHttpRequest (this->readySockets[i].data.fd);
+                    errValue  = epoll_ctl (this->epollInstance, EPOLL_CTL_DEL, this->readySockets[i].data.fd,&this->readySockets[i]);
+                    if (errValue == -1)
+                        handleError (POLLERR);
+                    errValue = close (this->readySockets[i].data.fd);
+                    if (errValue == -1)
+                        handleError (CLOSEERR);
                 }
-                else
-                {
-                    // handle client's socket
-                    if (this->readySockets[i].events & POLLOUT)
-                    {
-                        handleHttpRequest (this->readySockets[i].data.fd);
-                        errValue  = epoll_ctl (this->epollInstance, EPOLL_CTL_DEL, this->readySockets[i].data.fd,&this->readySockets[i]);
-                        if (errValue == -1)
-                            handleError (POLLERR);
-                        errValue = close (this->readySockets[i].data.fd);
-                        if (errValue == -1)
-                            handleError (CLOSEERR);
-                    }
-                }
-
             }
+
         }
     }
 }
 
-void HttpApplication::handleNewConnection (int server_indx)
+void HttpApplication::handleNewConnection (int serverFd)
 {
     int clientSocket ;
     struct epoll_event event;
+    ServerInstance *server;
     
-    clientSocket = serverList[server_indx]->accept_connection ();
+    server = findServerByFd (serverFd); 
+    clientSocket = server->accept_connection ();
     event.data.fd = clientSocket;
     event.events = POLLIN | POLLOUT;
     errValue = epoll_ctl(this->epollInstance, EPOLL_CTL_ADD, clientSocket, &event);
     if (errValue == -1)
-       throw Connection_error (strerror (errno));
+       throw Connection_error (strerror (errno), "epoll_ctl");
     connectionCount++;
-    serverLog (server_indx);
+  //  serverLog (server_indx);
 }
 
 
@@ -178,29 +185,20 @@ void HttpApplication::filterServerBlocks (void)
 {
     serverBlocks serverBlockList;
     serverBlocks::iterator it;
-    // ServerInstance *server;
-    // struct addrinfo hints, *resaddr;
+    ServerInstance *server;
 
-    // memset (&hints, 0, sizeof (hints));
+
     serverBlockList = config->getHttpContext ()->getServers ();
-    // hints.ai_family = AF_INET6; // this need to be modified
-    // hints.ai_socktype = SOCK_STREAM;
-    // hints.ai_flags = AI_PASSIVE;
     for (it = serverBlockList.begin(); it != serverBlockList.end (); it++)
     {
-        (*it)->printServer ();
-        // if (!checkServerExistance (*it))
-        // {
-        //     // check host valid
-        //     server = new ServerInstance ((*it)->getHost(), (*it)->getPort ());
-        //     errValue = getaddrinfo (server->getHostName ().c_str (), server->getService ().c_str(), &hints, &resaddr);
-        //     if (errValue == 0)
-        //     {
-        //         serverList.push_back (server);
-        //     }
-        //     else
-        //         gai_strerror (errValue);
-        // }
+    
+        if (!checkServerExistance (*it))
+        {
+            //(*it)->printServer ();
+            // check host valid
+            server = new ServerInstance ((*it)->getHost(), (*it)->getPort ());
+            serverList.push_back (server);
+        }
     }
     
 }
@@ -216,4 +214,21 @@ int HttpApplication::checkServerExistance (Server *block)
             return TRUE;
     }
     return (FALSE);
+}
+
+serverContainer HttpApplication::getServerList(void) const
+{
+    return (this->serverList);
+}
+
+ServerInstance *HttpApplication::findServerByFd (int serverFd)
+{
+    serverContainer::iterator it;
+
+    for (it= serverList.begin (); it != serverList.end (); it++)
+    {
+        if ((*it)->getSocketFd () == serverFd)
+            return ((*it));
+    }
+    return (serverList[0]);
 }

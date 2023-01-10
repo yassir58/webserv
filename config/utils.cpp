@@ -288,3 +288,12 @@ bool checkSpaces(std::string string)
     }
     return (true);
 }
+
+std::string int2assci(int nb)
+{
+	std::stringstream res;
+	std::string str;
+	res << nb;
+	str = res.str();
+	return (str);
+}

@@ -39,19 +39,22 @@ int main(void)
     {
         Config *file = new Config("./webserv.conf");
         file->parseConfig();
+        std::cout << "Server [0] Host: " << file->getHttpContext()->getServers()[0]->getHost() << std::endl;
+        std::cout << "Server [0] Port: " << file->getHttpContext()->getServers()[0]->getPort() << std::endl;
+        std::cout << "Server [1] Host: " << file->getHttpContext()->getServers()[1]->getHost() << std::endl;
         std::cout << "Server [1] Port: " << file->getHttpContext()->getServers()[1]->getPort() << std::endl;
-        std::cout << "Server [0] Port: " << file->getHttpContext()->getServers()[0]->getServerName() << std::endl;
-        std::cout << "Global access log: " << file->getHttpContext()->getAccessLog() << std::endl;
-        std::cout << "Global error log: " << file->getHttpContext()->getErrorLog() << std::endl;
-        std::cout << "Server [1] 404 not found: " << file->getHttpContext()->getServers()[1]->getErrorPages()->path_not_found << std::endl;
-        std::cout << "Server [1] 403 forbidden: " << file->getHttpContext()->getServers()[1]->getErrorPages()->path_forbidden << std::endl;
-        std::cout << "Server [1] 500 internal server error: " << file->getHttpContext()->getServers()[1]->getErrorPages()->path_internal_error << std::endl;
-        std::cout << "Server [1] Port: " << file->getHttpContext()->getServers()[1]->getServerName() << std::endl;
-        printContainer(file->getHttpContext()->getServers()[0]->getLocations()[0]->getMethods());
-        printContainer(file->getHttpContext()->getServers()[0]->getLocations()[1]->getMethods());
-        std::cout << "Directory listing: server[0] location[0]: " << file->getHttpContext()->getServers()[0]->getLocations()[0]->getListingStatus() << std::endl;
-        std::cout << "Redirect link: " << file->getHttpContext()->getServers()[0]->getLocations()[0]->getRedirectLink() << std::endl;
-        std::cout << "Redirect link: " << file->getHttpContext()->getServers()[0]->getLocations()[1]->getRedirectLink() << std::endl;
+        // std::cout << "Server [0] Port: " << file->getHttpContext()->getServers()[0]->getServerName() << std::endl;
+        // std::cout << "Global access log: " << file->getHttpContext()->getAccessLog() << std::endl;
+        // std::cout << "Global error log: " << file->getHttpContext()->getErrorLog() << std::endl;
+        // std::cout << "Server [1] 404 not found: " << file->getHttpContext()->getServers()[1]->getErrorPages()->path_not_found << std::endl;
+        // std::cout << "Server [1] 403 forbidden: " << file->getHttpContext()->getServers()[1]->getErrorPages()->path_forbidden << std::endl;
+        // std::cout << "Server [1] 500 internal server error: " << file->getHttpContext()->getServers()[1]->getErrorPages()->path_internal_error << std::endl;
+        // std::cout << "Server [1] Port: " << file->getHttpContext()->getServers()[1]->getServerName() << std::endl;
+        // printContainer(file->getHttpContext()->getServers()[0]->getLocations()[0]->getMethods());
+        // printContainer(file->getHttpContext()->getServers()[0]->getLocations()[1]->getMethods());
+        // std::cout << "Directory listing: server[0] location[0]: " << file->getHttpContext()->getServers()[0]->getLocations()[0]->getListingStatus() << std::endl;
+        // std::cout << "Redirect link: " << file->getHttpContext()->getServers()[0]->getLocations()[0]->getRedirectLink() << std::endl;
+        // std::cout << "Redirect link: " << file->getHttpContext()->getServers()[0]->getLocations()[1]->getRedirectLink() << std::endl;
     }   
     catch(std::exception &e)
     {
