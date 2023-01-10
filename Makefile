@@ -1,45 +1,33 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    Makefile                                           :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2023/01/06 16:09:42 by Ma3ert            #+#    #+#              #
-#    Updated: 2023/01/06 17:46:18 by Ma3ert           ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
+SDIR =tcp
+CFLAGS =-Wall -Wextra -Werror  -g #-std=c++98
+CCP =c++
+CC =gcc
+CORE_SRCS =main.cpp  serverUtils.cpp ServerInstance.cpp  HttpApplication.cpp httpUtils.cpp 
+CONF_SRCS = config.cpp utils.cpp
+REQUEST_SRCS =
+RESPONSE_SRCS =
+CORE_HEADERS = ServerInstance.hpp 
+SRCS =  $(addprefix ./config/, $(CONF_SRCS)) $(addprefix ./core/, $(CORE_SRCS)) $(addprefix ./request/, $(REQUEST_SRCS)) $(addprefix ./response/, $(RESPONSE_SRCS))
+OBJS = $(SRCS:.cpp=.o)
+CONF_HEADERS = config.hpp utils.hpp
+HEADERS = $(addprefix ./core/, $(CORE_HEADERS)) $(addprefix ./config/, $(CONF_HEADERS))  $(addprefix ./request/, $(REQUEST_HEADERS)) $(addprefix ./response/, $(RESPONSE_HEADERS))
 
-SRC = main.cpp ./response/Response.cpp ./request/Request.cpp 
+all:server
 
-OBJ = $(SRC:.cpp=.o)
+%.o : %.cpp $(HEADERS)
+	$(CCP) $(CFLAGS) -c $< -o $@ 
+%.o : %.c $(HEADERS)
+	$(CC) $(CFLAGS) -c $< -o $@ 
 
-NAME = test
+server:$(OBJS) 
+	$(CCP) $(CFLAGS) $(OBJS) -o server 
 
-HEADER = ./response/Response.hpp ./request/Request.hpp ./request/Request.h
+# client:	basic_cn_client.o
+# 	$(CC) $(CFLAGS) $< -o client
 
-CC = c++
-
-FLAGS = -Wall -Wextra -Werror -std=c++98
-
-all: $(NAME)
-
-$(NAME): $(OBJ) $(HEADER)
-	$(CC) $(FLAGS) $(OBJ) -o $(NAME)
-
-%.o : %.cpp $(HEADER)
-	$(CC) $(FLAGS) -c $< -o $@
 
 clean:
-	@rm -f $(OBJ)
-
+	rm -rf $(OBJS)
 fclean: clean
-	@rm -f $(NAME)
-
-hoho: all
-	clear && ./$(NAME) && make fclean
-
-sbrdl: all clean
-	clear
-
-re: fclean all
+	rm -rf server
+re:fclean all

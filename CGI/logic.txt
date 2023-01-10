@@ -1,0 +1,2 @@
+# i should get the server context and the location the request is targeting
+# so i can execute cgi
