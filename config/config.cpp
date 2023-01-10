@@ -179,7 +179,7 @@ bool Http::getSendFilestatus()
 Server::Server()
 {
     this->maxBodySize = 0;
-    this->port = 80;
+    this->port = 8080;
     this->host = "127.0.0.1";
     this->serverName = "";
     // std::cout << "Called the default constructor of server" << std::endl;
@@ -262,17 +262,25 @@ void    Server::parseDirective(stringContainer config, Server *instance, int lin
         instance->maxBodySize = atoi(str[1].c_str());
     else if ((str[0] == "listen" && str.size() == 3) || (str[0] == "listen" && str.size() == 2))
     {
-        if (str.size() == 2 && isNumber(str[1]))
-            instance->port = atoi(str[1].c_str());
-        else if (str.size() == 3 && isNumber(str[2]))
+        if (str.size() == 2)
+        {
+            if (!validateHost(str[1]) && isNumber(str[1]))
+                instance->port = atoi(str[1].c_str());
+            else
+                instance->host = strcmp(str[1].c_str(), "localhost") ? str[1] : "127.0.0.1";
+        }
+        if (str.size() == 3 && isNumber(str[2]))
             instance->port = atoi(str[2].c_str());
-        else
+        if (str.size() == 3)
         {
             if (str[1] != "localhost" && !validateHost(str[1]))
                 throw parseError("Syntax Error: invalid ip address format: " + str[1]);
             instance->port = 80;
             instance->host = strcmp(str[1].c_str(), "localhost") ? str[1] : "127.0.0.1";
+            std::cout << str[1] << std::endl;
         }
+        if (instance->port > PORT_MAX)
+            throw parseError("Config Error: invalid port number out of range");
     }
     else
         throw parseError("Syntax Error: invalid directive format: Server");
@@ -341,7 +349,7 @@ std::string Http::getErrorLog()
     return (this->errorLog);
 }
 
-short Server::getPort()
+unsigned int Server::getPort()
 {
     return (this->port);
 }

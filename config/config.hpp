@@ -19,6 +19,8 @@
 #define DIR_MODE 2
 #define CHECK_MODE 0
 
+#define PORT_MAX 65535
+
 typedef std::vector<std::string> stringContainer;
 
 typedef struct errorPages {
@@ -66,7 +68,7 @@ class Location
 class Server {
     private:
         Pages *pages;
-        unsigned short port;
+        unsigned int port;
         unsigned int maxBodySize;
         std::string host;
         std::string root;
@@ -74,7 +76,7 @@ class Server {
         std::vector<Location *> locations;
     public:
         // Getters
-        short getPort();
+        unsigned int getPort();
         unsigned int getMaxBodySize();
         std::string getHost();
         std::string getRoot();

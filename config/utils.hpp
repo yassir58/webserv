@@ -1,6 +1,7 @@
 #pragma once
 #ifndef UTILS_HPP
 #define UTILS_HPP
+#include <iostream>
 
 const char * httpContext[] = {
         "send_file",
