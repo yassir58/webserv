@@ -66,7 +66,7 @@ class Location
 class Server {
     private:
         Pages *pages;
-        short port;
+        unsigned short port;
         unsigned int maxBodySize;
         std::string host;
         std::string root;
@@ -153,5 +153,6 @@ void    printContainer(stringContainer table);
 bool    validateHost(std::string ipAddress);
 bool checkSpaces(std::string string);
 stringContainer   stripSemiColon(stringContainer str);
+std::string int2assci(int nb);
 
-#endif
+#endif 
