@@ -8,30 +8,22 @@ int ServerInstance::accept_connection (void)
     struct sockaddr_storage clientAddr;
     socklen_t clientLen = sizeof (clientAddr);
 
-    new_connection = accept (this->_server_fd, (sockaddr *)&clientAddr, (socklen_t *) &clientLen);
+    new_connection = accept (this->serverSocket, (sockaddr *)&clientAddr, (socklen_t *) &clientLen);
     if (new_connection == -1 )
         throw Connection_error (strerror (errno));
-    this->_request_count++;
+    this->requestCount++;
     return (new_connection);
 }
 
-void ServerInstance::setServerName (std::string name)
-{
-    this->_server_name = name;
-}
 
 void ServerInstance::setServerPort (int port)
 {
-    this->_connection_port = port;
+    this->connectionPort = port;
 }
 
 int ServerInstance::getServerPort (void)
 {
-    return (this->_connection_port);
-}
-std::string ServerInstance::getServerName (void) const
-{
-    return (this->_server_name);
+    return (this->connectionPort);
 }
 
 void Connection::setFd (int)
@@ -48,4 +40,29 @@ void Connection::initFdSet (int fd)
 void Connection::setFdType (int type)
 {
     this->fd_type = type ;
+}
+
+int Client::getClientSocket (void) const
+{
+    return (this->clientSocket);
+}
+
+std::vector <int>Client::getResolversList (void) const
+{
+    return (this->resolversList);
+}
+
+char *Client::getBuffer (void) 
+{
+    return (this->buffer);
+}
+
+void Client::emptyBuffer (void) 
+{
+    memset (buffer, 0, sizeof (buffer));
+}
+
+int Client::getServerHandlerIndx (void) const
+{
+    return (this->serverHandlerIndx);
 }

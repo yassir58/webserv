@@ -2,7 +2,7 @@ SDIR =tcp
 CFLAGS =-Wall -Wextra -Werror  -g #-std=c++98
 CCP =c++
 CC =gcc
-CORE_SRCS =main.cpp  server_utils.cpp ServerInstance.cpp log_utils.cpp err_handling.cpp Http_application.cpp
+CORE_SRCS =main.cpp  serverUtils.cpp ServerInstance.cpp  HttpApplication.cpp httpUtils.cpp 
 CONF_SRCS = config.cpp utils.cpp
 REQUEST_SRCS =
 RESPONSE_SRCS =
@@ -24,6 +24,7 @@ server:$(OBJS)
 
 # client:	basic_cn_client.o
 # 	$(CC) $(CFLAGS) $< -o client
+
 
 clean:
 	rm -rf $(OBJS)

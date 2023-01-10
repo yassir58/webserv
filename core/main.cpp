@@ -3,7 +3,7 @@
 
 int main (int argc , char *argv[])
 {
-    Http_application app;
+    HttpApplication app;
 
     try 
     {
@@ -17,25 +17,26 @@ int main (int argc , char *argv[])
     
     try
     {
-        app.setupAppResources ();
-        app.allocateServers ();
-        app.connectServers ();
-        while (1)
-        {
-            try 
-            {
-                app.checkForConnection ();
-            }
-            catch (Fatal_error &exc)
-            {
-                std::cout << exc.what () << std::endl;
-                exit (EXIT_FAILURE);
-            }
-            catch (std::exception &exc)
-            {
-                 std::cout << exc.what () << std::endl;
-            }
-        }    
+        app.filterServerBlocks ();
+        // app.setupAppResources ();
+        // app.allocateServers ();
+        // app.connectServers ();
+        // while (1)
+        // {
+        //     try 
+        //     {
+        //         app.checkForConnection ();
+        //     }
+        //     catch (Fatal_error &exc)
+        //     {
+        //         std::cout << exc.what () << std::endl;
+        //         exit (EXIT_FAILURE);
+        //     }
+        //     catch (std::exception &exc)
+        //     {
+        //          std::cout << exc.what () << std::endl;
+        //     }
+        // }    
     }
     catch (std::exception &ex) 
     {

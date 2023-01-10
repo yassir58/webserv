@@ -1,7 +1,7 @@
 #include "ServerInstance.hpp"
 #include "../config/config.hpp"
 
-Http_application::Http_application ()
+HttpApplication::HttpApplication ()
 {
     serverCount = 1;
     connectionCount = 0;
@@ -11,25 +11,25 @@ Http_application::Http_application ()
 }
 
 
-Http_application::~Http_application ()
+HttpApplication::~HttpApplication ()
 {
     std::cout << "\e[0;31m HTTP APPLICATION CLOSED \e[0m" <<std::endl;
     logFile.close ();
     close (epollInstance);
 }
 
-Http_application::Http_application (const Http_application &copy)
+HttpApplication::HttpApplication (const HttpApplication &copy)
 {
     serverCount = copy.serverCount;
     connectionCount= copy.connectionCount;
-    clientMaxBodySize = copy.clientMaxBodySize;
+    HttpMaxBodySize = copy.HttpMaxBodySize;
     indx = serverCount;
 }
 
-void Http_application::connectServers (void)
+void HttpApplication::connectServers (void)
 {
     struct epoll_event event;
-    std::vector<ServerInstance*>::iterator bg;
+    serverContainer::iterator bg;
     int err;
     
     for (bg = serverList.begin (); bg != serverList.end (); bg++)
@@ -46,7 +46,7 @@ void Http_application::connectServers (void)
 
 
 
-void Http_application::checkForConnection(void)
+void HttpApplication::checkForConnection(void)
 {
     int fd;
     int server_indx;
@@ -89,7 +89,7 @@ void Http_application::checkForConnection(void)
     }
 }
 
-void Http_application::handleNewConnection (int server_indx)
+void HttpApplication::handleNewConnection (int server_indx)
 {
     int clientSocket ;
     struct epoll_event event;
@@ -104,48 +104,15 @@ void Http_application::handleNewConnection (int server_indx)
     serverLog (server_indx);
 }
 
-void Http_application::allocateServers (void)
+
+
+void HttpApplication::handleHttpRequest (int fd)
 {
-    std::vector<Server*>::iterator bg;
-    std::vector<Server*> serverConfigs;
-    std::vector<int> portList;
-    ServerInstance *server;
-    int servPort;
-
-    serverConfigs = config->getHttpContext ()->getServers ();
-    if (serverConfigs.size () > 0)
-    {
-
-        for (bg = serverConfigs.begin ();bg != serverConfigs.end (); bg++)
-        {
-            servPort = (*(*bg)).getPort ();
-            server = new ServerInstance ();
-            if (std::find (portList.begin (), portList.end (), servPort) == portList.end ())
-            {
-                portList.push_back (servPort);    
-                server->setServerName ((*(*bg)).getServerName ());
-                server->setServerPort ((*(*bg)).getPort ());
-                server->setService ((*(*bg)).getPort ());
-                serverList.push_back (server);
-            }
-        }
-    }
-    else
-    {
-        server = new ServerInstance ();
-        server->setServerName (DEFAULT_SERVER_NAME);
-        server->setServerPort (DEFAULT_PORT);
-        server->setService (DEFAULT_PORT);
-        serverList.push_back (server);
-    }
-}
-
-void Http_application::handleHttpRequest (int fd)
-{
-    return_value = recv (fd, buffer, HEADER_MAX, 0);
-    if (return_value == 0)
+    char buffer[HEADER_MAX];
+    returnValue = recv (fd, buffer, HEADER_MAX, 0);
+    if (returnValue == 0)
         std::cout << "remote peer closed connection" << std::endl;
-    else if (return_value == -1)
+    else if (returnValue == -1)
         handleError  (READERR);
     else
     {
@@ -153,32 +120,27 @@ void Http_application::handleHttpRequest (int fd)
         std::cout << buffer << std::endl;
     }
     // for testing and observability
-    return_value = send (fd, HTTP_RESPONSE_EXAMPLE, strlen (HTTP_RESPONSE_EXAMPLE), 0);
-    logFile << "\e[0;33mbyte sent : \e[0m" << return_value << " \e[0;33mexpected : \e[0m" <<  strlen (HTTP_RESPONSE_EXAMPLE) << std::endl;
+    returnValue = send (fd, HTTP_RESPONSE_EXAMPLE, strlen (HTTP_RESPONSE_EXAMPLE), 0);
+    logFile << "\e[0;33mbyte sent : \e[0m" << returnValue << " \e[0;33mexpected : \e[0m" <<  strlen (HTTP_RESPONSE_EXAMPLE) << std::endl;
 }
 
-int Http_application::getConnectionIndx (void)
+int HttpApplication::getConnectionIndx (void)
 {
     return (indx);
 }
 
-int Http_application::getConnectionCount (void)
-{
-    return (this->watchedFds.size());
-}
-
-int Http_application::getServerCount (void) const
+int HttpApplication::getServerCount (void) const
 {
     return (this->serverCount);
 }
 
-int Http_application::getConnectionCount (void) const
+int HttpApplication::getConnectionCount (void) const
 {
     return (this->connectionCount);
 }
 
 
-void Http_application::handleConfig (int argc , char *argv[])
+void HttpApplication::handleConfig (int argc , char *argv[])
 {
     if (argc == 1)
         config = new Config ("./default.conf");
@@ -192,21 +154,66 @@ void Http_application::handleConfig (int argc , char *argv[])
 
 // test
 
-void Http_application::printServerInfo (void)
+void HttpApplication::printServerInfo (void)
 {
-    std::vector<ServerInstance*>::iterator bg;
+    serverContainer::iterator bg;
 
     for (bg = serverList.begin(); bg != serverList.end (); bg++)
     {
         std::cout << (*(*bg)).getServerPort () << std::endl;
-        std::cout << (*(*bg)).getServerName() << std::endl;
+        std::cout << (*(*bg)).getHostName() << std::endl;
     }
 }
 
 
-void Http_application::setupAppResources (void) 
+void HttpApplication::setupAppResources (void) 
 {
     epollInstance = epoll_create (MAX_CONNECT);
     if (epollInstance == -1)
         throw Fatal_error (strerror (errno));
+}
+
+
+void HttpApplication::filterServerBlocks (void)
+{
+    serverBlocks serverBlockList;
+    serverBlocks::iterator it;
+    // ServerInstance *server;
+    // struct addrinfo hints, *resaddr;
+
+    // memset (&hints, 0, sizeof (hints));
+    serverBlockList = config->getHttpContext ()->getServers ();
+    // hints.ai_family = AF_INET6; // this need to be modified
+    // hints.ai_socktype = SOCK_STREAM;
+    // hints.ai_flags = AI_PASSIVE;
+    for (it = serverBlockList.begin(); it != serverBlockList.end (); it++)
+    {
+        (*it)->printServer ();
+        // if (!checkServerExistance (*it))
+        // {
+        //     // check host valid
+        //     server = new ServerInstance ((*it)->getHost(), (*it)->getPort ());
+        //     errValue = getaddrinfo (server->getHostName ().c_str (), server->getService ().c_str(), &hints, &resaddr);
+        //     if (errValue == 0)
+        //     {
+        //         serverList.push_back (server);
+        //     }
+        //     else
+        //         gai_strerror (errValue);
+        // }
+    }
+    
+}
+
+
+int HttpApplication::checkServerExistance (Server *block)
+{
+    serverContainer::iterator it;
+
+    for (it = serverList.begin (); it != serverList.end (); it++)
+    {
+        if (!block->getHost().compare ((*it)->getHostName ()) && block->getPort () == (*it)->getServerPort ())
+            return TRUE;
+    }
+    return (FALSE);
 }

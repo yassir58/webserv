@@ -3,51 +3,57 @@
 
 ServerInstance::ServerInstance (void)
 {
-    this->_server_alive = 1;
     this->enable = 1;
-    this->_request_count = 0;
-    this->_connection_port = 0;
+    this->requestCount = 0;
+    this->connectionPort = 8080;
+    this->hostName = "127.0.0.1";
 }
 
 ServerInstance::~ServerInstance (void)
 {
     std::cout << "\e[0;31m shutdown server \e[0m" << std::endl;
-    close (this->_server_fd);
+    close (this->serverSocket);
 }
 
 ServerInstance::ServerInstance (const ServerInstance &copy)
 {
-    this->_server_name = copy._server_name;
-    this->_connection_port = copy._connection_port;
+    this->enable = copy.enable;
+    this->requestCount = copy.requestCount;
+    this->connectionPort = copy.connectionPort;
+    this->hostName = copy.hostName;
 }
 
 ServerInstance &ServerInstance::operator= (const ServerInstance &assign)
 {
-    this->_server_name = assign._server_name;
-    this->_connection_port = assign._connection_port;
+    this->enable = assign.enable;
+    this->requestCount = assign.requestCount;
+    this->connectionPort = assign.connectionPort;
+    this->hostName = assign.hostName;
     return (*this);
 }
 
-ServerInstance::ServerInstance (int port, std::string name)
+ServerInstance::ServerInstance (std::string host, int port)
 {
-    this->_connection_port = port;
-    this->_server_alive = 1;
-    this->_request_count = 0;
-    this->_server_name = name;
+    this->hostName = host;
+    this->connectionPort = port;
+    this->setService (port);
+    this->requestCount = 0;
     this->enable = 1;
+}
+
+std::string ServerInstance::getService (void) const
+{
+    return (this->service);
 }
 
 int ServerInstance::establish_connection (void)
 {
     this->bind_socket ();
-    err_check = listen (this->_server_fd, BACK_LOG_MAX);     
-    if (err_check == -1)
-    {
-        handleError (LISTENERR);
+    errCheck = listen (this->serverSocket, BACK_LOG_MAX);     
+    if (errCheck == -1)
         throw Connection_error (strerror (errno));
-    }
     else
-        std::cout << this->_server_name << "\e[0;33m listen on port \e[0m" << this->_connection_port << std::endl;
+        std::cout << "\e[0;33m listening on port \e[0m" << this->connectionPort << "through intarface : " << this->hostName  <<  std::endl;
     return (0); 
 }
 
@@ -60,51 +66,40 @@ void ServerInstance::bind_socket (void)
     initAddr.ai_family = AF_INET6; // this need to be modified
     initAddr.ai_socktype = SOCK_STREAM;
     initAddr.ai_flags = AI_PASSIVE; // this flag make the getaddreinfo info return wildcard address
-    err_check = getaddrinfo (0, _service.c_str (), &initAddr, &servAddr);
-    if (err_check == -1)
-    {
-        std::cout << "context : getaddrinfo" << std::endl;
+    errCheck = getaddrinfo (0, service.c_str (), &initAddr, &servAddr);
+    if (errCheck == -1)
         throw Connection_error (strerror (errno));
-    }
-    this->_server_fd = socket (servAddr->ai_family, servAddr->ai_socktype, servAddr->ai_protocol);
-    if (this->_server_fd < 0)
-    {
-         std::cout << "context : socket" << std::endl;
+    this->serverSocket = socket (servAddr->ai_family, servAddr->ai_socktype, servAddr->ai_protocol);
+    if (this->serverSocket < 0)
         throw Connection_error (strerror (errno));
-    }
-    this->err_check =  setsockopt (this->_server_fd, SOL_SOCKET, SO_REUSEADDR, &this->enable, sizeof (int));
-    if (this->err_check == -1)
-    {
-        std::cout << "context : setsocketopt" << std::endl;
+    this->errCheck =  setsockopt (this->serverSocket, SOL_SOCKET, SO_REUSEADDR, &this->enable, sizeof (int));
+    if (this->errCheck == -1)
         throw  Connection_error (strerror (errno));
-    }
-    fcntl (this->_server_fd, F_SETFL, O_NONBLOCK);
-    bzero (this->_buffer, HEADER_MAX);
+    fcntl (this->serverSocket, F_SETFL, O_NONBLOCK);
     int option = 0;
-    err_check = setsockopt (this->_server_fd, IPPROTO_IPV6, IPV6_V6ONLY, (void *)&option, sizeof (option));
-    if (err_check == -1)
-    {
-        std::cout << "context : setsocketopt" << std::endl;
+    errCheck = setsockopt (this->serverSocket, IPPROTO_IPV6, IPV6_V6ONLY, (void *)&option, sizeof (option));
+    if (errCheck == -1)
         throw  Connection_error (strerror (errno));
-    }
-    this->err_check = bind (this->_server_fd, servAddr->ai_addr, servAddr->ai_addrlen) ;
-    if (this->err_check == -1)
-    {
-        handleError (BINDERR);
+    this->errCheck = bind (this->serverSocket, servAddr->ai_addr, servAddr->ai_addrlen) ;
+    if (this->errCheck == -1)
         throw  Connection_error (strerror (errno));
-    }
     freeaddrinfo(servAddr);
 } 
 
 
 int ServerInstance::getSocketFd (void) const
 {
-    return (this->_server_fd);
+    return (this->serverSocket);
+}
+
+std::string ServerInstance::getHostName (void)
+{
+    return (this->hostName);
 }
 
 int ServerInstance::getRequestCount (void) const
 {
-    return (this->_request_count);    
+    return (this->requestCount);    
 }
 
 
@@ -138,10 +133,10 @@ void ServerInstance::setService (int port)
     std::stringstream strs;
 
     strs << port ;
-    strs >> _service;
+    strs >> service;
 }
 
 void ServerInstance::setService (std::string service)
 {
-    _service = service;
+    service = service;
 }

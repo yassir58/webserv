@@ -24,8 +24,7 @@
 #include <sstream>
 #include <cstring>
 
-#define SSTR( x ) static_cast< std::ostringstream & >( \
-        ( std::ostringstream() << std::dec << x ) ).str()
+
 // MACROS
 #define PORT 8080
 #define HEADER_MAX 8000
@@ -47,6 +46,13 @@
 #define RESPONSE_LINES 7
 #define DEFAULT_PORT 8080
 #define DEFAULT_SERVER_NAME "default"
+#define TRUE 1
+#define FALSE 0
+
+
+typedef std::vector <Server*> serverBlocks;
+typedef int SOCKET ;
+
 
 // for testing purpos
 #define HTTP_RESPONSE_EXAMPLE "HTTP/1.1 200 OK\r\nServer: WebServer\r\nContent-Type: text/html\r\nContent-Length: 109\r\nConnection: close\r\n\r\nhello world</br><p>this is a paragraph</p><img src='https://i.ytimg.com/vi/8wWBcs99hTw/hqdefault.jpg' ></img>"
@@ -89,45 +95,36 @@ class Connection
 class ServerInstance
 {
     private:
-        std::string _server_name;
-        int _request_count;
-        int _server_fd;
-        int _connection_fd;
-        int _connection_port;
-        std::string _service;
-        int _addr_len;
-        fd_set fds;
-        fd_set ready_fds;
-        std::string _request_text;
-        int _server_alive;
-        int _read_return;
-        char _buffer[HEADER_MAX];
-        int err_check;
+        std::string hostName;
+        int requestCount;
+        SOCKET serverSocket;
+        int connectionPort;
+        std::string service;
         int enable;
+        int errCheck;
+        struct addrinfo addr;
 public:
     ServerInstance(void);                       // init server with random port number
-    ServerInstance(int port, std::string name); // init server with the given port
+    ServerInstance(std::string host, int port); // init server with the given port
     ~ServerInstance();
     ServerInstance(const ServerInstance &copy);
     ServerInstance &operator=(const ServerInstance &assign);
     void bind_socket(void);
     int establish_connection(void);
     int accept_connection(void);
-    void handle_request(int conn_fd);
-    void handle_active_sockets(int i);
     int getSocketFd(void) const;
     int getRequestCount(void) const;
-    std::string getServerName (void) const;
-    void setServerName(std::string name);
     void setServerPort(int port);
     int getServerPort (void);
+    std::string getHostName (void);
     void setService (int port);
     void setService (std::string service);
-
-  
+    std::string getService (void) const;
 };
 
-class Http_application
+typedef std::vector <ServerInstance*> serverContainer ;
+
+class HttpApplication
 {
     private:
         int epollInstance;
@@ -136,24 +133,21 @@ class Http_application
         int errValue;
         int serverCount;
         int connectionCount;
-        int return_value;
+        int returnValue;
         int indx;
-        char buffer[HEADER_MAX];
-        std::vector <ServerInstance*> serverList;
-        std::string defaultErrorPage;
-        int clientMaxBodySize;
+        serverContainer serverList;
+        serverBlocks servConfigBlocks;
+        std::string httpDefaultErrorPage;
+        int HttpMaxBodySize;
         std::ofstream logFile;
-        std::list<int> watchedFds;
         std::vector<int> serverFds;
-        std::vector <Server*> servConfigs;
         Config *config;
       
 
-
 public:
-    Http_application();
-    Http_application(const Http_application &copy);
-    ~Http_application();
+    HttpApplication();
+    HttpApplication(const HttpApplication &copy);
+    ~HttpApplication();
     int getServerCount(void) const;
     int getConnectionCount(void) const;
     void connectServers(void);
@@ -174,15 +168,25 @@ public:
     // int getFdType (int fd);
     void serverLog (int serverIndx);
     void printServerInfo (void);
-
-
+    void filterServerBlocks (void);
+    int checkServerExistance (Server *block);
 };
 
 
 class Client {
     private:
         int clientSocket;
+        std::vector <int> resolversList;
+        int serverHandlerIndx;
+        struct epoll_event event;
+        char buffer[HEADER_MAX];
     public:
+        int getClientSocket (void) const;
+        int getServerHandlerIndx (void) const;
+        char *getBuffer (void) ;
+        void emptyBuffer (void);
+        std::vector <int> getResolversList (void) const;
+
 };
 
 class request
