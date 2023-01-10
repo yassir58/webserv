@@ -275,9 +275,7 @@ void    Server::parseDirective(stringContainer config, Server *instance, int lin
         {
             if (str[1] != "localhost" && !validateHost(str[1]))
                 throw parseError("Syntax Error: invalid ip address format: " + str[1]);
-            instance->port = 80;
             instance->host = strcmp(str[1].c_str(), "localhost") ? str[1] : "127.0.0.1";
-            std::cout << str[1] << std::endl;
         }
         if (instance->port > PORT_MAX)
             throw parseError("Config Error: invalid port number out of range");

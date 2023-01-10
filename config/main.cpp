@@ -43,6 +43,8 @@ int main(void)
         std::cout << "Server [0] Port: " << file->getHttpContext()->getServers()[0]->getPort() << std::endl;
         std::cout << "Server [1] Host: " << file->getHttpContext()->getServers()[1]->getHost() << std::endl;
         std::cout << "Server [1] Port: " << file->getHttpContext()->getServers()[1]->getPort() << std::endl;
+        std::cout << "Server [2] Host: " << file->getHttpContext()->getServers()[2]->getHost() << std::endl;
+        std::cout << "Server [2] Port: " << file->getHttpContext()->getServers()[2]->getPort() << std::endl;
         // std::cout << "Server [0] Port: " << file->getHttpContext()->getServers()[0]->getServerName() << std::endl;
         // std::cout << "Global access log: " << file->getHttpContext()->getAccessLog() << std::endl;
         // std::cout << "Global error log: " << file->getHttpContext()->getErrorLog() << std::endl;
