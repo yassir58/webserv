@@ -1,5 +1,7 @@
 #include "config.hpp"
 
+//! Problem: if line contains a comment after directive value
+
 Config::Config()
 {
     // std::cout << "Config constructor called but without any params" << std::endl;
@@ -9,7 +11,7 @@ Config::Config(std::string path)
 {
     this->configContent = read_config_file(path);
     // printContainer(this->configContent);
-    check_brackets(this->configContent);
+    checkBrackets(this->configContent);
 }
 
 Config::~Config()
@@ -25,9 +27,9 @@ void    Config::printConfig()
     if (this->getHttpContext()->getSendFilestatus())
         std::cout << "File upload::: enabled" << std::endl;
     std::cout << "Error Pages: " << std::endl;
-    std::cout << "404::: " << this->getHttpContext()->getErrorPages()->path_not_found << std::endl;
-    std::cout << "403::: " << this->getHttpContext()->getErrorPages()->path_forbidden << std::endl;
-    std::cout << "500::: " << this->getHttpContext()->getErrorPages()->path_internal_error << std::endl;
+    // std::cout << "404::: " << this->getHttpContext()->getErrorPages()->path_not_found << std::endl;
+    // std::cout << "403::: " << this->getHttpContext()->getErrorPages()->path_forbidden << std::endl;
+    // std::cout << "500::: " << this->getHttpContext()->getErrorPages()->path_internal_error << std::endl;
     this->getHttpContext()->printServers();
 }
 
@@ -43,11 +45,13 @@ void    Config::parseConfig()
     while (i < size)
     {
         line = split(configContent[i]);
-        if (line.size() > 0 && line[0] == "http" && line[1] == "{")
+        if (line.size() > 1 && line[0] == "http" && line[1] == "{")
         {
             this->mainHttpContext->parseHttpContext(configContent, i + 1);
             i = getClosingIndex(this->configContent, i + 1);
         }
+        else if (line.size() > 1 && line[0] == "server" && line[1] == "{")
+            throw parseError("Syntax Error: Server context must be wrapped inside http context");
         else
             this->parseDirective(this->configContent, i);
         i++;
@@ -57,14 +61,10 @@ void    Config::parseConfig()
 void    Config::parseDirective(stringContainer config, int line)
 {
     stringContainer str;
-    unsigned int size;
 
-    
     str = split(config[line]);
-    size = str.size();
-
     validateDirective(str, MAIN);
-    str[size - 1][str[size - 1].length() - 1] != ';' ? str.pop_back() : str[size - 1].pop_back();
+    str = stripSemiColon(str);
     if (!this->pid_path.empty())
         throw parseError("Syntax Error: PID path file already is set.");
     this->pid_path = str[1];
@@ -74,6 +74,11 @@ void    Config::parseDirective(stringContainer config, int line)
 Http * Config::getHttpContext()
 {
     return (this->mainHttpContext);
+}
+
+std::string Config::getPidPath()
+{
+    return (this->pid_path);
 }
 
 Http::Http() 
@@ -106,19 +111,20 @@ void    Http::parseHttpContext(stringContainer & configContent, int index)
     Server server;
     stringContainer line;
     
-    this->pages = new Pages();
-
+    
     size = configContent.size();
     while (index < size)
     {
         line = split(configContent[index]);
         if (line.size() == 1 && line[0] == "}")
             return ;
-        if (line.size() > 0 && line[0] == "server" && line[1] == "{")
+        if (line.size() > 1 && line[0] == "server" && line[1] == "{")
         {
             this->servers.push_back(server.parseServer(configContent, index + 1));
             index = getClosingIndex(configContent, index + 1);
         }
+        else if (line.size() > 1 && line[0] == "location" && line[2] == "{")
+            throw parseError("Syntax Error: location context must be wrapped in server context");
         else
             this->parseDirective(configContent, index);
         index += 1;
@@ -128,59 +134,37 @@ void    Http::parseHttpContext(stringContainer & configContent, int index)
 void    Http::parseDirective(stringContainer config, int line)
 {
     stringContainer str;
-    int size;
     
     str = split(config[line]);
-    size = str.size();
     validateDirective(str, HTTP);
-    str[size - 1][str[size - 1].length() - 1] != ';' ? str.pop_back() : str[size - 1].pop_back();
-    if (str.size() == 3 && str[0] == "default_page")
-    {
-        checkPath(str[2], CHECK_MODE);
-        this->parseErrorPages(str);
-    }
+    str = stripSemiColon(str);
+
     if (str.size() == 2 && str[0] == "send_file")
     {
-        // ! Checking for null i can check wheather the directive is duplicated or not.
         if (strcmp(str[1].c_str(), "on") == 0)
             this->sendFile = true;
         else if (strcmp(str[1].c_str(), "off") == 0)
             this->sendFile = false;
+        else
+            throw parseError("Syntax Error: send_file [off|on]");
+    }
+    else if (str.size() == 2 && str[0] == "error_log")
+    {
+        checkPath(str[1], CREATE_MODE);
+        if (!this->errorLog.empty())
+            throw parseError("Config Error: Error log path already set");
+        this->errorLog = str[1];
+    }
+    else if (str.size() == 2 && str[0] == "access_log")
+    {
+        checkPath(str[1], CREATE_MODE);
+        if (!this->accessLog.empty())
+            throw parseError("Config Error: Access log path already set");
+        this->accessLog = str[1];
     }
 }
 
-void    Http::parseErrorPages(stringContainer page)
-{
-    if (atoi(page[1].c_str()) == 404)
-    {
-        if (this->pages->path_not_found.length() == 0)
-            this->pages->path_not_found = page[2];
-        else
-            throw parseError("Error Pages: status code page 404 is duplicated");
-    }
-    else if (atoi(page[1].c_str()) == 403)
-    {
-        if (this->pages->path_forbidden.length() == 0)
-            this->pages->path_forbidden = page[2];
-        else
-            throw parseError("Error Pages: status code page 403 is duplicated");
 
-    }
-    else if (atoi(page[1].c_str()) == 500)
-    {
-        if (this->pages->path_internal_error.length() == 0)
-            this->pages->path_internal_error = page[2];
-        else
-            throw parseError("Error Pages: status code page 500 is duplicated");
-    }
-    else
-        throw parseError("Error Pages: invalid status code");
-}
-
-Pages * Http::getErrorPages()
-{
-    return (this->pages);
-}
 
 std::vector<Server *> Http::getServers()
 {
@@ -195,7 +179,7 @@ bool Http::getSendFilestatus()
 Server::Server()
 {
     this->maxBodySize = 0;
-    this->port = 80;
+    this->port = 8080;
     this->host = "127.0.0.1";
     this->serverName = "";
     // std::cout << "Called the default constructor of server" << std::endl;
@@ -226,8 +210,6 @@ void    Server::printServer()
     std::cout << "SERVER NAME: " << this->serverName << std::endl;
     std::cout << "ROOT: " << this->root << std::endl;
     std::cout << "MAX BODY SIZE: " << this->maxBodySize << std::endl;
-    std::cout << "ERROR LOG: " << this->errorLog << std::endl;
-    std::cout << "ACCESS LOG: " << this->accessLog << std::endl; 
 }
 
 Server * Server::parseServer(stringContainer configFile, int index)
@@ -237,6 +219,7 @@ Server * Server::parseServer(stringContainer configFile, int index)
     Location location;
     stringContainer line;
 
+    server->pages = new Pages();
     size = configFile.size();
     while (index < size)
     {
@@ -258,17 +241,20 @@ Server * Server::parseServer(stringContainer configFile, int index)
 void    Server::parseDirective(stringContainer config, Server *instance, int line)
 {
     stringContainer str;
-    int size;
 
     str = split(config[line]);
-    size = str.size();
-
     validateDirective(str, SERVER);
-    str[size - 1][str[size - 1].length() - 1] != ';' ? str.pop_back() : str[size - 1].pop_back();
+    str = stripSemiColon(str);
+
     if (str.size() == 2 && str[0] == "root")
     {
         checkPath(str[1], CHECK_MODE);
         instance->root = str[1];
+    }
+    else if (str.size() == 3 && str[0] == "error_page")
+    {
+        checkPath(str[2], CHECK_MODE);
+        instance->parseErrorPages(str);
     }
     else if (str.size() == 2 && str[0] == "server_name")
         instance->serverName = str[1];
@@ -276,34 +262,61 @@ void    Server::parseDirective(stringContainer config, Server *instance, int lin
         instance->maxBodySize = atoi(str[1].c_str());
     else if ((str[0] == "listen" && str.size() == 3) || (str[0] == "listen" && str.size() == 2))
     {
-        if (str.size() == 2 && is_number(str[1]))
-            instance->port = atoi(str[1].c_str());
-        else if (str.size() == 3 && is_number(str[2]))
-            instance->port = atoi(str[2].c_str());
-        else
+        if (str.size() == 2)
         {
-            if (str[1] != "localhost" && !validate_host(str[1]))
+            if (!validateHost(str[1]) && isNumber(str[1]))
+                instance->port = atoi(str[1].c_str());
+            else
+                instance->host = strcmp(str[1].c_str(), "localhost") ? str[1] : "127.0.0.1";
+        }
+        if (str.size() == 3 && isNumber(str[2]))
+            instance->port = atoi(str[2].c_str());
+        if (str.size() == 3)
+        {
+            if (str[1] != "localhost" && !validateHost(str[1]))
                 throw parseError("Syntax Error: invalid ip address format: " + str[1]);
             instance->port = 80;
             instance->host = strcmp(str[1].c_str(), "localhost") ? str[1] : "127.0.0.1";
+            std::cout << str[1] << std::endl;
         }
+        if (instance->port > PORT_MAX)
+            throw parseError("Config Error: invalid port number out of range");
     }
-    else if (str.size() == 2 && str[0] == "error_log")
+    else
+        throw parseError("Syntax Error: invalid directive format: Server");
+}
+
+void    Server::parseErrorPages(stringContainer page)
+{
+    if (atoi(page[1].c_str()) == 404)
     {
-        checkPath(str[1], CREATE_MODE);
-        if (!instance->errorLog.empty())
-            throw parseError("Config Error: Error log path already set");
-        instance->errorLog = str[1];
+        if (this->pages->path_not_found.length() == 0)
+            this->pages->path_not_found = page[2];
+        else
+            throw parseError("Error Pages: status code page 404 is duplicated");
     }
-    else if (str.size() == 2 && str[0] == "access_log")
+    else if (atoi(page[1].c_str()) == 403)
     {
-        checkPath(str[1], CREATE_MODE);
-        if (!instance->accessLog.empty())
-            throw parseError("Config Error: Access log path already set");
-        instance->accessLog = str[1];
+        if (this->pages->path_forbidden.length() == 0)
+            this->pages->path_forbidden = page[2];
+        else
+            throw parseError("Error Pages: status code page 403 is duplicated");
+
     }
-    else 
-        throw parseError("Syntax Error: Invalid Directive");
+    else if (atoi(page[1].c_str()) == 500)
+    {
+        if (this->pages->path_internal_error.length() == 0)
+            this->pages->path_internal_error = page[2];
+        else
+            throw parseError("Error Pages: status code page 500 is duplicated");
+    }
+    else
+        throw parseError("Error Pages: invalid status code");
+}
+
+Pages * Server::getErrorPages()
+{
+    return (this->pages);
 }
 
 std::vector<Location *> Server::getLocations()
@@ -326,17 +339,17 @@ std::string Server::getServerName()
     return (this->serverName);
 }
 
-std::string Server::getAccessLog()
+std::string Http::getAccessLog()
 {
     return (this->accessLog);
 }
 
-std::string Server::getErrorLog()
+std::string Http::getErrorLog()
 {
     return (this->errorLog);
 }
 
-short Server::getPort()
+unsigned int Server::getPort()
 {
     return (this->port);
 }
@@ -350,6 +363,7 @@ Location::Location()
     this->cgiDefault = "";
     this->sendFile = false;
     this->cgiEnable = false;
+    this->listDirectory = true;
 }
 
 Location::~Location()
@@ -362,6 +376,7 @@ Location::Location(std::string path)
 {
     // std::cout << "Setting the location path" << std::endl;
     this->endPoint = path;
+    this->redirectLink = "";
 }
 
 void    Location::printLocation()
@@ -407,18 +422,28 @@ Location * Location::parseLocation(stringContainer configFile, std::string path,
 
 void    Location::parseDirective(stringContainer line, Location *instance)
 {
-    int size;
-
-    size = line.size();
     validateDirective(line, LOCATION);
-    line[size - 1][line[size - 1].length() - 1] != ';' ? line.pop_back() : line[size - 1].pop_back();
+    line = stripSemiColon(line);
     if (line[0] == "send_file" && line.size() == 2)
     {
         if (strcmp(line[1].c_str(), "on") == 0)
             instance->sendFile = true;
         else if (strcmp(line[1].c_str(), "off") == 0)
             instance->sendFile = false;
+        else
+            throw parseError("Syntax Error: send_file [off|on]");
     }
+    else if (line[0] == "directory_listing" && line.size() == 2)
+    {
+        if (strcmp(line[1].c_str(), "on") == 0)
+            instance->listDirectory = true;
+        else if (strcmp(line[1].c_str(), "off") == 0)
+            instance->listDirectory = false;
+        else
+            throw parseError("Syntax Error: directory_listing [off|on]");
+    }
+    else if (line[0] == "allowed_methods" && line.size() >= 2)
+        this->parseMethods(line);
     else if (line[0] == "root" && line.size() == 2)
     {
         checkPath(line[1], CHECK_MODE);
@@ -429,12 +454,16 @@ void    Location::parseDirective(stringContainer line, Location *instance)
         checkPath(line[1], CHECK_MODE);
         instance->uploadPath = line[1];
     }
+    else if (line[0] == "redirect" && line.size() == 2)
+        instance->redirectLink = line[1];
     else if (line[0] == "cgi_enable" && line.size() == 2)
     {
         if (strcmp(line[1].c_str(), "on") == 0)
             instance->cgiEnable = true;
         else if (strcmp(line[1].c_str(), "off") == 0)
             instance->cgiEnable = false;
+        else
+            throw parseError("Syntax Error: cgi_enable [off|on]");
     }
     else if (line[0] == "cgi_default" && line.size() == 2)
     {
@@ -443,8 +472,32 @@ void    Location::parseDirective(stringContainer line, Location *instance)
     }
     else if (line[0] == "cgi_extension" && line.size() == 2)
         instance->cgiExtension = line[1];
-    else 
-        throw parseError("Syntax Error: Invalid directive");
+    else
+    {
+        printContainer(line);
+        throw parseError("Syntax Error: invalid directive format: Location: " + this->endPoint);
+    }
+}
+
+void    Location::parseMethods(stringContainer methods)
+{
+    unsigned int i;
+    const char * allowedMethods[] = { "POST", "GET", "DELETE", NULL };
+
+    i = 1;
+    while (i < methods.size())
+    {
+        if (keyExistsInTable(methods[i].c_str(), allowedMethods))
+            this->methods.push_back(methods[i].c_str());
+        else
+            throw parseError("Syntax Error: invalid Method: " + methods[i]);
+        i++;
+    }
+}
+
+stringContainer Location::getMethods()
+{
+    return (this->methods);
 }
 
 std::string Location::getEndPoint()
@@ -472,6 +525,11 @@ std::string Location::getCGIExtension()
     return (this->cgiExtension);
 }
 
+std::string Location::getRedirectLink()
+{
+    return (this->redirectLink);
+}
+
 bool Location::getUploadStatus()
 {
     return (this->sendFile);
@@ -480,4 +538,9 @@ bool Location::getUploadStatus()
 bool Location::getCGIStatus()
 {
     return (this->cgiEnable);
+}
+
+bool Location::getListingStatus()
+{
+    return (this->listDirectory);
 }

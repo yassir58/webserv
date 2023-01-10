@@ -1,7 +1,7 @@
 #include "config.hpp"
 #include "utils.hpp"
 
-void	validate_extension(const char *path, const char *ext)
+void	validateExtension(const char *path, const char *ext)
 {
 	int size;
 
@@ -12,7 +12,7 @@ void	validate_extension(const char *path, const char *ext)
 
 }
 
-bool    validate_host(std::string ipAddress)
+bool    validateHost(std::string ipAddress)
 {
     unsigned int index;
     unsigned int size;
@@ -25,7 +25,7 @@ bool    validate_host(std::string ipAddress)
     size = ip.size();
     while (index < size)
     {
-        if (!is_number(ip.at(index)) || atoi(ip.at(index).c_str()) > 255)
+        if (!isNumber(ip.at(index)) || atoi(ip.at(index).c_str()) > 255)
             return (false);
         index++;
     }
@@ -41,7 +41,7 @@ void    printContainer(stringContainer table)
     std::cout << "------------------------------" << std::endl;
     while (i < table.size())
     {
-        std::cout << table.at(i) << std::endl;
+        std::cout << "[" << table.at(i) << "]" << std::endl;
         i++;
     }
 }
@@ -92,12 +92,11 @@ stringContainer splitSeparator(std::string line, char c)
     return (result);
 }
 
-void    validate_file_content(std::ifstream & configFile)
+void    checkFileEmpty(std::ifstream & configFile)
 {
     //.. Chechking that the file is not empty
     if (configFile.peek() == std::ifstream::traits_type::eof())
         throw parseError("Config Error: config file is empty");
-
 }
 
 std::string getLine(std::string &line) {
@@ -121,23 +120,23 @@ stringContainer   read_config_file(std::string & path)
 
     ext = ".conf";
     //.. Openning the the config file
-    validate_extension(path.c_str(), ext.c_str());
+    validateExtension(path.c_str(), ext.c_str());
     config.open(path);
     //.. Checking if its open
     if (config.is_open())
     {
-        validate_file_content(config);
+        checkFileEmpty(config);
         while (getline(config, line))
         {
             parsedLine = getLine(line);
-            if (!parsedLine.empty())
+            if (!parsedLine.empty() && !checkSpaces(parsedLine))
                 configFile.push_back(parsedLine);
         }
     }
     return (configFile);
 }
 
-void    check_brackets(stringContainer configContent)
+void    checkBrackets(stringContainer configContent)
 {
     std::string line;
     unsigned int bracketsLevel;
@@ -167,17 +166,17 @@ bool checkValidDirectives(std::string line, int context)
     }
     else if (context == HTTP)
     {
-        if (!checkDirectiveKey(line, httpContext))
+        if (!keyExistsInTable(line, httpContext))
             return (false);
     }
     else if (context == SERVER)
     {
-        if (!checkDirectiveKey(line, serverContext))
+        if (!keyExistsInTable(line, serverContext))
             return (false);
     }
     else if (context == LOCATION)
     {
-        if (!checkDirectiveKey(line, locationContext))
+        if (!keyExistsInTable(line, locationContext))
             return (false);
     }
     return (true);
@@ -188,6 +187,8 @@ void    validateDirective(stringContainer & line, int context)
     std::string directiveEnd;
 
     directiveEnd = line[line.size() - 1];
+    if (line.size() < 2 && (line[0] == "server" || line[0] == "http" || line[0] == "location"))
+        throw parseError("Syntax Error: newline detected after context name: " + line[0]);
     if (line.size() < 2)
         throw parseError("Syntax Error: Directive must be listed as key : value pattern");
     if (strcmp(directiveEnd.c_str(), ";") && directiveEnd[directiveEnd.length() - 1] != ';')
@@ -196,20 +197,19 @@ void    validateDirective(stringContainer & line, int context)
         throw parseError("Config Error: Invalid directive name: " + line[0]);
 }
 
-bool checkDirectiveKey(std::string directiveName,const char **directivesTable)
+bool keyExistsInTable(std::string key,const char **table)
 {
     unsigned int i;
 
     i = 0;
-    while (directivesTable[i])
+    while (table[i])
     {
-        if (strcmp(directiveName.c_str(), directivesTable[i]) == 0)
+        if (strcmp(key.c_str(), table[i]) == 0)
             return (true);
         i++;
     }  
     return (false);
 }
-
 
 void checkPath(std::string path, int mode)
 {
@@ -255,10 +255,45 @@ int getClosingIndex(stringContainer fileContent, unsigned int position)
     return (0);
 }
 
-
-bool is_number(const std::string& s)
+bool isNumber(const std::string& s)
 {
     std::string::const_iterator it = s.begin();
     while (it != s.end() && std::isdigit(*it)) ++it;
     return !s.empty() && it == s.end();
+}
+
+stringContainer   stripSemiColon(stringContainer str)
+{
+    if ((str[str.size() - 1][str[str.size() - 1].length() - 1]) == ';' && str[str.size() - 1].length() > 1)
+    {
+        str[str.size() - 1].pop_back();
+        if ((str[str.size() - 1][str[str.size() - 1].length() - 1]) == ';')
+            throw parseError("Syntax Error: Duplicated semi-colons");
+    }
+    else
+        str.pop_back();
+    return (str);
+}
+
+bool checkSpaces(std::string string)
+{
+    unsigned int i;
+
+    i = 0;
+    while (i < string.length())
+    {
+        if (!isspace(string[i]))
+            return (false);
+        i++;
+    }
+    return (true);
+}
+
+std::string itoa(int nb)
+{
+	std::string s;
+	std::stringstream out;
+	out << nb;
+	s = out.str();
+	return (s);
 }

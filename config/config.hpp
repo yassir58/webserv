@@ -2,13 +2,14 @@
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
 #include <iostream>
-#include <regex>
+// #include <regex>
 #include <fstream>
 #include <istream>
 #include <vector>
 #include <algorithm>
 #include <exception>
 #include <sys/stat.h>
+#include <cstring>
 
 #define MAIN 0
 #define HTTP 1
@@ -18,6 +19,8 @@
 #define CREATE_MODE 1
 #define DIR_MODE 2
 #define CHECK_MODE 0
+
+#define PORT_MAX 65535
 
 typedef std::vector<std::string> stringContainer;
 
@@ -35,8 +38,11 @@ class Location
         std::string uploadPath;
         std::string cgiDefault;
         std::string cgiExtension;
+        std::string redirectLink;
+        stringContainer methods;
         bool cgiEnable;
         bool sendFile;
+        bool listDirectory;
     public:
         // Getters
         std::string getEndPoint();
@@ -44,9 +50,13 @@ class Location
         std::string getUploadPath();
         std::string getCGIDefault();
         std::string getCGIExtension();
+        std::string getRedirectLink();
         bool getCGIStatus();
         bool getUploadStatus();
+        bool getListingStatus();
 
+        stringContainer getMethods();
+        void    parseMethods(stringContainer methods);
         Location * parseLocation(stringContainer configFile, std::string path, int index);
         void    parseDirective(stringContainer line, Location *instance);
         void    printLocation();
@@ -58,29 +68,29 @@ class Location
 
 class Server {
     private:
-        short port;
+        Pages *pages;
+        unsigned int port;
         unsigned int maxBodySize;
         std::string host;
         std::string root;
         std::string serverName;
-        std::string accessLog;
-        std::string errorLog;
         std::vector<Location *> locations;
     public:
         // Getters
-        short getPort();
+        unsigned int getPort();
         unsigned int getMaxBodySize();
         std::string getHost();
         std::string getRoot();
         std::string getServerName();
-        std::string getAccessLog();
-        std::string getErrorLog();
+        Pages   *getErrorPages();
+
         
         std::vector<Location *>    getLocations();
         Server *  parseServer(stringContainer configFile, int line);
         void    printServer();
         void    printLocations();
         void    parseDirective(stringContainer config, Server *instance, int line);
+        void    parseErrorPages(stringContainer page);
         // Constructors
         Server();
         ~Server();
@@ -88,16 +98,17 @@ class Server {
 
 class Http {
     private:
-        Pages *pages;
         bool sendFile;
+        std::string accessLog;
+        std::string errorLog;
         std::vector<Server *> servers;
     public:
         void    parseDirective(stringContainer config, int line);
         void    parseHttpContext(stringContainer & configFile, int line);
-        void    parseErrorPages(stringContainer page);
         void    printServers();
         bool    getSendFilestatus();
-        Pages   *getErrorPages();
+        std::string getAccessLog();
+        std::string getErrorLog();
         std::vector<Server *> getServers();
         Http();
         ~Http();
@@ -112,6 +123,7 @@ class Config {
         void    printConfig();
         void    parseDirective(stringContainer config, int line);
         Http    *getHttpContext();
+        std::string getPidPath();
     private:
         stringContainer configContent;
         std::string pid_path;
@@ -127,20 +139,23 @@ class parseError: public std::runtime_error
         {}
 };
 
-void	validate_extension(const char *path, char *ext);
-void    validate_file_content(std::ifstream & configFile);
+void	validateExtension(const char *path, char *ext);
+void    checkFileEmpty(std::ifstream & configFile);
 std::string getLine(std::string &line);
 stringContainer   read_config_file(std::string & path);
-void    check_brackets(stringContainer configContent);
+void    checkBrackets(stringContainer configContent);
 stringContainer split(std::string line);
 stringContainer splitSeparator(std::string line, char c);
 void    validateDirective(stringContainer & line, int context);
-bool checkDirectiveKey(std::string directiveName,const char **directivesTable);
+bool keyExistsInTable(std::string key, const char **table);
 bool checkValidDirectives(std::string line, int context);
 void checkPath(std::string path, int mode);
-bool is_number(const std::string & s);
+bool isNumber(const std::string & s);
 int getClosingIndex(stringContainer fileContent, unsigned int position);
 void    printContainer(stringContainer table);
-bool    validate_host(std::string ipAddress);
+bool    validateHost(std::string ipAddress);
+bool checkSpaces(std::string string);
+stringContainer   stripSemiColon(stringContainer str);
+std::string int2assci(int nb);
 
-#endif
+#endif 
