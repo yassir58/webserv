@@ -289,11 +289,11 @@ bool checkSpaces(std::string string)
     return (true);
 }
 
-std::string itoa(int nb)
+std::string int2assci(int nb)
 {
-	std::string s;
-	std::stringstream out;
-	out << nb;
-	s = out.str();
-	return (s);
+	std::stringstream res;
+	std::string str;
+	res << nb;
+	str = res.str();
+	return (str);
 }
