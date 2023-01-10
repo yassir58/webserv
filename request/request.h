@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/14 16:01:13 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/09 19:01:38 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/10 19:26:45 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,9 @@ typedef struct start
 	std::string httpVersion;
 	std::string	requestTarget;
 	std::string	hostName;
+	std::string IpAdress;
+	std::string Port;
+	bool		Host;
 } t_start;
 
 typedef struct headerField
