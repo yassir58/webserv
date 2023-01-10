@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/09 18:55:54 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/10 19:28:48 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,11 @@ Request::Request(std::string fileString)
 	{
 		if (!parseHeaderField(headerFields, line))
 			statusCode = BAD_REQUEST;
+	}
+	if (startLine.Host == false)
+	{
+		statusCode = BAD_REQUEST;
+		return ;
 	}
 	if (startLine.method == "POST")
 	{
@@ -126,6 +131,7 @@ int	Request::treatAbsoluteURI()
 		startLine.hostName = startLine.requestTarget.substr(0, pos);
 		startLine.requestTarget.erase(0, pos);
 		startLine.requestTarget = startLine.requestTarget.substr(0, std::string::npos);
+		parseHostName(startLine.hostName);
 		return (1);
 	}
 	return (0);
@@ -191,6 +197,19 @@ int Request::checkVersion()
 	return (1);
 }
 
+void	Request::parseHostName(std::string &hostNameValue)
+{
+	startLine.Host = true;
+	if (isdigit (hostNameValue[0]))
+	{
+		size_t pos = hostNameValue.find(':', 0);
+		startLine.IpAdress = hostNameValue.substr(0, pos);
+		startLine.Port = hostNameValue.substr(pos + 1, std::string::npos);
+	}
+	else
+		startLine.hostName = hostNameValue;
+}
+
 int Request::parseHeaderField(headerFieldList &list, std::string line)
 {
 	headerField	field;
@@ -203,6 +222,8 @@ int Request::parseHeaderField(headerFieldList &list, std::string line)
 	field.value = line.substr(start, std::string::npos);
 	if (field.value.empty() || field.key.empty())
 		return (0);
+	if (field.key == "Host" && startLine.hostName.empty())
+		parseHostName(field.value);
 	list.push_back(field);
 	return (1);
 }
