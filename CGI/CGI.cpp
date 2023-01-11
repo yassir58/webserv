@@ -52,23 +52,28 @@ char ** CGIHandler::convertEnvList()
     return (table);
 }
 
+/* @details: this function is still in testing mode.*/
 std::string CGIHandler::getScriptName()
 {
     int i = 0;
     stringContainer container;
+    std::string extension = "php";
+
     std::string urlExample = "http://localhost/php-cgi/index.php/tv/home?season=5&episode=62";
     container = splitSeparator(urlExample, '/');
     while (i < container.size())
     {
-        std::cout << container[i] << std::endl;
+        if (!strcmp(container[i].c_str() + container[i].length() - 4, ("." + extension).c_str()))
+            return (container[i]);
         i++;
     }
+    return (std::string());
 }
 
 //Query Example: http://localhost/php-cgi/index.php/tv/home?season=5&episode=62
 
 // Host: localhost
 // Path info: /tv/home
-// Query string: var1=value1&var2=with%20percent%20encoding
+// Query string: season=5&episode=62
 // Script name: /php-cgi/index.php
 // Request URI: /php-cgi/index.php/tv/home?season=5&episode=62
