@@ -21,13 +21,14 @@
 #include <sys/types.h>
 #include <netdb.h>
 #include "../config/config.hpp"
+#include "../request/Request.hpp"
 #include <sstream>
 #include <cstring>
 
 
 // MACROS
 #define PORT 8080
-#define HEADER_MAX 8000
+#define BUFFER_MAX 8000
 #define MAX_CONNECT 1024
 #define POLL_TIMEOUT 5000
 #define BUFFER_SIZE 10
@@ -182,23 +183,30 @@ public:
 
 class Client {
     private:
+        Request *request;
         int clientSocket;
         std::vector <int> resolversList;
         int serverHandlerIndx;
         struct epoll_event event;
-        char buffer[HEADER_MAX];
+        char buffer[BUFFER_MAX];
+        int dataRecievedLength;
+        struct addrinfo *requestSourceAddr;
+        int clientPort;
+        std::string clientIp;
+
     public:
+        Client ();
+        Client (int fd);
         int getClientSocket (void) const;
         int getServerHandlerIndx (void) const;
         char *getBuffer (void) ;
         void emptyBuffer (void);
+        void recieveData (void);
+        void sendData (void);
         std::vector <int> getResolversList (void) const;
-
+        void generateResolversList (serverContainer serverList);
 };
 
-class request
-{
-};
 
 void handleError(int err);
 void initServers(ServerInstance *serv_list);
