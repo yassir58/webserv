@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:36 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/11 12:14:37 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/11 12:24:30 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,9 @@
 # define NOT_IMPLENTED 501
 # define SERVER_ERROR  500
 # define HTTP_VERSION  505
+
+typedef std::vector<std::string> stringContainer;
+typedef std::list<headerField>	headerFieldList;
 
 class Request
 {
@@ -54,10 +57,13 @@ class Request
 		void	printResult(void); // print the result produced
 		t_start &getStartLine(void); // geter of the startLine
 		headerFieldList &getHeaderField(void); // geter of the headerFields linked list
-		std::list<headerField> &getHeaderField(void); // geter of the headerFields linked list
 		void	setFileString(std::string &file); // seter of the file string
+		void	setStatusCode(int newStatusCode); // seter of the status code
+		std::string		getErrorCode(void); // geterof the error code as string (i think I should make one that return the int repre)
 		std::string		getMethod(void); // geter of the method
 		std::string		getHTTPVersion(void); // geter of the HTTP version
 		std::string		getRequestTarget(void); // geter of the request target
+		std::string		getErrorCode(void);
+		int 			getStatusCode(void);
 };
 #endif
