@@ -1,5 +1,5 @@
 #include "ServerInstance.hpp"
-
+#include "../request/Request.hpp"
 
 const std::string currentDateTime() {
     time_t     now = time(0);
@@ -52,4 +52,41 @@ void handleError (int err)
             break;
     }
     throw Connection_error (strerror (errno), "uknown error");
+}
+
+
+Client::Client ()
+{
+    clientSocket = 0;
+}
+
+Client::Client (int fd)
+{
+    clientSocket = fd;
+}
+
+void Client::recieveData (void)
+{
+    dataRecievedLength = recv (clientSocket, buffer, BUFFER_MAX, 0);
+    if (dataRecievedLength == 0)
+        std::cout << "remote peer closed connection" << std::endl;
+    else if (dataRecievedLength == -1)
+        throw Connection_error (strerror (errno), "recv");
+    else
+    {
+        std::cout << dataRecievedLength << "\e[0;32m byte recieved\e[0m" << std::endl;
+        try
+        {
+            request = new Request (buffer);
+            //request->printResult ();
+            std::cout << "Host Name" << request->getStartLine ().hostName << std::endl;
+            std::cout << "Ip Address" << request->getStartLine ().IpAdress << std::endl;
+            std::cout << "Port Number" << request->getStartLine ().Port << std::endl;
+        }
+        catch (std::exception &exc)
+        {
+            std::cout << "\e[0;31m" << exc.what () << "\e[0m" << std::endl;
+        }
+        //delete request;
+    }
 }

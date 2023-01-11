@@ -1,5 +1,7 @@
 #include "ServerInstance.hpp"
 #include "../config/config.hpp"
+#include "../request/request.h"
+#include "../request/Request.hpp"
 
 HttpApplication::HttpApplication ()
 {
@@ -115,17 +117,11 @@ void HttpApplication::handleNewConnection (int serverFd)
 
 void HttpApplication::handleHttpRequest (int fd)
 {
-    char buffer[HEADER_MAX];
-    returnValue = recv (fd, buffer, HEADER_MAX, 0);
-    if (returnValue == 0)
-        std::cout << "remote peer closed connection" << std::endl;
-    else if (returnValue == -1)
-        handleError  (READERR);
-    else
-    {
-        std::cout << "\e[0;32m recieved data : \e[0m" << std::endl;
-        std::cout << buffer << std::endl;
-    }
+    Client clientInfo(fd);
+
+
+    clientInfo.emptyBuffer ();
+    clientInfo.recieveData ();
     // for testing and observability
     returnValue = send (fd, HTTP_RESPONSE_EXAMPLE, strlen (HTTP_RESPONSE_EXAMPLE), 0);
     logFile << "\e[0;33mbyte sent : \e[0m" << returnValue << " \e[0;33mexpected : \e[0m" <<  strlen (HTTP_RESPONSE_EXAMPLE) << std::endl;
