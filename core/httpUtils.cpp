@@ -78,10 +78,8 @@ void Client::recieveData (void)
         try
         {
             request = new Request (buffer);
-            //request->printResult ();
-            std::cout << "Host Name" << request->getStartLine ().hostName << std::endl;
-            std::cout << "Ip Address" << request->getStartLine ().IpAdress << std::endl;
-            std::cout << "Port Number" << request->getStartLine ().Port << std::endl;
+
+            // std::cout << "Port Number" << request->getStartLine ().Port << std::endl;
         }
         catch (std::exception &exc)
         {
@@ -89,4 +87,18 @@ void Client::recieveData (void)
         }
         //delete request;
     }
+}
+
+
+int HttpApplication::isServer (int fd)
+{
+	std::vector <int>::iterator it;
+
+
+	for (it = serverFds.begin(); it != serverFds.end (); it++)
+	{
+		if (*it == fd)
+			return (TRUE);
+	}
+	return (FALSE);
 }

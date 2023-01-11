@@ -146,7 +146,7 @@ void ServerInstance::setService (int port)
 
 void ServerInstance::setService (std::string service)
 {
-    service = service;
+    this->service = service;
 }
 
 

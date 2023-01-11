@@ -19,16 +19,6 @@ int main (int argc , char *argv[])
     
     try
     {
-        // app.filterServerBlocks ();
-        // app.setupAppResources ();
-        // app.connectServers ();
-        // serverContainer servList = app.getServerList ();
-        // for (serverContainer::iterator it = servList.begin (); it < servList.end (); it++)
-        // {
-        //         std::cout << "Host : " << (*it)->getHostName () << std::endl;
-        //         std::cout << "Port : " << (*it)->getServerPort () << std::endl;
-        // }
-        // while (1);
         app.setupAppResources ();
         app.filterServerBlocks ();
         app.connectServers ();

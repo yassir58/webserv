@@ -11,7 +11,6 @@
 #include <iostream>
 #include <sys/select.h>
 #include <poll.h>
-#include <sys/epoll.h>
 #include <fcntl.h>
 #include <fstream>
 #include <vector>
@@ -24,7 +23,9 @@
 #include "../request/Request.hpp"
 #include <sstream>
 #include <cstring>
-
+ #include <sys/types.h>
+#include <sys/event.h>
+#include <sys/time.h>
 
 // MACROS
 #define PORT 8080
@@ -134,7 +135,9 @@ class HttpApplication
 {
     private:
         int epollInstance;
-        struct epoll_event readySockets[MAX_CONNECT];
+		int queueIdentifier;
+        struct kevent events[MAX_CONNECT];
+		int eventIndx;
         int nfds;
         int errValue;
         int serverCount;
@@ -177,6 +180,7 @@ public:
     void filterServerBlocks (void);
     int checkServerExistance (Server *block);
     ServerInstance *findServerByFd (int serverFd);
+	int isServer (int fd);
 
 };
 
@@ -187,7 +191,6 @@ class Client {
         int clientSocket;
         std::vector <int> resolversList;
         int serverHandlerIndx;
-        struct epoll_event event;
         char buffer[BUFFER_MAX];
         int dataRecievedLength;
         struct addrinfo *requestSourceAddr;

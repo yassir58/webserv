@@ -9,7 +9,7 @@ int ServerInstance::accept_connection (void)
     socklen_t clientLen = sizeof (clientAddr);
 
     new_connection = accept (this->serverSocket, (sockaddr *)&clientAddr, (socklen_t *) &clientLen);
-    if (new_connection == -1 )
+    if (new_connection < 0)
         throw Connection_error (strerror (errno), "accept");
     this->requestCount++;
     return (new_connection);
@@ -26,10 +26,7 @@ unsigned int ServerInstance::getServerPort (void)
     return (this->connectionPort);
 }
 
-void Connection::setFd (int)
-{
-    this->fd = fd ;
-}
+
 
 void Connection::initFdSet (int fd)
 {

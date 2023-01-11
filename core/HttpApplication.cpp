@@ -9,9 +9,8 @@ HttpApplication::HttpApplication ()
     connectionCount = 0;
     logFile.open ("server_log", std::ios_base::app);
     indx = serverCount;
-
+	eventIndx = 0;
 }
-
 
 HttpApplication::~HttpApplication ()
 {
@@ -30,68 +29,71 @@ HttpApplication::HttpApplication (const HttpApplication &copy)
 
 void HttpApplication::connectServers (void)
 {
-    struct epoll_event event;
     serverContainer::iterator bg;
-    int err;
-    
+	int fd;
+	
     for (bg = serverList.begin (); bg != serverList.end (); bg++)
     {
         try
         {
             (*bg)->establish_connection ();
-            event.data.fd = (*bg)->getSocketFd ();
-            event.events = POLLIN | POLLOUT;
-            serverFds.push_back (event.data.fd);
-            err = epoll_ctl (this->epollInstance, EPOLL_CTL_ADD, (*bg)->getSocketFd(), &event);
-            if (err == -1)
-                throw Connection_error (strerror(errno), "epoll_ctl");
-            serverFds.push_back ((*bg)->getSocketFd ());
-            
+			fd = (*bg)->getSocketFd();
+            serverFds.push_back (fd);
+            EV_SET (&events[eventIndx], fd, EVFILT_READ , EV_ADD | EV_CLEAR, 0, 0, 0);
+			errValue = kevent (this->queueIdentifier, events, MAX_CONNECT, NULL, 0, NULL);
+			if (errValue < 0)
+				throw Connection_error (strerror(errno), "kevent");
+			eventIndx++;
         }
         catch(const std::exception& e)
         {
             // remove server from list
             std::cout << "Invalid " << (*bg)->getHostName () << std::endl;
             (*bg)->setStatus (0);
-            // serverList.erase (bg);
+            //serverList.erase (bg);
+			// bg--;
             //std::cerr << e.what() << '\n';
         }
     }
+	
 }
-
-
 
 void HttpApplication::checkForConnection(void)
 {
     int fd;
     std::vector<int>::iterator it;
+	struct kevent resultEvents[MAX_CONNECT];
 
-    nfds = epoll_wait (this->epollInstance, this->readySockets, MAX_CONNECT, -1);
-    if (nfds == -1)
-        throw Connection_error (strerror (errno), "epoll_wait");
+    nfds = kevent(this->queueIdentifier, NULL, 0, resultEvents, MAX_CONNECT, NULL);
+    if (nfds < 0)
+        throw Connection_error (strerror (errno), "kevent");
     else
     {
         for (int i = 0; i < nfds; i++)
         {
-            fd = this->readySockets[i].data.fd;
-            it = std::find (this->serverFds.begin (), this->serverFds.end (), fd);
-            if (it != serverFds.end ())
-                handleNewConnection (this->readySockets[i].data.fd);
-            else
-            {
-                // handle client's socket
-                if (this->readySockets[i].events & POLLOUT)
-                {
-                    handleHttpRequest (this->readySockets[i].data.fd);
-                    errValue  = epoll_ctl (this->epollInstance, EPOLL_CTL_DEL, this->readySockets[i].data.fd,&this->readySockets[i]);
-                    if (errValue == -1)
-                        handleError (POLLERR);
-                    errValue = close (this->readySockets[i].data.fd);
-                    if (errValue == -1)
-                        handleError (CLOSEERR);
-                }
-            }
-
+			if (resultEvents[i].filter == EVFILT_READ || resultEvents[i].filter == EVFILT_WRITE)
+			{
+            	fd = resultEvents[i].ident;
+            	if (isServer(fd) )
+                	handleNewConnection (fd);
+            	else
+            	{
+					std::cout << "test" << std::endl;
+                	// handle client's socket
+                	if (resultEvents[i].filter == EVFILT_WRITE)
+                	{
+                    	handleHttpRequest (fd);
+						EV_SET (&events[i], fd, 0, EV_DELETE, 0, 0, 0);
+						errValue = kevent (this->queueIdentifier, events, MAX_CONNECT, NULL, 0, NULL);
+						if (errValue < 0)
+							throw Connection_error (strerror (errno), "kevent");
+                    	errValue = close (fd);
+                    	if (errValue == -1)
+                        	handleError (CLOSEERR);
+						eventIndx--;
+                	}
+            	}
+			}
         }
     }
 }
@@ -99,21 +101,20 @@ void HttpApplication::checkForConnection(void)
 void HttpApplication::handleNewConnection (int serverFd)
 {
     int clientSocket ;
-    struct epoll_event event;
     ServerInstance *server;
-    
+
     server = findServerByFd (serverFd); 
+	std::cout << "\e[0;31m server " << server->getHostName () << "\e[0m" << std::endl;
     clientSocket = server->accept_connection ();
-    event.data.fd = clientSocket;
-    event.events = POLLIN | POLLOUT;
-    errValue = epoll_ctl(this->epollInstance, EPOLL_CTL_ADD, clientSocket, &event);
-    if (errValue == -1)
-       throw Connection_error (strerror (errno), "epoll_ctl");
+	std::cout << "client fd " << clientSocket << std::endl;
+	EV_SET (&events[eventIndx], clientSocket, EVFILT_READ , EV_ADD | EV_CLEAR , 0, 0, 0);
+	errValue = kevent (this->queueIdentifier, events, MAX_CONNECT, NULL, 0, NULL);
+	if (errValue < 0)
+		throw Connection_error (strerror (errno), "kevent");
     connectionCount++;
-  //  serverLog (server_indx);
+	eventIndx++;
+   	//serverLog (server_indx);
 }
-
-
 
 void HttpApplication::handleHttpRequest (int fd)
 {
@@ -171,8 +172,9 @@ void HttpApplication::printServerInfo (void)
 
 void HttpApplication::setupAppResources (void) 
 {
-    epollInstance = epoll_create (MAX_CONNECT);
-    if (epollInstance == -1)
+    // epollInstance = epoll_create (MAX_CONNECT);
+	queueIdentifier = kqueue ();
+    if (queueIdentifier == -1)
         throw Fatal_error (strerror (errno));
 }
 
@@ -195,10 +197,8 @@ void HttpApplication::filterServerBlocks (void)
             server = new ServerInstance ((*it)->getHost(), (*it)->getPort ());
             serverList.push_back (server);
         }
-    }
-    
+    } 
 }
-
 
 int HttpApplication::checkServerExistance (Server *block)
 {
