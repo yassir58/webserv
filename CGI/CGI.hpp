@@ -26,6 +26,7 @@ class CGIHandler
         std::string         getScriptName();
         std::string         getQuery();
         std::string         getFilePath();
+        std::string         getRequestURI();
         void                createEnvList();
         char **             convertEnvList();
     public:

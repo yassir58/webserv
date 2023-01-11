@@ -73,14 +73,23 @@ std::string CGIHandler::getScriptName()
 std::string CGIHandler::getQuery()
 {
     std::string urlExample = "http://localhost/php-cgi/index.php/tv/home?season=5&episode=62";
-
     return (splitSeparator(urlExample, '?')[1]);
 }
+
+std::string CGIHandler::getFilePath()
+{
+    std::string scriptName = "index.php";
+    std::string urlExample = "http://localhost/php-cgi/index.php/tv/home?season=5&episode=62";
+    std::string queryStrippedURL = splitSeparator(urlExample, '?')[0];
+    std::string filePath = queryStrippedURL.erase(0, queryStrippedURL.find(scriptName) + scriptName.length());
+    return (filePath);
+}
+
 
 //Query Example: http://localhost/php-cgi/index.php/tv/home?season=5&episode=62
 
 // Host: localhost
 // Path info: /tv/home
 // Query string: season=5&episode=62
-// Script name: /php-cgi/index.php
+// Script name: index.php
 // Request URI: /php-cgi/index.php/tv/home?season=5&episode=62
