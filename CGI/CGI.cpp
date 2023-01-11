@@ -70,6 +70,13 @@ std::string CGIHandler::getScriptName()
     return (std::string());
 }
 
+std::string CGIHandler::getQuery()
+{
+    std::string urlExample = "http://localhost/php-cgi/index.php/tv/home?season=5&episode=62";
+
+    return (splitSeparator(urlExample, '?')[1]);
+}
+
 //Query Example: http://localhost/php-cgi/index.php/tv/home?season=5&episode=62
 
 // Host: localhost
