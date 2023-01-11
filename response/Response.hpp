@@ -38,8 +38,13 @@ typedef	struct status
 		Request			*request; // a pointer on the request that have been parsed by the all mighty ma3ert
 		t_status		status[11]; // table of the available status
 		int				statusIndex; // the index of the appropriate code response in the table
+	public:
+		stringContainer	responseToSend; // public a attribute because it meant to be send
+		Response(Request &request, std::string &responseBody); // param constractor first argument is the request and second is the response that should be included the response
+		stringContainer generateHeaderFields(std::string &responseBody); // generate the necessary header fields
+		std::string generateStatusLine(); // generate the status line
 		void	setRequest(Request *request); // seter of the request(look at the private attribute)
-//	~Response(); // desectrator not used
+		~Response(); // desectrator not used
 		int		getStatusCode(void); // return the index of the status code
 };
 

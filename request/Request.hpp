@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:36 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/10 19:23:44 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/11 12:18:04 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,9 +60,10 @@ class Request
 		void	setFileString(std::string &file); // seter of the file string
 		void	setStatusCode(int newStatusCode); // seter of the status code
 		std::string		getErrorCode(void); // geterof the error code as string (i think I should make one that return the int repre)
-		int				getStatusCode(void);
 		std::string		getMethod(void); // geter of the method
 		std::string		getHTTPVersion(void); // geter of the HTTP version
 		std::string		getRequestTarget(void); // geter of the request target
+		std::string		getErrorCode(void);
+		int 			getStatusCode(void);
 };
 #endif
