@@ -1,5 +1,7 @@
 #include "ServerInstance.hpp"
 #include "../config/config.hpp"
+#include "../request/request.h"
+#include "../request/Request.hpp"
 
 int main (int argc , char *argv[])
 {

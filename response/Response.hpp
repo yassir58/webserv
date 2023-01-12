@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 14:44:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/11 14:46:28 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/12 12:12:27 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,14 +23,17 @@
 
 typedef std::vector<std::string> stringContainer;
 
+
 typedef	struct status
 {
 	int			code; // status code in the numeric form
 	std::string	status; // status code in the character form
 } t_status;
 
-class Response
+typedef	struct status
 {
+	int			code; // status code in the numeric form
+	std::string	status; // status code in the character form
 	private:
 		Request			*request; // a pointer on the request that have been parsed by the all mighty ma3ert
 		t_status		status[11]; // table of the available status
