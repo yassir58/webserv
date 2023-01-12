@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
+/*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:36 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/11 12:24:30 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/12 15:58:28 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,7 +63,7 @@ class Request
 		std::string		getMethod(void); // geter of the method
 		std::string		getHTTPVersion(void); // geter of the HTTP version
 		std::string		getRequestTarget(void); // geter of the request target
-		std::string		getErrorCode(void);
+		// std::string		getErrorCode(void);
 		int 			getStatusCode(void);
 };
 #endif
