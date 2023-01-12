@@ -26,6 +26,7 @@
  #include <sys/types.h>
 #include <sys/event.h>
 #include <sys/time.h>
+#include <sys/select.h>
 
 // MACROS
 #define PORT 8080
@@ -136,7 +137,6 @@ class HttpApplication
     private:
         int epollInstance;
 		int queueIdentifier;
-        struct kevent events[MAX_CONNECT];
 		int eventIndx;
         int nfds;
         int errValue;

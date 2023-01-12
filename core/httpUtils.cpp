@@ -78,7 +78,8 @@ void Client::recieveData (void)
         try
         {
             request = new Request (buffer);
-
+			request->printResult ();	
+			delete request;
             // std::cout << "Port Number" << request->getStartLine ().Port << std::endl;
         }
         catch (std::exception &exc)
