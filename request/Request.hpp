@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:36 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/11 12:18:04 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/11 14:36:37 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,5 +62,6 @@ class Request
 		std::string		getRequestTarget(void); // geter of the request target
 		std::string		getErrorCode(void);
 		int 			getStatusCode(void);
+		stringContainer getBody(void);
 };
 #endif

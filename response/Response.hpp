@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 14:44:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/11 12:16:39 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/11 14:46:28 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,9 +35,11 @@ class Response
 		Request			*request; // a pointer on the request that have been parsed by the all mighty ma3ert
 		t_status		status[11]; // table of the available status
 		int				statusIndex; // the index of the appropriate code response in the table
+		std::string		responseBody;
 	public:
 		stringContainer	responseToSend; // public a attribute because it meant to be send
-		Response(Request &request, std::string &responseBody); // param constractor first argument is the request and second is the response that should be included the response
+		int				applyMethod();
+		Response(Request &request); // param constractor first argument is the request and second is the response that should be included the response
 		stringContainer generateHeaderFields(std::string &responseBody); // generate the necessary header fields
 		std::string generateStatusLine(); // generate the status line
 		void	setRequest(Request *request); // seter of the request(look at the private attribute)

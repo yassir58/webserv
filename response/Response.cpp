@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/09 14:07:08 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/11 15:00:40 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,10 @@
 ** ------------------------------- CONSTRUCTOR --------------------------------
 */
 
-Response::Response(Request &request, std::string &responseBody)
+Response::Response(Request &request)
 {
 	setRequest(&request);
+	applyMethod();
 	statusIndex = getStatusCode();
 	responseToSend.push_back(generateStatusLine());
 	stringContainer headerFields = generateHeaderFields(responseBody);
@@ -97,6 +98,51 @@ stringContainer Response::generateHeaderFields(std::string &responseBody)
 	std::string Server = "Server: websrv\r\n\r\n";
 	toReturn.push_back(Server);
 	return (toReturn);
+}
+
+int	Response::applyMethod(void)
+{
+	std::string method = request->getMethod();
+	int			statusCode = request->getStatusCode();
+	if (method == "GET" && statusCode == 0)
+	{
+		std::ifstream resource(request->getRequestTarget());
+		if (resource)
+		{
+			std::ostringstream ss;
+			ss << resource.rdbuf();
+			responseBody = ss.str();
+			request->setStatusCode(OK);
+		}
+		else
+			request->setStatusCode(SERVER_ERROR);
+	}
+	else if (method == "POST" && statusCode == 0)
+	{
+		std::ofstream outfile(request->getRequestTarget());
+		if (outfile)
+		{
+			stringContainer::iterator end = request->getBody().end();
+			stringContainer::iterator begin = request->getBody().begin();
+			while (begin != end)
+			{
+				outfile << *begin;
+				++begin;
+			}
+			outfile.close();
+			request->setStatusCode(OK);
+		}
+		else
+			request->setStatusCode(SERVER_ERROR);
+	}
+	else if (method == "DELETE" && statusCode == 0)
+	{
+		if (remove(request->getRequestTarget().c_str()))
+			request->setStatusCode(SERVER_ERROR);
+		else
+			request->setStatusCode(OK);
+	}
+	return (0);
 }
 
 /*

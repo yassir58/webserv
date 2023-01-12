@@ -6,12 +6,13 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/14 16:01:13 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/10 19:26:45 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/11 12:55:25 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 # include <fstream>
+# include <unistd.h>
 # include <list>
 # include <iostream>
 # include <cstring>

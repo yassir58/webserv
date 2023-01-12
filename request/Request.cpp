@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/10 19:28:48 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/11 14:37:16 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,19 +139,21 @@ int	Request::treatAbsoluteURI()
 
 int Request::treatAbsolutePath()
 {
-	// if (access(startLine.requestTarget, F_OK))
-	// {
-	// 	statusCode = 404;
-	// }
-	// if (startLine.method == "POST" && access(startLine.requestTarget, W_OK))
-	// {
-	// 	statusCode = 405;
-	// }
-	// if (startLine.method == "GET" && access(startLine.requestTarget, R_OK))
-	// {
-	// 	statusCode = 405;
-	// }
-	statusCode = 204;
+	if (access(startLine.requestTarget.c_str(), F_OK) == -1)
+	{
+		statusCode = NOT_FOUND;
+		return (0);
+	}
+	if (startLine.method == "POST" && access(startLine.requestTarget.c_str(), W_OK) == -1)
+	{
+		statusCode = NOT_ALLOWED;
+		return (0);
+	}
+	if (startLine.method == "GET" && access(startLine.requestTarget.c_str(), R_OK) == -1)
+	{
+		statusCode = NOT_ALLOWED;
+		return (0);
+	}
 	return (1);
 }
 
@@ -308,6 +310,11 @@ std::string		Request::getRequestTarget(void)
 int Request::getStatusCode(void)
 {
 	return (statusCode);
+}
+
+stringContainer Request::getBody(void)
+{
+	return (body);
 }
 
 /* ************************************************************************** */
