@@ -2,17 +2,18 @@
 #include <exception>
 #include "../config/config.hpp"
 
-class Request {
-    private:
-        std::string host;
-        std::string port;
-    public:
-        std::string getUrl();
-};
-
 #define SERVER_SOFTWARE_VERSION "Webserv/1.0"
 #define CGI_INTERFACE "CGI/1.1"
 #define HTTP_PROTOCOL "HTTP/1.1"
+
+class Request {
+    private:
+        std::string host;
+    public:
+        Request();
+        ~Request();
+        std::string getHost();
+};
 
 class CGIHandler 
 {

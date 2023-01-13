@@ -23,12 +23,15 @@ void    CGIHandler::createEnvList()
     envList.push_back(line.append(SERVER_SOFTWARE_VERSION));
     line = "SERVER_PROTOCOL=";
     envList.push_back(line.append(HTTP_PROTOCOL));
-    line = "GATEWAY_INTERFACE=";
-    envList.push_back(line.append(CGI_INTERFACE));
     line = "SERVER_PORT=";
     envList.push_back(line.append(int2assci(this->server.getPort())));
     line = "SERVER_NAME=";
     envList.push_back(line.append(this->server.getServerName()));
+    line = "GATEWAY_INTERFACE=";
+    envList.push_back(line.append(CGI_INTERFACE));
+    line = "PATH_INFO=";
+    envList.push_back(line.append(this->getFilePath()));
+    line = "SCRIPT_FILENAME=";
     this->envList = envList;
 }
 
@@ -55,19 +58,9 @@ char ** CGIHandler::convertEnvList()
 /* @details: this function is still in testing mode.*/
 std::string CGIHandler::getScriptName()
 {
-    int i = 0;
-    stringContainer container;
     std::string extension = "php";
-
-    std::string urlExample = "http://localhost/php-cgi/index.php/tv/home?season=5&episode=62";
-    container = splitSeparator(urlExample, '/');
-    while (i < container.size())
-    {
-        if (!strcmp(container[i].c_str() + container[i].length() - 4, ("." + extension).c_str()))
-            return (container[i]);
-        i++;
-    }
-    return (std::string());
+    std::string urlExample = "/php-cgi/index.php/tv/home?season=5&episode=62";
+    return (urlExample.substr(0, urlExample.find(("." + extension).c_str() + extension.length() + 1)));
 }
 
 std::string CGIHandler::getQuery()

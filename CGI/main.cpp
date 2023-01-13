@@ -2,14 +2,11 @@
 
 int main(void)
 {
-    std::string scriptName = "index.php";
-    std::string urlExample = "http://localhost/php-cgi/index.php/tv/home?season=5&episode=62";
-    std::string queryStrippedURL = splitSeparator(urlExample, '?')[0];
-    std::string filePath;
-    // this url site willl be the refrence of creating the new url.
-
-    filePath = queryStrippedURL.erase(0, queryStrippedURL.find(scriptName) + scriptName.length());
-
-    std::cout << filePath  << std::endl;
+    int i = 0;
+    stringContainer container;
+    std::string extension = "php";
+    std::string urlExample = "/php-cgi/index.php/tv/home?season=5&episode=62";
+    int position = urlExample.find(("." + extension).c_str());
+    std::cout << urlExample.substr(0, position + extension.length() + 1)  << std::endl;
     return (0);
 }
