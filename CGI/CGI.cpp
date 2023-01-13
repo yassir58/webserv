@@ -1,9 +1,9 @@
 #include "CGI.hpp"
 
-CGIHandler::CGIHandler(Location location, Server server, Request request)
+CGIHandler::CGIHandler(Location *location, Server *server, Request *request)
 {
     this->location = location;
-    this->defaultPath = location.getCGIDefault();
+    this->defaultPath = location->getCGIDefault();
     this->server = server;
     this->request = request;
 }
@@ -15,23 +15,43 @@ CGIHandler::~CGIHandler()
 
 void    CGIHandler::createEnvList()
 {
-    stringContainer envList;
     std::string line;
-    char buffer[5];
+    std::string tmp;
+    stringContainer envList;
+    headerFieldList value = this->request->getHeaderField();
 
+   	headerFieldList::iterator end = value.end();
+	headerFieldList::iterator begin = value.begin();
     line = "SERVER_SOFTWARE=";
     envList.push_back(line.append(SERVER_SOFTWARE_VERSION));
     line = "SERVER_PROTOCOL=";
     envList.push_back(line.append(HTTP_PROTOCOL));
     line = "SERVER_PORT=";
-    envList.push_back(line.append(int2assci(this->server.getPort())));
+    envList.push_back(line.append(int2assci(this->server->getPort())));
     line = "SERVER_NAME=";
-    envList.push_back(line.append(this->server.getServerName()));
+    envList.push_back(line.append(this->server->getServerName()));
     line = "GATEWAY_INTERFACE=";
     envList.push_back(line.append(CGI_INTERFACE));
     line = "PATH_INFO=";
     envList.push_back(line.append(this->getFilePath()));
+    line = "SCRIPT_NAME=";
+    envList.push_back(line.append(this->getScriptName()));
     line = "SCRIPT_FILENAME=";
+    envList.push_back(line.append(this->location->getRoot() + this->getScriptName()));
+    line = "QUERY_STRING=";
+    envList.push_back(line.append(this->getQuery()));
+    line = "REQUEST_METHOD=";
+    envList.push_back(line.append(this->request->getMethod()));
+    line = "REQUEST_URI=";
+    envList.push_back(line.append(this->request->getRequestTarget()));
+    line = "REMOTE_IDENT=";
+    envList.push_back(line.append(""));
+    line = "PATH_TRANSLATED=";
+    envList.push_back(line.append(this->location->getRoot() + this->getFilePath()));
+    for (; begin != end; ++begin)
+	{
+		envList.push_back("HTTP_" + toUpperCase(begin->key) + "=" + begin->value);
+	}
     this->envList = envList;
 }
 
@@ -84,5 +104,5 @@ std::string CGIHandler::getFilePath()
 // Host: localhost
 // Path info: /tv/home
 // Query string: season=5&episode=62
-// Script name: index.php
+// Script name: /php-cgi/index.php
 // Request URI: /php-cgi/index.php/tv/home?season=5&episode=62

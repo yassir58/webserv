@@ -297,3 +297,16 @@ std::string int2assci(int nb)
 	str = res.str();
 	return (str);
 }
+
+std::string toUpperCase(std::string str)
+{
+    int i;
+
+    i = 0;
+    while (str[i])
+    {
+        str[i] = toupper(str[i]);
+        i++;
+    }
+    return (str);
+}
