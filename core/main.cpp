@@ -1,9 +1,11 @@
 #include "ServerInstance.hpp"
 #include "../config/config.hpp"
+#include "../request/request.h"
+#include "../request/Request.hpp"
 
 int main (int argc , char *argv[])
 {
-    Http_application app;
+    HttpApplication app;
 
     try 
     {
@@ -18,7 +20,7 @@ int main (int argc , char *argv[])
     try
     {
         app.setupAppResources ();
-        app.allocateServers ();
+        app.filterServerBlocks ();
         app.connectServers ();
         while (1)
         {
@@ -34,6 +36,7 @@ int main (int argc , char *argv[])
             catch (std::exception &exc)
             {
                  std::cout << exc.what () << std::endl;
+                 exit (EXIT_FAILURE);
             }
         }    
     }

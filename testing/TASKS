@@ -38,17 +38,9 @@ using SO_REUSADDR to prevent bind () error after server crash , because the sock
 
 // server location selection algorithm :
 
+kevent ident (fd) filte (event | EVFILT_READ| EVFILT_WRITE) flags add event to kqueue EV_ADD delete event with EV_DELETE
 
-			request
-	server_name	   | listen
-			   |
-			   |
-			   |		
+kevent ev;
 
-
-RESOURCES :
-https://www.notion.so/Documentation-Webserv-320727979ffd4176a7dd5ba41aaadf46#ea1643287ee74f5b9719a987ec50eb5b
-
-
-
+EV_SET(&ev, sckfd, EVFILT_READ, EV_ADD, 0, 0, 0);
 

@@ -10,6 +10,7 @@
 #include <exception>
 #include <sys/stat.h>
 #include <cstring>
+#include <sstream>
 
 #define MAIN 0
 #define HTTP 1
