@@ -158,5 +158,6 @@ bool    validateHost(std::string ipAddress);
 bool checkSpaces(std::string string);
 stringContainer   stripSemiColon(stringContainer str);
 std::string int2assci(int nb);
+std::string toUpperCase(std::string str);
 
 #endif 
