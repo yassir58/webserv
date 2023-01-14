@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/11 15:00:40 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/14 13:17:29 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -148,6 +148,12 @@ int	Response::applyMethod(void)
 /*
 ** --------------------------------- ACCESSOR ---------------------------------
 */
+
+
+stringContainer Response::getResponse(void)
+{
+	return (responseToSend);
+}
 
 void	Response::setRequest(Request *request)
 {

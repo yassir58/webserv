@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/11 14:37:16 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/14 13:09:22 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,8 +83,6 @@ int	Request::checkContentParsed()
 
 int	Request::getCRLF(std::string &newLine, char *delim)
 {
-	static size_t pos;
-	static size_t start;
 	if (start == fileString.length())
 	{
 		newLine = "";
@@ -124,9 +122,9 @@ int Request::checkMethod()
 
 int	Request::treatAbsoluteURI()
 {
-	if (!startLine.requestTarget.compare(0, 6, "http//") || !startLine.requestTarget.compare(0, 6, "HTTP//"))
+	if (!startLine.requestTarget.compare(0, 7, "http://") || !startLine.requestTarget.compare(0, 7, "HTTP://"))
 	{
-		startLine.requestTarget.erase(0, 6);
+		startLine.requestTarget.erase(0, 7);
 		size_t pos = startLine.requestTarget.find('/', 0);
 		startLine.hostName = startLine.requestTarget.substr(0, pos);
 		startLine.requestTarget.erase(0, pos);
@@ -160,9 +158,9 @@ int Request::treatAbsolutePath()
 int Request::checkRequestTarget()
 {
 	treatAbsoluteURI();
-	if (treatAbsolutePath())
-		return (1);
-	return (0);
+	// if (treatAbsolutePath())
+	// 	return (1);
+	return (1);
 }
 
 int Request::parseFirstLine(std::string line)
@@ -201,6 +199,8 @@ int Request::checkVersion()
 
 void	Request::parseHostName(std::string &hostNameValue)
 {
+	if (startLine.Host == true)
+		return ;
 	startLine.Host = true;
 	if (isdigit (hostNameValue[0]))
 	{
@@ -263,7 +263,7 @@ void	Request::printResult(void)
 ** --------------------------------- ACCESSOR ---------------------------------
 */
 
-headerFieldList &Request::getHeaderField(void) 
+headerFieldList &Request::getHeaderFieldlist(void) 
 {
 	return (headerFields);
 }
@@ -276,6 +276,9 @@ t_start &Request::getStartLine(void)
 void	Request::setFileString(std::string &file)
 {
 	fileString = file;
+	startLine.Host = false;
+	pos = 0;
+	start = 0;
 }
 
 void	Request::setStatusCode(int newStatusCode)
@@ -315,6 +318,19 @@ int Request::getStatusCode(void)
 stringContainer Request::getBody(void)
 {
 	return (body);
+}
+
+headerField *Request::getHeaderField(std::string key)
+{
+	headerFieldList::iterator begin = headerFields.begin();
+	headerFieldList::iterator end = headerFields.end();
+	while (begin != end)
+	{
+		if (begin->key == key)
+			return (&(*begin));
+		++begin;
+	}
+	return (NULL);
 }
 
 /* ************************************************************************** */
