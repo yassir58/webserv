@@ -56,7 +56,7 @@ int ServerInstance::establish_connection (void)
     if (errCheck == -1)
         throw Connection_error (strerror (errno), "listen");
     else
-        std::cout << "\e[0;33m listening on port \e[0m" << this->connectionPort << " through intarface : " << this->hostName  <<  std::endl;
+        std::cout << "\e[0;33m listening on port \e[0;32m" << this->connectionPort << "\e[0;36m [ " << this->hostName  << " ]\e[0m" <<   std::endl;
     return (0); 
 }
 

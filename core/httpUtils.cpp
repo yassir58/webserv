@@ -65,28 +65,22 @@ Client::Client (int fd)
     clientSocket = fd;
 }
 
+
+Client::~Client()
+{
+	delete this->request;
+}
+
 void Client::recieveData (void)
 {
     dataRecievedLength = recv (clientSocket, buffer, BUFFER_MAX, 0);
     if (dataRecievedLength == 0)
-        std::cout << "remote peer closed connection" << std::endl;
+        std::cout << "\e[0;31m remote peer closed connection\e[0m" << std::endl;
     else if (dataRecievedLength == -1)
         throw Connection_error (strerror (errno), "recv");
     else
     {
-        std::cout << dataRecievedLength << "\e[0;32m byte recieved\e[0m" << std::endl;
-        try
-        {
-            request = new Request (buffer);
-			request->printResult ();	
-			delete request;
-            // std::cout << "Port Number" << request->getStartLine ().Port << std::endl;
-        }
-        catch (std::exception &exc)
-        {
-            std::cout << "\e[0;31m" << exc.what () << "\e[0m" << std::endl;
-        }
-        //delete request;
+        std::cout << dataRecievedLength << "\e[0;37m byte recieved\e[0m" << std::endl;
     }
 }
 
@@ -102,4 +96,61 @@ int HttpApplication::isServer (int fd)
 			return (TRUE);
 	}
 	return (FALSE);
+}
+
+void Client::generateResolversList (serverBlocks serverBlockList)
+{
+	serverBlocks::iterator it;
+	std::string service;
+	std::string host;
+	int serverIndx = 0;
+	
+	this->ipAddress = request->getStartLine().IpAdress;
+	this->serviceName = request->getStartLine().Port;
+	this->hostName = request->getStartLine().hostName;
+	std::cout << "host check " << this->request->getStartLine().Host << std::endl;
+	std::cout << this->request->getStartLine().hostName << std::endl;
+	for (it = serverBlockList.begin(); it != serverBlockList.end (); it++)
+	{
+		service = int2assci ((*it)->getPort ());
+		hostName = (*it)->getHost();
+		//if (this->request->getStartLine().Host)
+		if (!this->ipAddress.compare(hostName) && !this->serviceName.compare(service))
+			this->resolversList.push_back (serverIndx);
+		serverIndx++;
+	}
+}
+
+void Client::setRequest (void)
+{
+	try
+    {
+    	request = new Request (buffer);
+    }
+    catch (std::exception &exc)
+    {
+        std::cout << "\e[0;31m" << exc.what () << "\e[0m" << std::endl;
+    }
+}
+
+void Client::printfResolvers (void)
+{
+	std::vector<int>::iterator it;
+
+	for (it = resolversList.begin (); it != resolversList.end (); it++)
+	{
+		std::cout << (*it) << " ";
+	}
+	std::cout << std::endl;
+}
+
+void Client::matchRequestHandler (serverBlocks serverList)
+{
+	std::vector<int>::iterator it ;
+
+	std::cout << "request host" <<  this->request->getStartLine().hostName << std::endl;
+	for (it = this->resolversList.begin(); it != this->resolversList.end (); it++)
+	{
+		std::cout << "config host" <<  serverList[(*it)]->getServerName () << std::endl;
+	}
 }

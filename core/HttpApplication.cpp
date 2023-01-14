@@ -74,12 +74,11 @@ void HttpApplication::checkForConnection(void)
         {
             fd = resultEvents[i].ident;
 			if (resultEvents[i].flags & EV_ERROR)
-				std::cout << "\e[0;31m socket error \e[0m" << strerror (errno) <<  std::endl; 
+				throw Connection_error (strerror (errno), "EVENT_ERROR");
             else if (resultEvents[i].filter == EVFILT_READ)
             {
             	if (!isServer(fd))
 				{
-					std::cout << "client socket" << std::endl;
             		handleHttpRequest (fd);
             		errValue = close (fd);
             		if (errValue == -1)
@@ -88,7 +87,6 @@ void HttpApplication::checkForConnection(void)
 				}
 				else
 					handleNewConnection (fd);
-				std::cout << "server socket " << std::endl;
             }
         }
     }
@@ -101,9 +99,7 @@ void HttpApplication::handleNewConnection (int serverFd)
 	struct kevent change ;
 
     server = findServerByFd (serverFd); 
-	std::cout << "\e[0;31m server " << server->getHostName () << "\e[0m" << std::endl;
     clientSocket = server->accept_connection ();
-	std::cout << clientSocket << std::endl;
 	EV_SET (&change, clientSocket, EVFILT_READ , EV_ADD | EV_CLEAR, 0, 0, 0);
 	errValue = kevent (this->queueIdentifier, &change, 1, NULL, 0, NULL);
 	if (errValue < 0)
@@ -124,6 +120,10 @@ void HttpApplication::handleHttpRequest (int fd)
 
     clientInfo.emptyBuffer ();
     clientInfo.recieveData ();
+	clientInfo.setRequest ();
+	clientInfo.generateResolversList (this->getServerBlockList ());
+	clientInfo.printfResolvers ();
+	//clientInfo.matchRequestHandler (this->getServerBlockList());
     // for testing and observability
     returnValue = send (fd, HTTP_RESPONSE_EXAMPLE, strlen (HTTP_RESPONSE_EXAMPLE), 0);
     logFile << "\e[0;33mbyte sent : \e[0m" << returnValue << " \e[0;33mexpected : \e[0m" <<  strlen (HTTP_RESPONSE_EXAMPLE) << std::endl;
@@ -148,7 +148,7 @@ int HttpApplication::getConnectionCount (void) const
 void HttpApplication::handleConfig (int argc , char *argv[])
 {
     if (argc == 1)
-        config = new Config ("./default.conf");
+        config = new Config ("./testing/configs/default.conf");
     else if (argc == 2)
         config = new Config (argv[argc - 1]);
     else 
@@ -228,4 +228,9 @@ ServerInstance *HttpApplication::findServerByFd (int serverFd)
             return ((*it));
     }
     return (serverList[0]);
+}
+
+serverBlocks HttpApplication::getServerBlockList (void) const
+{
+	return (this->config->getHttpContext()->getServers());
 }

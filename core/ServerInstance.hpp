@@ -145,7 +145,6 @@ class HttpApplication
         int returnValue;
         int indx;
         serverContainer serverList;
-        serverBlocks servConfigBlocks;
         std::string httpDefaultErrorPage;
         int HttpMaxBodySize;
         std::ofstream logFile;
@@ -165,6 +164,7 @@ public:
     void handleConfig (int argc, char *argv[]);
     pollfd *getConnectionPool(void) const;
     serverContainer getServerList(void) const;
+	serverBlocks getServerBlockList (void) const;
     // void setConnectionPool(pollfd *fd_pool);
     void allocateServers (void);
     void checkForConnection (void);
@@ -195,11 +195,15 @@ class Client {
         int dataRecievedLength;
         struct addrinfo *requestSourceAddr;
         int clientPort;
-        std::string clientIp;
+        std::string hostName;
+		std::string serviceName;
+		std::string ipAddress;
+		int requestHandlerIndx ;
 
     public:
         Client ();
-        Client (int fd);
+		Client (int fd);
+		~Client ();
         int getClientSocket (void) const;
         int getServerHandlerIndx (void) const;
         char *getBuffer (void) ;
@@ -207,13 +211,15 @@ class Client {
         void recieveData (void);
         void sendData (void);
         std::vector <int> getResolversList (void) const;
-        void generateResolversList (serverContainer serverList);
+        void generateResolversList (serverBlocks serverList);
+		void setRequest (void);
+		void printfResolvers (void);
+		void matchRequestHandler (serverBlocks serverList);
 };
 
 
 void handleError(int err);
 void initServers(ServerInstance *serv_list);
 const std::string currentDateTime();
-
 
 #endif
