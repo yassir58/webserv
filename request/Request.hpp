@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:36 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/14 16:11:45 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/15 11:44:04 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,8 +40,8 @@ class Request
 		headerFieldList			headerFields; // linked list store the header fields of the request
 		stringContainer			body; // contain the body of the request
 		int						statusCode; // the error code or the status code
-		size_t pos;
-		size_t start;
+		size_t 					pos; // used in getCRLF() method
+		size_t 					start; // also used in getCRLF() method
 	public:
 		Request(std::string	file); //param constructor take a string as param
 		~Request(); // destructor not used 
