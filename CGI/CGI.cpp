@@ -15,60 +15,63 @@ CGIHandler::~CGIHandler()
 
 void    CGIHandler::createEnvList()
 {
-    std::string line;
-    std::string tmp;
-    stringContainer envList;
+    mapContainer envList;
     headerFieldList value = this->request->getHeaderField();
 
    	headerFieldList::iterator end = value.end();
 	headerFieldList::iterator begin = value.begin();
-    line = "SERVER_SOFTWARE=";
-    envList.push_back(line.append(SERVER_SOFTWARE_VERSION));
-    line = "SERVER_PROTOCOL=";
-    envList.push_back(line.append(HTTP_PROTOCOL));
-    line = "SERVER_PORT=";
-    envList.push_back(line.append(int2assci(this->server->getPort())));
-    line = "SERVER_NAME=";
-    envList.push_back(line.append(this->server->getServerName()));
-    line = "GATEWAY_INTERFACE=";
-    envList.push_back(line.append(CGI_INTERFACE));
-    line = "PATH_INFO=";
-    envList.push_back(line.append(this->getFilePath()));
-    line = "SCRIPT_NAME=";
-    envList.push_back(line.append(this->getScriptName()));
-    line = "SCRIPT_FILENAME=";
-    envList.push_back(line.append(this->location->getRoot() + this->getScriptName()));
-    line = "QUERY_STRING=";
-    envList.push_back(line.append(this->getQuery()));
-    line = "REQUEST_METHOD=";
-    envList.push_back(line.append(this->request->getMethod()));
-    line = "REQUEST_URI=";
-    envList.push_back(line.append(this->request->getRequestTarget()));
-    line = "REMOTE_IDENT=";
-    envList.push_back(line.append(""));
-    line = "PATH_TRANSLATED=";
-    envList.push_back(line.append(this->location->getRoot() + this->getFilePath()));
+
+    envList["SERVER_SOFTWARE"] = SERVER_SOFTWARE_VERSION;
+    envList["SERVER_PROTOCOL"] = HTTP_PROTOCOL;
+    envList["SERVER_PORT"] = int2assci(this->server->getPort());
+    envList["SERVER_NAME"] = this->server->getServerName();
+    envList["GATEWAY_INTERFACE"] = CGI_INTERFACE;
+    envList["PATH_INFO"] = this->getFilePath();
+    envList["SCRIPT_NAME"] = this->getScriptName();
+    envList["SCRIPT_FILENAME"] = this->location->getRoot() + this->getScriptName();
+    envList["QUERY_STRING"] = this->getQuery();
+    envList["REQUEST_METHOD"] = this->request->getMethod();
+    envList["REQUEST_URI"] = this->request->getRequestTarget();
+    envList["REMOTE_IDENT"] = "";
+    envList["PATH_TRANSLATED"] = this->location->getRoot() + this->getFilePath();
     for (; begin != end; ++begin)
 	{
-		envList.push_back("HTTP_" + toUpperCase(begin->key) + "=" + begin->value);
+        envList["HTTP_" + toUpperCase(begin->key)] = begin->value;
 	}
     this->envList = envList;
 }
 
-char ** CGIHandler::convertEnvList()
+const char **CGIHandler::getExecuteArgs()
 {
-    char **table;
+    const char **table;
+
+    table = (char **)malloc(sizeof(char *) * 3);
+    if (!table)
+        return (NULL);
+    table[0] = this->location->getCGIDefault().c_str();
+    table[1] = (this->location->getRoot() + this->getScriptName()).c_str();
+    table[2] = NULL;
+    return (table);
+}
+
+const char ** CGIHandler::convertEnvList()
+{
+    mapContainer::iterator begin;
+    mapContainer::iterator end;
+    const char **table;
     int size;
     int i;
 
     i = 0;
     size = this->envList.size();
-    table = (char **)malloc(sizeof(char *) * size);
+    begin = this->envList.begin();
+    end = this->envList.end();
+    table = (char **)malloc(sizeof(char *) * (size + 1));
     if (!table)
         return (NULL);
-    while (i < size)
+    for (; begin != end; ++begin)
     {
-        table[i] = strdup(this->envList[i].c_str());
+        table[i] = (begin->first + "=" + begin->second).c_str();
         i++;
     }
     table[i] = NULL;

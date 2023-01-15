@@ -7,6 +7,7 @@
 #define CGI_INTERFACE "CGI/1.1"
 #define HTTP_PROTOCOL "HTTP/1.1"
 
+typedef std::map<std::string, std::string> mapContainer;
 
 class CGIHandler 
 {
@@ -16,13 +17,14 @@ class CGIHandler
         Server *server;
         Request *request;
         Config *configFile;
-        stringContainer envList;
+        mapContainer envList;
         std::string         getScriptName();
         std::string         getQuery();
         std::string         getFilePath();
         std::string         getRequestURI();
         void                createEnvList();
-        char **             convertEnvList();
+        const char **             convertEnvList();
+        const char **             getExecuteArgs();
     public:
         CGIHandler(Location *location, Server *server, Request *request);
         ~CGIHandler();
