@@ -101,6 +101,46 @@ std::string CGIHandler::getFilePath()
     return (filePath);
 }
 
+std::string    CGIHandler::execute()
+{
+    int fds[2];
+    int fd;
+    std::string output;
+    char **envList;
+    char **args;
+    pid_t pid;
+
+    args = (char **)this->getExecuteArgs();
+    if (pipe(fds) < 0)
+    {
+        std::cout << "Could not use pipe" << std::endl;
+        exit(1);
+    }
+    pid = fork();
+    if (pid == 0)
+    {
+        close(fds[1]);
+        dup2(fds[0], 0);
+        fd = open("/tmp/CGI", O_RDWR | O_CREAT | 777);
+        if (fd < 0)
+        {
+            std::cout << "Could not open tmp file" << std::endl;
+            exit(1);
+        }
+        execve(this->defaultPath.c_str(), args, envList);
+        dup2(fd, 1); // Redirecting the execve output to the file.
+        close(fds[0]);
+        close(fd);
+        exit(0);
+    }
+    else
+    {
+        close(fds[0]);
+        // Write request body to the child process std input
+        close(fds[1]);
+        waitpid(-1, NULL, 0);
+    }
+}
 
 //Query Example: http://localhost/php-cgi/index.php/tv/home?season=5&episode=62
 

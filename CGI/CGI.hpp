@@ -1,5 +1,11 @@
 #include <iostream>
 #include <exception>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include "../config/config.hpp"
 #include "../request/Request.hpp"
 
