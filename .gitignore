@@ -1,7 +1,0 @@
-*.o
-*.log
-*.out
-.vscode/
-settings.json
-**/.DS_Store
-.gitignore
