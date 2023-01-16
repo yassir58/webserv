@@ -2,14 +2,14 @@
 #include "../config/config.hpp"
 #include "../request/request.h"
 #include "../request/Request.hpp"
+#include "../response/Response.hpp"
 
 HttpApplication::HttpApplication ()
 {
     serverCount = 1;
     connectionCount = 0;
-    logFile.open ("server_log", std::ios_base::app);
+    logFile.open ("server.log", std::ios_base::app);
     indx = serverCount;
-	eventIndx = 0;
 }
 
 HttpApplication::~HttpApplication ()
@@ -32,6 +32,7 @@ void HttpApplication::connectServers (void)
     serverContainer::iterator bg;
 	int fd;
 	struct kevent change;
+	int indx = 0;
 	
     for (bg = serverList.begin (); bg != serverList.end (); bg++)
     {
@@ -44,7 +45,7 @@ void HttpApplication::connectServers (void)
 			errValue = kevent (this->queueIdentifier, &change, 1, NULL, 0, NULL);
 			if (errValue < 0)
 				throw Connection_error (strerror(errno), "kevent");
-			eventIndx++;
+			serverLog (indx);
         }
         catch(const std::exception& e)
         {
@@ -55,6 +56,7 @@ void HttpApplication::connectServers (void)
 			// bg--;
             // std::cerr << e.what() << '\n';
         }
+		indx++;
     }
 	
 }
@@ -83,7 +85,6 @@ void HttpApplication::checkForConnection(void)
             		errValue = close (fd);
             		if (errValue == -1)
                 		handleError (CLOSEERR);
-					eventIndx--;
 				}
 				else
 					handleNewConnection (fd);
@@ -109,22 +110,21 @@ void HttpApplication::handleNewConnection (int serverFd)
 	if (errValue < 0)
 		throw Connection_error (strerror (errno), "kevent");
     connectionCount++;
-	eventIndx++;
    	//serverLog (server_indx);
 }
 
 void HttpApplication::handleHttpRequest (int fd)
 {
     Client clientInfo(fd);
+	int serverHandlerIndx = 0;
 
 
     clientInfo.emptyBuffer ();
     clientInfo.recieveData ();
 	clientInfo.setRequest ();
 	clientInfo.generateResolversList (this->getServerBlockList ());
-	std::cout << "server handler indx" << clientInfo.matchRequestHandler (this->getServerBlockList()) <<  std::endl;
-    returnValue = send (fd, HTTP_RESPONSE_EXAMPLE, strlen (HTTP_RESPONSE_EXAMPLE), 0);
-    logFile << "\e[0;33mbyte sent : \e[0m" << returnValue << " \e[0;33mexpected : \e[0m" <<  strlen (HTTP_RESPONSE_EXAMPLE) << std::endl;
+	serverHandlerIndx = clientInfo.matchRequestHandler (this->getServerBlockList()) ;
+	clientInfo.sendResponse ();
 }
 
 int HttpApplication::getConnectionIndx (void)

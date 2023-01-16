@@ -1,5 +1,6 @@
 #include "ServerInstance.hpp"
 #include "../request/Request.hpp"
+#include "../response/Response.hpp"
 
 const std::string currentDateTime() {
     time_t     now = time(0);
@@ -16,10 +17,9 @@ const std::string currentDateTime() {
 
 void HttpApplication::serverLog (int serverIndx)
 {
-    logFile << "connection count : "<< connectionCount  << " ";
-    // logFile <<  "\e[0;32mserver name: \e[0m: " <<     serverList[serverIndx]->getServerName () << " ";
+    logFile <<  "\e[0;36mserver interface : \e[0m: " <<     serverList[serverIndx]->getHostName() << " ";
     logFile << "\e[0;32mserver port: \e[0m:" << serverList[serverIndx]->getServerPort () << " ";
-    logFile << " " << currentDateTime ()  <<  std::endl;
+    logFile << " \e[0;33m" << currentDateTime ()  << "" <<  std::endl;
 }
 
 void handleError (int err)
@@ -173,4 +173,49 @@ int Client::matchRequestHandler (serverBlocks serverList)
 int Client::getHandlerIndx (void) const
 {
 	return  (this->requestHandlerIndx);
+}
+
+void Client::sendResponse (void)
+{
+	Response newResponse ((*this->request));
+	stringContainer::iterator it;
+	stringContainer response;
+	std::string body;
+	int sendReturn;
+
+	
+	response = newResponse.getResponse ();
+	std::cout << "\e[0;31m response content \e[0m" << std::endl;
+	for (it = response.begin(); it != response.end (); it++)
+	{
+		send (clientSocket, (*it).c_str(), (*it).length(), 0);
+		std::cout << (*it) << std::endl;
+	}
+    //sendReturn = send (clientSocket, HTTP_RESPONSE_EXAMPLE, strlen (HTTP_RESPONSE_EXAMPLE), 0);
+	body = getTestBody ("./testing/indx.html");
+	sendReturn = send (clientSocket, body.c_str (), body.length(), 0);
+	if (sendReturn == -1)
+		throw Connection_error (strerror (errno), "SEND");
+	else if (sendReturn == 0)
+		std::cout << "\e[0;31m server closed connection \e[0m" << std::endl;
+    //logFile << "\e[0;33mbyte sent : \e[0m" << sendReturn << " \e[0;33mexpected : \e[0m" <<  strlen (HTTP_RESPONSE_EXAMPLE) << std::endl;
+}
+
+
+std::string getTestBody (std::string filename)
+{
+	std::ifstream file;
+	std::string result;
+	std::string line;
+
+
+	file.open (filename, std::ios_base::in);
+	while (std::getline (file, line))
+	{
+		result.append (line);
+		if (file.peek () != EOF)
+			result.append ("\n");
+	}
+	file.close ();
+	return (result);
 }

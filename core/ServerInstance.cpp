@@ -1,5 +1,5 @@
 #include "ServerInstance.hpp"
-
+#include "../response/Response.hpp"
 
 ServerInstance::ServerInstance (void)
 {

@@ -140,7 +140,6 @@ class HttpApplication
     private:
         int epollInstance;
 		int queueIdentifier;
-		int eventIndx;
         int nfds;
         int errValue;
         int serverCount;
@@ -202,6 +201,7 @@ class Client {
 		std::string ipAddress;
 		int requestHandlerIndx ;
 		size_t requestLength;
+		
 
     public:
         Client ();
@@ -211,7 +211,7 @@ class Client {
         char *getBuffer (void) ;
         void emptyBuffer (void);
         void recieveData (void);
-        void sendRsponse (void);
+        void sendResponse (void);
         std::vector <int> getResolversList (void) const;
         void generateResolversList (serverBlocks serverList);
 		void setRequest (void);
@@ -224,5 +224,5 @@ class Client {
 void handleError(int err);
 void initServers(ServerInstance *serv_list);
 const std::string currentDateTime();
-
+std::string getTestBody (std::string filename);
 #endif
