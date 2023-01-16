@@ -58,8 +58,3 @@ void Client::emptyBuffer (void)
 {
     memset (buffer, 0, sizeof (buffer));
 }
-
-int Client::getServerHandlerIndx (void) const
-{
-    return (this->serverHandlerIndx);
-}

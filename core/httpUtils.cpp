@@ -58,11 +58,17 @@ void handleError (int err)
 Client::Client ()
 {
     clientSocket = 0;
+	clientPort = 0;
+	requestLength = 0;
+	requestHandlerIndx = 0;
 }
 
 Client::Client (int fd)
 {
     clientSocket = fd;
+	clientPort = 0;
+	requestLength = 0;
+	requestHandlerIndx = 0;
 }
 
 
@@ -78,10 +84,8 @@ void Client::recieveData (void)
         std::cout << "\e[0;31m remote peer closed connection\e[0m" << std::endl;
     else if (dataRecievedLength == -1)
         throw Connection_error (strerror (errno), "recv");
-    else
-    {
-        std::cout << dataRecievedLength << "\e[0;37m byte recieved\e[0m" << std::endl;
-    }
+	else
+		requestLength = dataRecievedLength;
 }
 
 
@@ -101,21 +105,23 @@ int HttpApplication::isServer (int fd)
 void Client::generateResolversList (serverBlocks serverBlockList)
 {
 	serverBlocks::iterator it;
-	std::string service;
-	std::string host;
+	int confPort = 0;
+	std::string confHost;
 	int serverIndx = 0;
+	struct sockaddr_in address;
+	socklen_t len = sizeof (address);
+	char ipStr[INET_ADDRSTRLEN];
+	int port;
 	
-	this->ipAddress = request->getStartLine().IpAdress;
-	this->serviceName = request->getStartLine().Port;
-	this->hostName = request->getStartLine().hostName;
-	std::cout << "host check " << this->request->getStartLine().Host << std::endl;
-	std::cout << this->request->getStartLine().hostName << std::endl;
+	
+	getsockname (this->clientSocket,(sockaddr *) &address, &len);
+	inet_ntop (AF_INET, &address.sin_addr, ipStr, INET6_ADDRSTRLEN);
+	port = ntohs (address.sin_port);
 	for (it = serverBlockList.begin(); it != serverBlockList.end (); it++)
 	{
-		service = int2assci ((*it)->getPort ());
-		hostName = (*it)->getHost();
-		//if (this->request->getStartLine().Host)
-		if (!this->ipAddress.compare(hostName) && !this->serviceName.compare(service))
+		confPort = (*it)->getPort ();
+		confHost = (*it)->getHost();	
+		if (!confHost.compare (std::string(ipStr)) && confPort == port)
 			this->resolversList.push_back (serverIndx);
 		serverIndx++;
 	}
@@ -144,13 +150,27 @@ void Client::printfResolvers (void)
 	std::cout << std::endl;
 }
 
-void Client::matchRequestHandler (serverBlocks serverList)
+int Client::matchRequestHandler (serverBlocks serverList)
 {
-	std::vector<int>::iterator it ;
+	int servIndx = 0;
+	int hostFlag = this->request->getStartLine().Host;
+	std::string servName;
+	intContainer::iterator it;
 
-	std::cout << "request host" <<  this->request->getStartLine().hostName << std::endl;
-	for (it = this->resolversList.begin(); it != this->resolversList.end (); it++)
+	servName = this->request->getStartLine().hostName ;
+	if (hostFlag)
 	{
-		std::cout << "config host" <<  serverList[(*it)]->getServerName () << std::endl;
+		for (it = resolversList.begin (); it != resolversList.end (); it++)
+		{
+			servIndx = (*it);
+			if (!serverList[(*it)]->getServerName ().compare(servName))
+				return (*it);
+		}
 	}
+	return (0);
+}
+
+int Client::getHandlerIndx (void) const
+{
+	return  (this->requestHandlerIndx);
 }

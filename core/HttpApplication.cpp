@@ -122,9 +122,7 @@ void HttpApplication::handleHttpRequest (int fd)
     clientInfo.recieveData ();
 	clientInfo.setRequest ();
 	clientInfo.generateResolversList (this->getServerBlockList ());
-	clientInfo.printfResolvers ();
-	//clientInfo.matchRequestHandler (this->getServerBlockList());
-    // for testing and observability
+	std::cout << "server handler indx" << clientInfo.matchRequestHandler (this->getServerBlockList()) <<  std::endl;
     returnValue = send (fd, HTTP_RESPONSE_EXAMPLE, strlen (HTTP_RESPONSE_EXAMPLE), 0);
     logFile << "\e[0;33mbyte sent : \e[0m" << returnValue << " \e[0;33mexpected : \e[0m" <<  strlen (HTTP_RESPONSE_EXAMPLE) << std::endl;
 }
@@ -173,7 +171,6 @@ void HttpApplication::printServerInfo (void)
 
 void HttpApplication::setupAppResources (void) 
 {
-    // epollInstance = epoll_create (MAX_CONNECT);
 	queueIdentifier = kqueue ();
     if (queueIdentifier  < 0)
         throw Fatal_error (strerror (errno));
@@ -193,8 +190,6 @@ void HttpApplication::filterServerBlocks (void)
     
         if (!checkServerExistance (*it))
         {
-            //(*it)->printServer ();
-            // check host valid
             server = new ServerInstance ((*it)->getHost(), (*it)->getPort ());
             serverList.push_back (server);
         }

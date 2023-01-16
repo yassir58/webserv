@@ -27,6 +27,7 @@
 #include <sys/event.h>
 #include <sys/time.h>
 #include <sys/select.h>
+#include <arpa/inet.h>
 
 // MACROS
 #define PORT 8080
@@ -55,6 +56,8 @@
 
 typedef std::vector <Server*> serverBlocks;
 typedef int SOCKET ;
+typedef std::vector <int> intContainer;
+typedef std::vector <std::string> stringContainer;
 
 
 // for testing purpos
@@ -190,7 +193,6 @@ class Client {
         Request *request;
         int clientSocket;
         std::vector <int> resolversList;
-        int serverHandlerIndx;
         char buffer[BUFFER_MAX];
         int dataRecievedLength;
         struct addrinfo *requestSourceAddr;
@@ -199,22 +201,23 @@ class Client {
 		std::string serviceName;
 		std::string ipAddress;
 		int requestHandlerIndx ;
+		size_t requestLength;
 
     public:
         Client ();
 		Client (int fd);
 		~Client ();
         int getClientSocket (void) const;
-        int getServerHandlerIndx (void) const;
         char *getBuffer (void) ;
         void emptyBuffer (void);
         void recieveData (void);
-        void sendData (void);
+        void sendRsponse (void);
         std::vector <int> getResolversList (void) const;
         void generateResolversList (serverBlocks serverList);
 		void setRequest (void);
 		void printfResolvers (void);
-		void matchRequestHandler (serverBlocks serverList);
+		int matchRequestHandler (serverBlocks serverList);
+		int getHandlerIndx (void) const;
 };
 
 
