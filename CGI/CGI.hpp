@@ -28,12 +28,14 @@ class CGIHandler
         std::string         getQuery();
         std::string         getFilePath();
         std::string         getRequestURI();
+        std::string         getOutput();
         void                createEnvList();
         const char **             convertEnvList();
         const char **             getExecuteArgs();
     public:
+        CGIHandler();
         CGIHandler(Location *location, Server *server, Request *request);
         ~CGIHandler();
-        std::string    execute();
+        std::string         execute();
 };
 

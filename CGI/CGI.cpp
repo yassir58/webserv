@@ -1,5 +1,10 @@
 #include "CGI.hpp"
 
+CGIHandler::CGIHandler()
+{
+    std::cout << "Calling the default constructor." << std::endl;
+}
+
 CGIHandler::CGIHandler(Location *location, Server *server, Request *request)
 {
     this->location = location;
@@ -10,7 +15,7 @@ CGIHandler::CGIHandler(Location *location, Server *server, Request *request)
 
 CGIHandler::~CGIHandler()
 {
-    std::cout << "Default destructor" << std::endl;
+    std::cout << "Freeing up all the allocated memory." << std::endl;
 }
 
 void    CGIHandler::createEnvList()
@@ -26,7 +31,7 @@ void    CGIHandler::createEnvList()
     envList["SERVER_PORT"] = int2assci(this->server->getPort());
     envList["SERVER_NAME"] = this->server->getServerName();
     envList["GATEWAY_INTERFACE"] = CGI_INTERFACE;
-    envList["PATH_INFO"] = this->getFilePath();
+    envList["PATH_INFO"] = this->getFilePath().length() > 0 ? "/" : "" + this->getFilePath();
     envList["SCRIPT_NAME"] = this->getScriptName();
     envList["SCRIPT_FILENAME"] = this->location->getRoot() + this->getScriptName();
     envList["QUERY_STRING"] = this->getQuery();
@@ -36,6 +41,7 @@ void    CGIHandler::createEnvList()
     envList["PATH_TRANSLATED"] = this->location->getRoot() + this->getFilePath();
     for (; begin != end; ++begin)
 	{
+        //! Should check to espace the CONTENT_TYPE and CONTENT_LENGTH
         envList["HTTP_" + toUpperCase(begin->key)] = begin->value;
 	}
     this->envList = envList;
@@ -45,7 +51,7 @@ const char **CGIHandler::getExecuteArgs()
 {
     const char **table;
 
-    table = (char **)malloc(sizeof(char *) * 3);
+    table = (const char **)malloc(sizeof(const char *) * 3);
     if (!table)
         return (NULL);
     table[0] = this->location->getCGIDefault().c_str();
@@ -66,42 +72,79 @@ const char ** CGIHandler::convertEnvList()
     size = this->envList.size();
     begin = this->envList.begin();
     end = this->envList.end();
-    table = (char **)malloc(sizeof(char *) * (size + 1));
+    table = (const char **)malloc(sizeof(const char *) * (size + 1));
     if (!table)
         return (NULL);
     for (; begin != end; ++begin)
     {
-        table[i] = (begin->first + "=" + begin->second).c_str();
+        table[i] = strdup((begin->first + "=" + begin->second).c_str());
         i++;
     }
     table[i] = NULL;
     return (table);
 }
 
-/* @details: this function is still in testing mode.*/
+std::string CGIHandler::execute()
+{
+    const char **convertedList;
+    int i;
+
+    i = 0;
+    this->createEnvList();
+    convertedList = this->convertEnvList();
+    while (convertedList[i])
+    {
+        std::cout << convertedList[i] << std::endl;
+        i++;
+    }
+}
+
+/* @details: in the substr function i started from 1 to remove the backslash from the 
+script name file path
+*/
 std::string CGIHandler::getScriptName()
 {
-    std::string extension = "php";
-    std::string urlExample = "/php-cgi/index.php/tv/home?season=5&episode=62";
-    return (urlExample.substr(0, urlExample.find(("." + extension).c_str() + extension.length() + 1)));
+    std::string extension = this->location->getCGIExtension();
+    std::string urlExample = this->request->getRequestTarget();
+    return (urlExample.substr(1, urlExample.find(("." + extension).c_str()) + extension.length())); 
 }
 
 std::string CGIHandler::getQuery()
 {
-    std::string urlExample = "http://localhost/php-cgi/index.php/tv/home?season=5&episode=62";
-    return (splitSeparator(urlExample, '?')[1]);
+    std::string urlExample = this->request->getRequestTarget();
+    stringContainer str;
+    stringContainer params;
+    int i;
+
+    i = 0;
+    if (urlExample.find("?") != std::string::npos)
+    {
+        str = splitSeparator(urlExample, '?');
+        if (str.size() > 1)
+        {
+            params = splitSeparator(str[1], '&');
+            while (i < params.size())
+            {
+                if (params[i].find("=") == std::string::npos)
+                    return (std::string());
+                i++;
+            }
+            return (str[1]);
+        }
+    }
+    return (std::string());
 }
 
 std::string CGIHandler::getFilePath()
 {
     std::string scriptName = "index.php";
-    std::string urlExample = "http://localhost/php-cgi/index.php/tv/home?season=5&episode=62";
+    std::string urlExample = "http://localhost/php-cgi/index.php?season=5&episode=62";
     std::string queryStrippedURL = splitSeparator(urlExample, '?')[0];
-    std::string filePath = queryStrippedURL.erase(0, queryStrippedURL.find(scriptName) + scriptName.length());
+    std::string filePath = queryStrippedURL.erase(0, queryStrippedURL.find(scriptName) + scriptName.length() + 1);
     return (filePath);
 }
 
-std::string    CGIHandler::execute()
+std::string    CGIHandler::getOutput()
 {
     int fds[2];
     int fd;
@@ -117,10 +160,10 @@ std::string    CGIHandler::execute()
         exit(1);
     }
     pid = fork();
-    if (pid == 0)
+    if (pid == 0) // Redirecting the execve output to the file.
     {
         close(fds[1]);
-        dup2(fds[0], 0);
+        dup2(fds[0], STDIN_FILENO);
         fd = open("/tmp/CGI", O_RDWR | O_CREAT | 777);
         if (fd < 0)
         {
@@ -128,7 +171,7 @@ std::string    CGIHandler::execute()
             exit(1);
         }
         execve(this->defaultPath.c_str(), args, envList);
-        dup2(fd, 1); // Redirecting the execve output to the file.
+        dup2(fd, STDOUT_FILENO); // Redirecting the execve output to the file.
         close(fds[0]);
         close(fd);
         exit(0);
@@ -142,10 +185,9 @@ std::string    CGIHandler::execute()
     }
 }
 
-//Query Example: http://localhost/php-cgi/index.php/tv/home?season=5&episode=62
+//URL Example: http://localhost/php-cgi/index.php/tv/home?season=5&episode=62
 
-// Host: localhost
-// Path info: /tv/home
-// Query string: season=5&episode=62
-// Script name: /php-cgi/index.php
-// Request URI: /php-cgi/index.php/tv/home?season=5&episode=62
+// PATH_INFO: /tv/home
+// QUERY_STRING: season=5&episode=62
+// SCRIPT_NAME: /php-cgi/index.php
+// REQUEST_URI: /php-cgi/index.php/tv/home?season=5&episode=62
