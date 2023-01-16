@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/13 15:35:19 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/14 13:00:53 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/16 10:45:11 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 std::string requestGeneratorByGPT()
 {
 	std::string method = "POST";
-    std::string url = "http://www.example.com/api";
+    std::string url = "http://141.21.31.4:90/sbardila";
     std::string headers = "Host: sbrdila\r\nContent-Type: application/json\r\nAccept: application/json\r\n";
     std::string body = "{\"param1\":\"value1\",\"param2\":\"value2\"}";
 
@@ -41,14 +41,18 @@ int main(void)
 		std::string fileRequest = requestGeneratorByGPT();
 		Request newRequest(fileRequest);
 		newRequest.printResult();
-		std::cout << "==============\n";
-		std::string fileRequest1 = requestGeneratorByGPT();
-		Request newRequest1(fileRequest1);
-		newRequest1.printResult();
-		std::cout << "==============\n";
-		std::string fileRequest12 = requestGeneratorByGPT();
-		Request newRequest12(fileRequest12);
-		newRequest12.printResult();
+		std::cout << "hostname: " << newRequest.getStartLine().hostName << std::endl;
+		std::cout << "ipAdress: " << newRequest.getStartLine().IpAdress << std::endl;
+		std::cout << "Port: " << newRequest.getStartLine().Port << std::endl;
+		
+		// std::cout << "==============\n";
+		// std::string fileRequest1 = requestGeneratorByGPT();
+		// Request newRequest1(fileRequest1);
+		// newRequest1.printResult();
+		// std::cout << "==============\n";
+		// std::string fileRequest12 = requestGeneratorByGPT();
+		// Request newRequest12(fileRequest12);
+		// newRequest12.printResult();
 		// std::string body = "sbardila hoho teyoo jotaro";
 		// Response	newResponse(newRequest, body);
 		// stringContainer::iterator end = newResponse.responseToSend.end();
