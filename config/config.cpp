@@ -164,8 +164,6 @@ void    Http::parseDirective(stringContainer config, int line)
     }
 }
 
-
-
 std::vector<Server *> Http::getServers()
 {
     return (this->servers);
@@ -276,7 +274,6 @@ void    Server::parseDirective(stringContainer config, Server *instance, int lin
             if (str[1] != "localhost" && !validateHost(str[1]))
                 throw parseError("Syntax Error: invalid ip address format: " + str[1]);
             instance->host = strcmp(str[1].c_str(), "localhost") ? str[1] : "127.0.0.1";
-            //std::cout << str[1] << std::endl;
         }
         if (instance->port > PORT_MAX)
             throw parseError("Config Error: invalid port number out of range");
@@ -472,10 +469,7 @@ void    Location::parseDirective(stringContainer line, Location *instance)
     else if (line[0] == "cgi_extension" && line.size() == 2)
         instance->cgiExtension = line[1];
     else
-    {
-        printContainer(line);
         throw parseError("Syntax Error: invalid directive format: Location: " + this->endPoint);
-    }
 }
 
 void    Location::parseMethods(stringContainer methods)

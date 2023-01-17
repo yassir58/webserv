@@ -1,5 +1,11 @@
 #include <iostream>
 #include <exception>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include "../config/config.hpp"
 #include "../request/Request.hpp"
 
@@ -7,6 +13,7 @@
 #define CGI_INTERFACE "CGI/1.1"
 #define HTTP_PROTOCOL "HTTP/1.1"
 
+typedef std::map<std::string, std::string> mapContainer;
 
 class CGIHandler 
 {
@@ -16,16 +23,19 @@ class CGIHandler
         Server *server;
         Request *request;
         Config *configFile;
-        stringContainer envList;
+        mapContainer envList;
         std::string         getScriptName();
         std::string         getQuery();
         std::string         getFilePath();
         std::string         getRequestURI();
+        std::string         getOutput();
         void                createEnvList();
-        char **             convertEnvList();
+        const char **             convertEnvList();
+        const char **             getExecuteArgs();
     public:
+        CGIHandler();
         CGIHandler(Location *location, Server *server, Request *request);
         ~CGIHandler();
-        std::string    execute();
+        std::string         execute();
 };
 
