@@ -4,7 +4,7 @@
 
 Config::Config()
 {
-    // std::cout << "Config constructor called but without any params" << std::endl;
+    // //std::cout << "Config constructor called but without any params" << std::endl;
 }
 
 Config::Config(std::string path)
@@ -16,20 +16,20 @@ Config::Config(std::string path)
 
 Config::~Config()
 {
-    // std::cout << "Config destructor called." << std::endl;
+    // //std::cout << "Config destructor called." << std::endl;
 }
 
 void    Config::printConfig()
 {
-    std::cout << "====Main context:" << std::endl;
-    std::cout << "PID path::: " << this->pid_path << std::endl;
-    std::cout << "====Http context:" << std::endl;
+    //std::cout << "====Main context:" << std::endl;
+    //std::cout << "PID path::: " << this->pid_path << std::endl;
+    //std::cout << "====Http context:" << std::endl;
     if (this->getHttpContext()->getSendFilestatus())
-        std::cout << "File upload::: enabled" << std::endl;
-    std::cout << "Error Pages: " << std::endl;
-    // std::cout << "404::: " << this->getHttpContext()->getErrorPages()->path_not_found << std::endl;
-    // std::cout << "403::: " << this->getHttpContext()->getErrorPages()->path_forbidden << std::endl;
-    // std::cout << "500::: " << this->getHttpContext()->getErrorPages()->path_internal_error << std::endl;
+        //std::cout << "File upload::: enabled" << std::endl;
+    //std::cout << "Error Pages: " << std::endl;
+    // //std::cout << "404::: " << this->getHttpContext()->getErrorPages()->path_not_found << std::endl;
+    // //std::cout << "403::: " << this->getHttpContext()->getErrorPages()->path_forbidden << std::endl;
+    // //std::cout << "500::: " << this->getHttpContext()->getErrorPages()->path_internal_error << std::endl;
     this->getHttpContext()->printServers();
 }
 
@@ -83,12 +83,12 @@ std::string Config::getPidPath()
 
 Http::Http() 
 {
-    // std::cout << "Http default constructor called" << std::endl;
+    // //std::cout << "Http default constructor called" << std::endl;
 }
 
 Http::~Http() {
     // Should free up any memeory used by the http context.
-    // std::cout << "Http destructor called" << std::endl;
+    // //std::cout << "Http destructor called" << std::endl;
 }
 
 void    Http::printServers(){
@@ -97,7 +97,7 @@ void    Http::printServers(){
     i = 0;
     while (i < this->getServers().size())
     {
-        std::cout << "====Server context:" << std::endl;
+        //std::cout << "====Server context:" << std::endl;
         this->getServers()[i]->printServer();
         if (this->getServers()[i]->getLocations().size() > 0)
             this->getServers()[i]->printLocations();
@@ -180,12 +180,12 @@ Server::Server()
     this->port = 8080;
     this->host = "127.0.0.1";
     this->serverName = "";
-    // std::cout << "Called the default constructor of server" << std::endl;
+    // //std::cout << "Called the default constructor of server" << std::endl;
 }
 
 Server::~Server()
 {
-    // std::cout << "Called the default destructor of server" << std::endl;
+    // //std::cout << "Called the default destructor of server" << std::endl;
 }
 
 void    Server::printLocations()
@@ -203,11 +203,11 @@ void    Server::printLocations()
 
 void    Server::printServer()
 {
-    std::cout << "HOST: " << this->host << std::endl;
-    std::cout << "PORT: " << this->port << std::endl;
-    std::cout << "SERVER NAME: " << this->serverName << std::endl;
-    std::cout << "ROOT: " << this->root << std::endl;
-    std::cout << "MAX BODY SIZE: " << this->maxBodySize << std::endl;
+    //std::cout << "HOST: " << this->host << std::endl;
+    //std::cout << "PORT: " << this->port << std::endl;
+    //std::cout << "SERVER NAME: " << this->serverName << std::endl;
+    //std::cout << "ROOT: " << this->root << std::endl;
+    //std::cout << "MAX BODY SIZE: " << this->maxBodySize << std::endl;
 }
 
 Server * Server::parseServer(stringContainer configFile, int index)
@@ -365,12 +365,12 @@ Location::Location()
 Location::~Location()
 {
     // Free any allocated memory by the location object
-    // std::cout << "Default destructor of location called" << std::endl;
+    // //std::cout << "Default destructor of location called" << std::endl;
 }
 
 Location::Location(std::string path)
 {
-    // std::cout << "Setting the location path" << std::endl;
+    // //std::cout << "Setting the location path" << std::endl;
     this->endPoint = path;
     this->redirectLink = "";
 }

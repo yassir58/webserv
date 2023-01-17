@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
+/*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:36 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/12 15:58:28 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/01/15 11:44:04 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,30 +40,33 @@ class Request
 		headerFieldList			headerFields; // linked list store the header fields of the request
 		stringContainer			body; // contain the body of the request
 		int						statusCode; // the error code or the status code
+		size_t 					pos; // used in getCRLF() method
+		size_t 					start; // also used in getCRLF() method
 	public:
 		Request(std::string	file); //param constructor take a string as param
 		~Request(); // destructor not used 
-		int	checkMethod(void); // check if the method is valid
-		int	treatAbsoluteURI(void); // treat the case where the request contain an absolute URI
-		int	treatAbsolutePath(void); // treat the case where the request contain an absolute path
-		int checkRequestTarget(void); // check if the request target is valid
-		int	checkVersion(void); // check the HTTP version
-		int	checkContentParsed(void); // check the content that been parsed
-		int parseFirstLine(std::string line); // parse the first line of the request
-		int parseHeaderField(headerFieldList &list, std::string line); // parse the header fields and store it in linked list
-		void	parseHostName(std::string &hostNameValue); // parse the host name and store it on the t_start struct (startLine)
-		int	parseBody(std::string line); // parse the body and store it in the body(look at the private attribute)
-		int	getCRLF(std::string &newLine, char *delim); // split the fileString by delim given as argument and store it on the newLine
-		void	printResult(void); // print the result produced
-		t_start &getStartLine(void); // geter of the startLine
-		headerFieldList &getHeaderField(void); // geter of the headerFields linked list
-		void	setFileString(std::string &file); // seter of the file string
-		void	setStatusCode(int newStatusCode); // seter of the status code
+		int				checkMethod(void); // check if the method is valid
+		int				treatAbsoluteURI(void); // treat the case where the request contain an absolute URI
+		int				treatAbsolutePath(void); // treat the case where the request contain an absolute path
+		int 			checkRequestTarget(void); // check if the request target is valid
+		int				checkVersion(void); // check the HTTP version
+		int				checkContentParsed(void); // check the content that been parsed
+		int 			parseFirstLine(std::string line); // parse the first line of the request
+		int 			parseHeaderField(headerFieldList &list, std::string line); // parse the header fields and store it in linked list
+		void			parseHostName(std::string &hostNameValue); // parse the host name and store it on the t_start struct (startLine)
+		int				parseBody(std::string line); // parse the body and store it in the body(look at the private attribute)
+		int				getCRLF(std::string &newLine, char *delim); // split the fileString by delim given as argument and store it on the newLine
+		void			printResult(void); // print the result produced
+		t_start 		&getStartLine(void); // geter of the startLine
+		headerFieldList &getHeaderFieldlist(void); // geter of the headerFields linked list
+		void			setFileString(std::string &file); // seter of the file string
+		void			setStatusCode(int newStatusCode); // seter of the status code
+		headerField		*getHeaderField(std::string key); // return a pointer on headerField struct specified in the key param return NULL if not found
 		std::string		getErrorCode(void); // geterof the error code as string (i think I should make one that return the int repre)
 		std::string		getMethod(void); // geter of the method
 		std::string		getHTTPVersion(void); // geter of the HTTP version
 		std::string		getRequestTarget(void); // geter of the request target
-		// std::string		getErrorCode(void);
-		int 			getStatusCode(void);
+		int 			getStatusCode(void); // geter of the status code int repre
+		stringContainer getBody(void); // return the body within the request 
 };
 #endif

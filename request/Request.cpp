@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/10 19:28:48 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/16 10:40:45 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,8 +83,6 @@ int	Request::checkContentParsed()
 
 int	Request::getCRLF(std::string &newLine, char *delim)
 {
-	static size_t pos;
-	static size_t start;
 	if (start == fileString.length())
 	{
 		newLine = "";
@@ -124,14 +122,15 @@ int Request::checkMethod()
 
 int	Request::treatAbsoluteURI()
 {
-	if (!startLine.requestTarget.compare(0, 6, "http//") || !startLine.requestTarget.compare(0, 6, "HTTP//"))
+	std::string hostName;
+	if (!startLine.requestTarget.compare(0, 7, "http://") || !startLine.requestTarget.compare(0, 7, "HTTP://"))
 	{
-		startLine.requestTarget.erase(0, 6);
+		startLine.requestTarget.erase(0, 7);
 		size_t pos = startLine.requestTarget.find('/', 0);
-		startLine.hostName = startLine.requestTarget.substr(0, pos);
+		hostName = startLine.requestTarget.substr(0, pos);
 		startLine.requestTarget.erase(0, pos);
 		startLine.requestTarget = startLine.requestTarget.substr(0, std::string::npos);
-		parseHostName(startLine.hostName);
+		parseHostName(hostName);
 		return (1);
 	}
 	return (0);
@@ -139,28 +138,30 @@ int	Request::treatAbsoluteURI()
 
 int Request::treatAbsolutePath()
 {
-	// if (access(startLine.requestTarget, F_OK))
-	// {
-	// 	statusCode = 404;
-	// }
-	// if (startLine.method == "POST" && access(startLine.requestTarget, W_OK))
-	// {
-	// 	statusCode = 405;
-	// }
-	// if (startLine.method == "GET" && access(startLine.requestTarget, R_OK))
-	// {
-	// 	statusCode = 405;
-	// }
-	statusCode = 204;
+	if (access(startLine.requestTarget.c_str(), F_OK) == -1)
+	{
+		statusCode = NOT_FOUND;
+		return (0);
+	}
+	if (startLine.method == "POST" && access(startLine.requestTarget.c_str(), W_OK) == -1)
+	{
+		statusCode = NOT_ALLOWED;
+		return (0);
+	}
+	if (startLine.method == "GET" && access(startLine.requestTarget.c_str(), R_OK) == -1)
+	{
+		statusCode = NOT_ALLOWED;
+		return (0);
+	}
 	return (1);
 }
 
 int Request::checkRequestTarget()
 {
 	treatAbsoluteURI();
-	if (treatAbsolutePath())
-		return (1);
-	return (0);
+	// if (treatAbsolutePath())
+	// 	return (1);
+	return (1);
 }
 
 int Request::parseFirstLine(std::string line)
@@ -199,15 +200,29 @@ int Request::checkVersion()
 
 void	Request::parseHostName(std::string &hostNameValue)
 {
-	startLine.Host = true;
-	if (isdigit (hostNameValue[0]))
+	if (startLine.Host == true || !startLine.Port.empty())
+		return ;
+	if (isdigit (hostNameValue[0]) || !hostNameValue.compare(0, 9, "localhost"))
 	{
 		size_t pos = hostNameValue.find(':', 0);
 		startLine.IpAdress = hostNameValue.substr(0, pos);
-		startLine.Port = hostNameValue.substr(pos + 1, std::string::npos);
+		if (pos == std::string::npos)
+			startLine.Port = "80";
+		else
+			startLine.Port = hostNameValue.substr(pos + 1, std::string::npos);
 	}
 	else
-		startLine.hostName = hostNameValue;
+	{
+		startLine.Host = true;
+		size_t pos1 = hostNameValue.find(':', 0);
+		if (pos1 != std::string::npos)
+		{
+			startLine.hostName = hostNameValue.substr(0, pos1);
+			startLine.Port = hostNameValue.substr(pos1 + 1, std::string::npos);
+		}
+		else
+			startLine.hostName = hostNameValue;
+	}
 }
 
 int Request::parseHeaderField(headerFieldList &list, std::string line)
@@ -261,7 +276,7 @@ void	Request::printResult(void)
 ** --------------------------------- ACCESSOR ---------------------------------
 */
 
-headerFieldList &Request::getHeaderField(void) 
+headerFieldList &Request::getHeaderFieldlist(void) 
 {
 	return (headerFields);
 }
@@ -274,6 +289,9 @@ t_start &Request::getStartLine(void)
 void	Request::setFileString(std::string &file)
 {
 	fileString = file;
+	startLine.Host = false;
+	pos = 0;
+	start = 0;
 }
 
 void	Request::setStatusCode(int newStatusCode)
@@ -308,6 +326,24 @@ std::string		Request::getRequestTarget(void)
 int Request::getStatusCode(void)
 {
 	return (statusCode);
+}
+
+stringContainer Request::getBody(void)
+{
+	return (body);
+}
+
+headerField *Request::getHeaderField(std::string key)
+{
+	headerFieldList::iterator begin = headerFields.begin();
+	headerFieldList::iterator end = headerFields.end();
+	while (begin != end)
+	{
+		if (begin->key == key)
+			return (&(*begin));
+		++begin;
+	}
+	return (NULL);
 }
 
 /* ************************************************************************** */
