@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/14 16:01:13 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/11 12:55:25 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/16 12:34:25 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ typedef struct start
 	std::string	hostName;
 	std::string IpAdress;
 	std::string Port;
+	std::string	Query;
 	bool		Host;
 } t_start;
 

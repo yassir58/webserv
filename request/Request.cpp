@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/16 10:40:45 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/16 12:47:38 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -202,6 +202,12 @@ void	Request::parseHostName(std::string &hostNameValue)
 {
 	if (startLine.Host == true || !startLine.Port.empty())
 		return ;
+	size_t queryPos = this->startLine.requestTarget.find('?', 0);
+	if (queryPos != std::string::npos)
+	{
+		startLine.Query = this->startLine.requestTarget.substr(queryPos + 1, std::string::npos);
+		this->startLine.requestTarget = this->startLine.requestTarget.substr(0, queryPos);
+	}
 	if (isdigit (hostNameValue[0]) || !hostNameValue.compare(0, 9, "localhost"))
 	{
 		size_t pos = hostNameValue.find(':', 0);

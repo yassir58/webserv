@@ -6,20 +6,21 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/13 15:35:19 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/16 10:45:11 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/17 13:17:48 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "request.h"
 #include "Request.hpp"
+#include "../response/Response.hpp"
 #include <unistd.h>
 #include <iostream>
 
 std::string requestGeneratorByGPT()
 {
 	std::string method = "POST";
-    std::string url = "http://141.21.31.4:90/sbardila";
-    std::string headers = "Host: sbrdila\r\nContent-Type: application/json\r\nAccept: application/json\r\n";
+    std::string url = "/";
+    std::string headers = "Host: 12.12.3123.1:78\r\nContent-Type: application/json\r\nAccept: application/json\r\n";
     std::string body = "{\"param1\":\"value1\",\"param2\":\"value2\"}";
 
     std::stringstream request;
@@ -44,6 +45,7 @@ int main(void)
 		std::cout << "hostname: " << newRequest.getStartLine().hostName << std::endl;
 		std::cout << "ipAdress: " << newRequest.getStartLine().IpAdress << std::endl;
 		std::cout << "Port: " << newRequest.getStartLine().Port << std::endl;
+		std::cout << "query: " << newRequest.getStartLine().Query << std::endl;
 		
 		// std::cout << "==============\n";
 		// std::string fileRequest1 = requestGeneratorByGPT();
@@ -54,7 +56,9 @@ int main(void)
 		// Request newRequest12(fileRequest12);
 		// newRequest12.printResult();
 		// std::string body = "sbardila hoho teyoo jotaro";
-		// Response	newResponse(newRequest, body);
+		std::cout << "=======response===========\n";
+		Response	newResponse(newRequest);
+		std::cout << newResponse.getResponse();
 		// stringContainer::iterator end = newResponse.responseToSend.end();
 		// stringContainer::iterator begin = newResponse.responseToSend.begin();
 		// std::cout << "===============request==============\n";

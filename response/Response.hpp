@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 14:44:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/14 16:11:54 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/17 13:07:19 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ class Response
 		std::string 	generateStatusLine(); // generate the status line
 		void			setRequest(Request *request); // seter of the request(look at the private attribute)
 		int				getStatusCode(void); // return the index of the status code
-		stringContainer	getResponse(void);
+		std::string		getResponse(void);
 };
 
 #endif /* ******************************************************** RESPONSE_H */
