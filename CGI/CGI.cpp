@@ -60,8 +60,8 @@ const char **CGIHandler::getExecuteArgs()
     table = (const char **)malloc(sizeof(const char *) * 3);
     if (!table)
         return (NULL);
-    table[0] = this->location->getCGIDefault().c_str();
-    table[1] = (this->location->getRoot() + this->getScriptName()).c_str();
+    table[0] = strdup(this->location->getCGIDefault().c_str());
+    table[1] = strdup((this->location->getRoot() + this->getScriptName()).c_str());
     table[2] = NULL;
     return (table);
 }
@@ -97,12 +97,7 @@ std::string CGIHandler::execute()
 
     i = 0;
     this->createEnvList();
-    convertedList = this->convertEnvList();
-    while (convertedList[i])
-    {
-        std::cout << convertedList[i] << std::endl;
-        i++;
-    }
+    this->getOutput();
 }
 
 /* @details: in the substr function i started from 1 to remove the backslash from the 
@@ -112,7 +107,7 @@ std::string CGIHandler::getScriptName()
 {
     std::string extension = this->location->getCGIExtension();
     std::string urlExample = this->request->getRequestTarget();
-    return (urlExample.substr(1, urlExample.find(("." + extension).c_str()) + extension.length())); 
+    return (urlExample.substr(urlExample[0] == '/' ? 1 : 0, (urlExample.find(("." + extension).c_str()) + extension.length()) + 1)); 
 }
 
 std::string CGIHandler::getQuery()
@@ -154,11 +149,13 @@ std::string    CGIHandler::getOutput()
     int fds[2];
     int fd;
     std::string output;
+    char buff[100000];
     char **envList;
     char **args;
     pid_t pid;
 
     args = (char **)this->getExecuteArgs();
+    envList = (char **)this->convertEnvList();
     if (pipe(fds) < 0)
     {
         std::cout << "Could not use pipe" << std::endl;
@@ -178,17 +175,20 @@ std::string    CGIHandler::getOutput()
         execve(this->defaultPath.c_str(), args, envList);
         dup2(fd, STDOUT_FILENO); // Redirecting the execve output to the file.
         close(fds[0]);
+        read(fd, buff, 1000);
         close(fd);
         exit(0);
     }
     else
     {
+        std::cout << "before the segfault" << std::endl;
         close(fds[0]);
         //? I think i should do some more parsing to request body accoring to the encoding type.
         write(fds[1], convertBody(this->request->getBody()).c_str(), convertBody(this->request->getBody()).length());
         close(fds[1]);
         waitpid(-1, NULL, 0);
     }
+    std::cout << buff << std::endl;
 }
 
 //URL Example: http://localhost/php-cgi/index.php/tv/home?season=5&episode=62
