@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/13 15:35:19 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/17 13:17:48 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/17 17:47:26 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 std::string requestGeneratorByGPT()
 {
 	std::string method = "POST";
-    std::string url = "/";
+    std::string url = "http://hoho.com/sbardila?sbarila"; // a rad lquery
     std::string headers = "Host: 12.12.3123.1:78\r\nContent-Type: application/json\r\nAccept: application/json\r\n";
     std::string body = "{\"param1\":\"value1\",\"param2\":\"value2\"}";
 
@@ -41,7 +41,8 @@ int main(void)
 		// char fileRequest[] = {	"POST /echo/post/json HTTP/1.1\r\nHost: reqbin.com\r\nAccept: application/json\r\nContent-Type: application/json\r\nContent-Length: 81\r\n\r\n{\nId: 78912,\nCustomer: Jason Sweet,\nQuantity: 1,\nPrice: 18.00\n}\n"};
 		std::string fileRequest = requestGeneratorByGPT();
 		Request newRequest(fileRequest);
-		newRequest.printResult();
+		// newRequest.printResult();
+		std::cout << "request: " << newRequest.getStartLine().requestTarget << std::endl;
 		std::cout << "hostname: " << newRequest.getStartLine().hostName << std::endl;
 		std::cout << "ipAdress: " << newRequest.getStartLine().IpAdress << std::endl;
 		std::cout << "Port: " << newRequest.getStartLine().Port << std::endl;

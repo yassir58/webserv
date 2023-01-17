@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/16 12:47:38 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/17 19:00:18 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,8 @@ Request::Request(std::string fileString)
 		if (!parseHeaderField(headerFields, line))
 			statusCode = BAD_REQUEST;
 	}
+	if (!startLine.Query.empty())
+		startLine.requestTarget = startLine.requestTarget +  "?" + startLine.Query;
 	if (startLine.Host == false)
 	{
 		statusCode = BAD_REQUEST;
