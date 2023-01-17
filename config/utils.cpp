@@ -320,3 +320,19 @@ void    freeTable(char **table)
         free(table[i++]);
     free(table);
 }
+
+std::string convertBody(stringContainer body)
+{
+    unsigned int i;
+    std::string res;
+
+    i = 0;
+    while (i < body.size())
+    {
+        res.append(body[i]);
+        if (i + 1 < body.size())
+            res.append("\n");
+        i++;
+    }
+    return (res);
+}

@@ -184,8 +184,8 @@ std::string    CGIHandler::getOutput()
     else
     {
         close(fds[0]);
-        // write(fd[1], )
-        // Write request body to the child process std input
+        //? I think i should do some more parsing to request body accoring to the encoding type.
+        write(fds[1], convertBody(this->request->getBody()).c_str(), convertBody(this->request->getBody()).length());
         close(fds[1]);
         waitpid(-1, NULL, 0);
     }
