@@ -30,8 +30,9 @@ void    CGIHandler::createEnvList()
     envList["SERVER_PROTOCOL"] = HTTP_PROTOCOL;
     envList["SERVER_PORT"] = int2assci(this->server->getPort());
     envList["SERVER_NAME"] = this->server->getServerName();
+    envList["SERVER_ADDR"] = this->server->getHost();
     envList["GATEWAY_INTERFACE"] = CGI_INTERFACE;
-    envList["PATH_INFO"] = this->getFilePath().length() > 0 ? "/" : "" + this->getFilePath();
+    envList["PATH_INFO"] = (this->getFilePath().length() > 0 ? "/" : "") + this->getFilePath();
     envList["SCRIPT_NAME"] = this->getScriptName();
     envList["SCRIPT_FILENAME"] = this->location->getRoot() + this->getScriptName();
     envList["QUERY_STRING"] = this->getQuery();
@@ -41,9 +42,11 @@ void    CGIHandler::createEnvList()
     envList["PATH_TRANSLATED"] = this->location->getRoot() + this->getFilePath();
     for (; begin != end; ++begin)
 	{
-        //! Should check to espace the CONTENT_TYPE and CONTENT_LENGTH
+        if (begin->key == "content-type" || begin->key == "content-length")
+            begin++;
         envList["HTTP_" + toUpperCase(begin->key)] = begin->value;
 	}
+
     this->envList = envList;
 }
 
@@ -138,7 +141,7 @@ std::string CGIHandler::getQuery()
 std::string CGIHandler::getFilePath()
 {
     std::string scriptName = "index.php";
-    std::string urlExample = "http://localhost/php-cgi/index.php?season=5&episode=62";
+    std::string urlExample = "http://localhost/php-cgi/index.php/home/good?season=5&episode=62";
     std::string queryStrippedURL = splitSeparator(urlExample, '?')[0];
     std::string filePath = queryStrippedURL.erase(0, queryStrippedURL.find(scriptName) + scriptName.length() + 1);
     return (filePath);
