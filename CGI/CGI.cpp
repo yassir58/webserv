@@ -21,7 +21,7 @@ CGIHandler::~CGIHandler()
 void    CGIHandler::createEnvList()
 {
     mapContainer envList;
-    headerFieldList value = this->request->getHeaderField();
+    headerFieldList value = this->request->getHeaderFieldlist();
 
    	headerFieldList::iterator end = value.end();
 	headerFieldList::iterator begin = value.begin();
@@ -46,7 +46,10 @@ void    CGIHandler::createEnvList()
             begin++;
         envList["HTTP_" + toUpperCase(begin->key)] = begin->value;
 	}
-
+    if (this->request->getHeaderField("content-type") != NULL)
+        envList["CONTENT_TYPE"] = this->request->getHeaderField("content-type")->value;
+    if (this->request->getHeaderField("content-length") != NULL)
+        envList["CONTENT_LENGTH"] = this->request->getHeaderField("content-length")->value;
     this->envList = envList;
 }
 
@@ -140,10 +143,9 @@ std::string CGIHandler::getQuery()
 
 std::string CGIHandler::getFilePath()
 {
-    std::string scriptName = "index.php";
-    std::string urlExample = "http://localhost/php-cgi/index.php/home/good?season=5&episode=62";
+    std::string urlExample = this->request->getRequestTarget();
     std::string queryStrippedURL = splitSeparator(urlExample, '?')[0];
-    std::string filePath = queryStrippedURL.erase(0, queryStrippedURL.find(scriptName) + scriptName.length() + 1);
+    std::string filePath = queryStrippedURL.erase(0, queryStrippedURL.find(this->getScriptName()) + this->getScriptName().length() + 1);
     return (filePath);
 }
 
@@ -182,6 +184,7 @@ std::string    CGIHandler::getOutput()
     else
     {
         close(fds[0]);
+        // write(fd[1], )
         // Write request body to the child process std input
         close(fds[1]);
         waitpid(-1, NULL, 0);
