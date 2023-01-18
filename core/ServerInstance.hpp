@@ -27,6 +27,7 @@
 #include <sys/event.h>
 #include <sys/time.h>
 #include <sys/select.h>
+#include <arpa/inet.h>
 
 // MACROS
 #define PORT 8080
@@ -55,6 +56,8 @@
 
 typedef std::vector <Server*> serverBlocks;
 typedef int SOCKET ;
+typedef std::vector <int> intContainer;
+typedef std::vector <std::string> stringContainer;
 
 
 // for testing purpos
@@ -137,7 +140,6 @@ class HttpApplication
     private:
         int epollInstance;
 		int queueIdentifier;
-		int eventIndx;
         int nfds;
         int errValue;
         int serverCount;
@@ -145,7 +147,6 @@ class HttpApplication
         int returnValue;
         int indx;
         serverContainer serverList;
-        serverBlocks servConfigBlocks;
         std::string httpDefaultErrorPage;
         int HttpMaxBodySize;
         std::ofstream logFile;
@@ -165,6 +166,7 @@ public:
     void handleConfig (int argc, char *argv[]);
     pollfd *getConnectionPool(void) const;
     serverContainer getServerList(void) const;
+	serverBlocks getServerBlockList (void) const;
     // void setConnectionPool(pollfd *fd_pool);
     void allocateServers (void);
     void checkForConnection (void);
@@ -190,30 +192,37 @@ class Client {
         Request *request;
         int clientSocket;
         std::vector <int> resolversList;
-        int serverHandlerIndx;
         char buffer[BUFFER_MAX];
         int dataRecievedLength;
         struct addrinfo *requestSourceAddr;
         int clientPort;
-        std::string clientIp;
+        std::string hostName;
+		std::string serviceName;
+		std::string ipAddress;
+		int requestHandlerIndx ;
+		size_t requestLength;
+		
 
     public:
         Client ();
-        Client (int fd);
+		Client (int fd);
+		~Client ();
         int getClientSocket (void) const;
-        int getServerHandlerIndx (void) const;
         char *getBuffer (void) ;
         void emptyBuffer (void);
         void recieveData (void);
-        void sendData (void);
+        void sendResponse (void);
         std::vector <int> getResolversList (void) const;
-        void generateResolversList (serverContainer serverList);
+        void generateResolversList (serverBlocks serverList);
+		void setRequest (void);
+		void printfResolvers (void);
+		int matchRequestHandler (serverBlocks serverList);
+		int getHandlerIndx (void) const;
 };
 
 
 void handleError(int err);
 void initServers(ServerInstance *serv_list);
 const std::string currentDateTime();
-
-
+std::string getTestBody (std::string filename);
 #endif

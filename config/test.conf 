@@ -1,0 +1,12 @@
+# I will use this config file to test weird configs
+# and see how the parser will react
+
+pid /var/www/webserv/webserv.pid;
+
+http {
+    server {
+        location / {
+            root /var/www/html/webserv/res;
+        }
+    }
+}

@@ -305,8 +305,34 @@ std::string toUpperCase(std::string str)
     i = 0;
     while (str[i])
     {
-        str[i] = toupper(str[i]);
+        str[i] = toupper(str[i]); 
         i++;
     }
     return (str);
+}
+
+void    freeTable(char **table)
+{
+    int i;
+
+    i = 0;
+    while (table[i])
+        free(table[i++]);
+    free(table);
+}
+
+std::string convertBody(stringContainer body)
+{
+    unsigned int i;
+    std::string res;
+
+    i = 0;
+    while (i < body.size())
+    {
+        res.append(body[i]);
+        if (i + 1 < body.size())
+            res.append("\n");
+        i++;
+    }
+    return (res);
 }

@@ -2,14 +2,14 @@
 #include "../config/config.hpp"
 #include "../request/request.h"
 #include "../request/Request.hpp"
+#include "../response/Response.hpp"
 
 HttpApplication::HttpApplication ()
 {
     serverCount = 1;
     connectionCount = 0;
-    logFile.open ("server_log", std::ios_base::app);
+    logFile.open ("server.log", std::ios_base::app);
     indx = serverCount;
-	eventIndx = 0;
 }
 
 HttpApplication::~HttpApplication ()
@@ -32,6 +32,7 @@ void HttpApplication::connectServers (void)
     serverContainer::iterator bg;
 	int fd;
 	struct kevent change;
+	int indx = 0;
 	
     for (bg = serverList.begin (); bg != serverList.end (); bg++)
     {
@@ -44,7 +45,7 @@ void HttpApplication::connectServers (void)
 			errValue = kevent (this->queueIdentifier, &change, 1, NULL, 0, NULL);
 			if (errValue < 0)
 				throw Connection_error (strerror(errno), "kevent");
-			eventIndx++;
+			serverLog (indx);
         }
         catch(const std::exception& e)
         {
@@ -55,6 +56,7 @@ void HttpApplication::connectServers (void)
 			// bg--;
             // std::cerr << e.what() << '\n';
         }
+		indx++;
     }
 	
 }
@@ -74,21 +76,18 @@ void HttpApplication::checkForConnection(void)
         {
             fd = resultEvents[i].ident;
 			if (resultEvents[i].flags & EV_ERROR)
-				std::cout << "\e[0;31m socket error \e[0m" << strerror (errno) <<  std::endl; 
+				throw Connection_error (strerror (errno), "EVENT_ERROR");
             else if (resultEvents[i].filter == EVFILT_READ)
             {
             	if (!isServer(fd))
 				{
-					std::cout << "client socket" << std::endl;
             		handleHttpRequest (fd);
             		errValue = close (fd);
             		if (errValue == -1)
                 		handleError (CLOSEERR);
-					eventIndx--;
 				}
 				else
 					handleNewConnection (fd);
-				std::cout << "server socket " << std::endl;
             }
         }
     }
@@ -101,9 +100,7 @@ void HttpApplication::handleNewConnection (int serverFd)
 	struct kevent change ;
 
     server = findServerByFd (serverFd); 
-	std::cout << "\e[0;31m server " << server->getHostName () << "\e[0m" << std::endl;
     clientSocket = server->accept_connection ();
-	std::cout << clientSocket << std::endl;
 	EV_SET (&change, clientSocket, EVFILT_READ , EV_ADD | EV_CLEAR, 0, 0, 0);
 	errValue = kevent (this->queueIdentifier, &change, 1, NULL, 0, NULL);
 	if (errValue < 0)
@@ -113,20 +110,21 @@ void HttpApplication::handleNewConnection (int serverFd)
 	if (errValue < 0)
 		throw Connection_error (strerror (errno), "kevent");
     connectionCount++;
-	eventIndx++;
    	//serverLog (server_indx);
 }
 
 void HttpApplication::handleHttpRequest (int fd)
 {
     Client clientInfo(fd);
+	int serverHandlerIndx = 0;
 
 
     clientInfo.emptyBuffer ();
     clientInfo.recieveData ();
-    // for testing and observability
-    returnValue = send (fd, HTTP_RESPONSE_EXAMPLE, strlen (HTTP_RESPONSE_EXAMPLE), 0);
-    logFile << "\e[0;33mbyte sent : \e[0m" << returnValue << " \e[0;33mexpected : \e[0m" <<  strlen (HTTP_RESPONSE_EXAMPLE) << std::endl;
+	clientInfo.setRequest ();
+	clientInfo.generateResolversList (this->getServerBlockList ());
+	serverHandlerIndx = clientInfo.matchRequestHandler (this->getServerBlockList()) ;
+	clientInfo.sendResponse ();
 }
 
 int HttpApplication::getConnectionIndx (void)
@@ -148,7 +146,7 @@ int HttpApplication::getConnectionCount (void) const
 void HttpApplication::handleConfig (int argc , char *argv[])
 {
     if (argc == 1)
-        config = new Config ("./default.conf");
+        config = new Config ("./testing/configs/default.conf");
     else if (argc == 2)
         config = new Config (argv[argc - 1]);
     else 
@@ -173,7 +171,6 @@ void HttpApplication::printServerInfo (void)
 
 void HttpApplication::setupAppResources (void) 
 {
-    // epollInstance = epoll_create (MAX_CONNECT);
 	queueIdentifier = kqueue ();
     if (queueIdentifier  < 0)
         throw Fatal_error (strerror (errno));
@@ -193,8 +190,6 @@ void HttpApplication::filterServerBlocks (void)
     
         if (!checkServerExistance (*it))
         {
-            //(*it)->printServer ();
-            // check host valid
             server = new ServerInstance ((*it)->getHost(), (*it)->getPort ());
             serverList.push_back (server);
         }
@@ -228,4 +223,9 @@ ServerInstance *HttpApplication::findServerByFd (int serverFd)
             return ((*it));
     }
     return (serverList[0]);
+}
+
+serverBlocks HttpApplication::getServerBlockList (void) const
+{
+	return (this->config->getHttpContext()->getServers());
 }
