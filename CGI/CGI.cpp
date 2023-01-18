@@ -49,8 +49,7 @@ void    CGIHandler::createEnvList()
 	}
     if (this->request->getHeaderField("content-type") != NULL)
         envList["CONTENT_TYPE"] = this->request->getHeaderField("content-type")->value;
-    if (this->request->getHeaderField("content-length") != NULL)
-        envList["CONTENT_LENGTH"] = this->request->getHeaderField("content-length")->value;
+    envList["CONTENT_LENGTH"] = convertBody(this->request->getBody()).length();
     this->envList = envList;
 }
 
@@ -146,8 +145,6 @@ std::string CGIHandler::getFilePath()
     return (filePath);
 }
 
-
-
 std::string    CGIHandler::getOutput()
 {
     int fds[2];
@@ -155,10 +152,12 @@ std::string    CGIHandler::getOutput()
     std::string output;
     char **envList;
     char **args;
+    char buffer[100];
     pid_t pid;
 
     args = (char **)this->getExecuteArgs();
     envList = (char **)this->convertEnvList();
+    print_table(envList);
     if (pipe(fds) < 0)
     {
         std::cout << "Could not use pipe" << std::endl;
@@ -169,26 +168,27 @@ std::string    CGIHandler::getOutput()
     {
         std::cout << "Child 3" << std::endl;
         close(fds[1]);
-        dup2(fds[0], STDIN_FILENO);
         fd = open("/home/sn4r7/Desktop/CGI", O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
         if (fd < 0)
         {
             std::cout << "Could not open tmp file" << std::endl;
             exit(1);
         }
+        dup2(fds[0], STDIN_FILENO);
         dup2(fd, STDOUT_FILENO); // Redirecting the execve output to the file.
-        // std::cout << "Hello from cgi" << std::endl;
         execve(this->defaultPath.c_str(), args, envList);
-        close(fds[0]);
         close(fd);
+        close(fds[0]);
         exit(0);
     }
     else
     {
-        std::cout << convertBody(this->request->getBody()) << std::endl;
+        stringContainer str;
+        str.push_back("username=havel");
         close(fds[0]);
         //? I think i should do some more parsing to request body accoring to the encoding type.
         // write(fds[1], convertBody(this->request->getBody()).c_str(), convertBody(this->request->getBody()).length());
+        write(fds[1], convertBody(str).c_str(), convertBody(str).length());
         close(fds[1]);
         waitpid(-1, NULL, 0);
     }
