@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
+/*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 14:44:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/14 20:03:17 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/01/18 21:26:38 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ class Response
 		std::string 	generateStatusLine(); // generate the status line
 		void			setRequest(Request *request); // seter of the request(look at the private attribute)
 		int				getStatusCode(void); // return the index of the status code
-		stringContainer	getResponse(void);
+		std::string		getResponse(void);
 };
 
 #endif /* ******************************************************** RESPONSE_H */

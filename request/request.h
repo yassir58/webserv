@@ -6,11 +6,11 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/14 16:01:13 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/11 12:55:25 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/17 17:18:31 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#pragma once
+# pragma once
 # include <fstream>
 # include <unistd.h>
 # include <list>
@@ -28,6 +28,7 @@ typedef struct start
 	std::string	hostName;
 	std::string IpAdress;
 	std::string Port;
+	std::string	Query;
 	bool		Host;
 } t_start;
 
@@ -41,7 +42,7 @@ typedef std::list<headerField>	headerFieldList;
 
 typedef struct request
 {
-	t_start		startLine;
+	t_start			startLine;
 	headerFieldList	generalField;
 	headerFieldList	requestField;
 	headerFieldList	entityField;

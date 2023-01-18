@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/14 13:17:29 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/17 13:16:19 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 Response::Response(Request &request)
 {
 	setRequest(&request);
-	applyMethod();
+	// applyMethod();
 	statusIndex = getStatusCode();
 	responseToSend.push_back(generateStatusLine());
 	stringContainer headerFields = generateHeaderFields(responseBody);
@@ -149,10 +149,19 @@ int	Response::applyMethod(void)
 ** --------------------------------- ACCESSOR ---------------------------------
 */
 
-
-stringContainer Response::getResponse(void)
+std::string Response::getResponse(void)
 {
-	return (responseToSend);
+	std::string toReturn;
+	std::stringstream ss;
+	stringContainer::iterator begin = responseToSend.begin();
+	stringContainer::iterator end = responseToSend.end();
+	while (end != begin)
+	{
+		ss << *begin;
+		++begin;
+	}
+	toReturn = ss.str();
+	return (toReturn);
 }
 
 void	Response::setRequest(Request *request)
