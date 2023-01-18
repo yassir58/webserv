@@ -160,5 +160,6 @@ stringContainer   stripSemiColon(stringContainer str);
 std::string int2assci(int nb);
 std::string toUpperCase(std::string str);
 std::string convertBody(stringContainer body);
+void    print_table(char **table);
 
 #endif 

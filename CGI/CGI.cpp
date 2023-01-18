@@ -15,7 +15,7 @@ CGIHandler::CGIHandler(Location *location, Server *server, Request *request)
 
 CGIHandler::~CGIHandler()
 {
-    std::cout << "Freeing up all the allocated memory." << std::endl;
+    // std::cout << "Freeing up all the allocated memory." << std::endl;
 }
 
 void    CGIHandler::createEnvList()
@@ -26,6 +26,7 @@ void    CGIHandler::createEnvList()
    	headerFieldList::iterator end = value.end();
 	headerFieldList::iterator begin = value.begin();
 
+    envList["DOCUMENT_ROOT"] = this->server->getRoot();
     envList["SERVER_SOFTWARE"] = SERVER_SOFTWARE_VERSION;
     envList["SERVER_PROTOCOL"] = HTTP_PROTOCOL;
     envList["SERVER_PORT"] = int2assci(this->server->getPort());
@@ -48,8 +49,7 @@ void    CGIHandler::createEnvList()
 	}
     if (this->request->getHeaderField("content-type") != NULL)
         envList["CONTENT_TYPE"] = this->request->getHeaderField("content-type")->value;
-    if (this->request->getHeaderField("content-length") != NULL)
-        envList["CONTENT_LENGTH"] = this->request->getHeaderField("content-length")->value;
+    envList["CONTENT_LENGTH"] = convertBody(this->request->getBody()).length();
     this->envList = envList;
 }
 
@@ -89,6 +89,7 @@ const char ** CGIHandler::convertEnvList()
     table[i] = NULL;
     return (table);
 }
+
 
 std::string CGIHandler::execute()
 {
@@ -149,46 +150,49 @@ std::string    CGIHandler::getOutput()
     int fds[2];
     int fd;
     std::string output;
-    char buff[100000];
     char **envList;
     char **args;
+    char buffer[100];
     pid_t pid;
 
     args = (char **)this->getExecuteArgs();
     envList = (char **)this->convertEnvList();
+    print_table(envList);
     if (pipe(fds) < 0)
     {
         std::cout << "Could not use pipe" << std::endl;
         exit(1);
     }
     pid = fork();
-    if (pid == 0) // Redirecting the execve output to the file.
+    if (pid == 0)
     {
+        std::cout << "Child 3" << std::endl;
         close(fds[1]);
-        dup2(fds[0], STDIN_FILENO);
-        fd = open("/tmp/CGI", O_RDWR | O_CREAT | 777);
+        fd = open("/home/sn4r7/Desktop/CGI", O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
         if (fd < 0)
         {
             std::cout << "Could not open tmp file" << std::endl;
             exit(1);
         }
-        execve(this->defaultPath.c_str(), args, envList);
+        dup2(fds[0], STDIN_FILENO);
         dup2(fd, STDOUT_FILENO); // Redirecting the execve output to the file.
-        close(fds[0]);
-        read(fd, buff, 1000);
+        execve(this->defaultPath.c_str(), args, envList);
         close(fd);
+        close(fds[0]);
         exit(0);
     }
     else
     {
-        std::cout << "before the segfault" << std::endl;
+        stringContainer str;
+        str.push_back("username=havel");
         close(fds[0]);
         //? I think i should do some more parsing to request body accoring to the encoding type.
-        write(fds[1], convertBody(this->request->getBody()).c_str(), convertBody(this->request->getBody()).length());
+        // write(fds[1], convertBody(this->request->getBody()).c_str(), convertBody(this->request->getBody()).length());
+        write(fds[1], convertBody(str).c_str(), convertBody(str).length());
         close(fds[1]);
         waitpid(-1, NULL, 0);
     }
-    std::cout << buff << std::endl;
+    return (std::string());
 }
 
 //URL Example: http://localhost/php-cgi/index.php/tv/home?season=5&episode=62

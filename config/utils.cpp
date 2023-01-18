@@ -336,3 +336,15 @@ std::string convertBody(stringContainer body)
     }
     return (res);
 }
+
+void    print_table(char **table)
+{
+    int i;
+    
+    i = 0;
+    while (table[i])
+    {
+        std::cout << table[i] << std::endl;
+        i++;
+    }
+}
