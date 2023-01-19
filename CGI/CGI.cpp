@@ -26,7 +26,7 @@ void    CGIHandler::createEnvList()
    	headerFieldList::iterator end = value.end();
 	headerFieldList::iterator begin = value.begin();
 
-    envList["DOCUMENT_ROOT"] = this->server->getRoot();
+    // envList["DOCUMENT_ROOT"] = this->server->getRoot();
     envList["SERVER_SOFTWARE"] = SERVER_SOFTWARE_VERSION;
     envList["SERVER_PROTOCOL"] = HTTP_PROTOCOL;
     envList["SERVER_PORT"] = int2assci(this->server->getPort());
@@ -37,6 +37,7 @@ void    CGIHandler::createEnvList()
     envList["SCRIPT_NAME"] = this->getScriptName();
     envList["SCRIPT_FILENAME"] = this->location->getRoot() + this->getScriptName();
     envList["QUERY_STRING"] = this->getQuery();
+    envList["REDIRECT_STATUS"] = "200";
     envList["REQUEST_METHOD"] = this->request->getMethod();
     envList["REQUEST_URI"] = this->request->getRequestTarget();
     envList["REMOTE_IDENT"] = "";
@@ -49,7 +50,8 @@ void    CGIHandler::createEnvList()
 	}
     if (this->request->getHeaderField("content-type") != NULL)
         envList["CONTENT_TYPE"] = this->request->getHeaderField("content-type")->value;
-    envList["CONTENT_LENGTH"] = convertBody(this->request->getBody()).length();
+    envList["CONTENT_LENGTH"] = int2assci(15);
+    // envList["CONTENT_LENGTH"] = convertBody(this->request->getBody()).length();
     this->envList = envList;
 }
 
@@ -104,6 +106,7 @@ std::string CGIHandler::execute()
 /* @details: in the substr function i started from 1 to remove the backslash from the 
 script name file path
 */
+//! In this function i should check that the extension is available otherwise return null.
 std::string CGIHandler::getScriptName()
 {
     std::string extension = this->location->getCGIExtension();
@@ -137,6 +140,7 @@ std::string CGIHandler::getQuery()
     return (std::string());
 }
 
+//! Should check the scriptname function because its not doing any validation.
 std::string CGIHandler::getFilePath()
 {
     std::string urlExample = this->request->getRequestTarget();
@@ -157,7 +161,6 @@ std::string    CGIHandler::getOutput()
 
     args = (char **)this->getExecuteArgs();
     envList = (char **)this->convertEnvList();
-    print_table(envList);
     if (pipe(fds) < 0)
     {
         std::cout << "Could not use pipe" << std::endl;
@@ -166,7 +169,6 @@ std::string    CGIHandler::getOutput()
     pid = fork();
     if (pid == 0)
     {
-        std::cout << "Child 3" << std::endl;
         close(fds[1]);
         fd = open("/home/sn4r7/Desktop/CGI", O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
         if (fd < 0)
@@ -184,7 +186,7 @@ std::string    CGIHandler::getOutput()
     else
     {
         stringContainer str;
-        str.push_back("username=havel");
+        str.push_back("username=havel&password=secure");
         close(fds[0]);
         //? I think i should do some more parsing to request body accoring to the encoding type.
         // write(fds[1], convertBody(this->request->getBody()).c_str(), convertBody(this->request->getBody()).length());
