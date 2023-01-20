@@ -29,7 +29,7 @@ int main(void)
     // stringContainer str = request->getBody();
     // printContainer(str);
     Server *server = file->getHttpContext()->getServers()[3];
-    Location *location = file->getHttpContext()->getServers()[3]->getLocations()[1];
+    Location *location = file->getHttpContext()->getServers()[3]->getLocations()[2];
     CGIHandler CGI(location, server, request);
     CGI.execute();
     return (0);
