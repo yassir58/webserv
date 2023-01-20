@@ -66,6 +66,10 @@
 		"typeinfo": "cpp",
 		"unordered_map": "cpp",
 		"utility": "cpp",
-		"filesystem": "cpp"
+		"filesystem": "cpp",
+		"*.tcc": "cpp",
+		"clocale": "cpp",
+		"map": "cpp",
+		"memory_resource": "cpp"
 	}
 }

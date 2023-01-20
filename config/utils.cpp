@@ -38,10 +38,11 @@ void    printContainer(stringContainer table)
 
     i = 0;
 
-    std::cout << "------------------------------" << std::endl;
+    std::cout << "===============================" << std::endl;
     while (i < table.size())
     {
-        std::cout << "[" << table.at(i) << "]" << std::endl;
+        printf("%s", table.at(i).c_str());
+        // std::cout << table.at(i) << std::endl;
         i++;
     }
 }
@@ -330,8 +331,6 @@ std::string convertBody(stringContainer body)
     while (i < body.size())
     {
         res.append(body[i]);
-        if (i + 1 < body.size())
-            res.append("\n");
         i++;
     }
     return (res);
