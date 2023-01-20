@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/17 13:16:19 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/20 16:16:41 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,18 @@
 Response::Response(Request &request)
 {
 	setRequest(&request);
-	// applyMethod();
+	applyMethod();
+	statusIndex = getStatusCode();
+	responseToSend.push_back(generateStatusLine());
+	stringContainer headerFields = generateHeaderFields(responseBody);
+	responseToSend.insert(responseToSend.begin() + 1, headerFields.begin(), headerFields.end());
+	responseToSend.push_back(responseBody);
+}
+
+Response::Response(Request &request, std::string CGIOutput)
+{
+	setRequest(&request);
+	setResponseBody(CGIOutput);
 	statusIndex = getStatusCode();
 	responseToSend.push_back(generateStatusLine());
 	stringContainer headerFields = generateHeaderFields(responseBody);
@@ -178,6 +189,11 @@ void	Response::setRequest(Request *request)
 	status[index].code = NOT_IMPLENTED; status[index++].status = "NOT_IMPLENTED";
 	status[index].code = SERVER_ERROR; status[index++].status = "SERVER_ERROR";
 	status[index].code = HTTP_VERSION; status[index++].status = "HTTP_VERSION";
+}
+
+void	Response::setResponseBody(std::string responseBody)
+{
+	this->responseBody = responseBody;
 }
 
 /* ************************************************************************** */
