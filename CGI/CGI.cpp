@@ -156,6 +156,7 @@ std::string    CGIHandler::getOutput()
 {
     int fds[2];
     int fd;
+    int trash;
     char **envList;
     char **args;
     std::string output;
@@ -174,14 +175,15 @@ std::string    CGIHandler::getOutput()
     {
         close(fds[1]);
         fd = open("/home/sn4r7/Desktop/CGI", O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
-        if (fd < 0)
+        trash = open("/dev/null", O_WRONLY);
+        if (fd < 0 || trash < 0)
         {
             std::cout << "Could not open tmp file" << std::endl;
             exit(1);
         }
         dup2(fds[0], STDIN_FILENO); // Reading from the read end of the pipe.
+        dup2(trash, STDERR_FILENO);
         dup2(fd, STDOUT_FILENO); // Redirecting the execve output to the file.
-        dup2(fd, STDERR_FILENO); // Redirecting the execve errors to the file.
         execve(this->defaultPath.c_str(), args, envList);
         close(fd);
         close(fds[0]);
