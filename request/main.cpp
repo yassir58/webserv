@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/13 15:35:19 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/18 21:22:57 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/20 12:16:38 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,8 @@
 std::string requestGeneratorByGPT()
 {
 	std::string method = "POST";
-    std::string url = "http://hoho.com/sbardila?sbarila"; // a rad lquery
-    std::string headers = "Host: 12.12.3123.1:78\r\nContent-Type: application/json\r\nAccept: application/json\r\nHost: 192.120.18.0:80\r\nConnection: keep-alive\r\naccept: /\r\naccept-encoding: gzip, deflate, br\r\ncontent-type: multipart/form-data\r\naccept-language: en-US,en;q=0.9\r\nsec-fetch-mode: cors\r\n";
+    std::string url = "http://www.sbardila.com/sbardila?sbarila"; // a rad lquery
+    std::string headers = "Content-Type: application/json\r\nAccept: application/json\r\nHost: 192.120.18.0:80\r\nConnection: keep-alive\r\naccept: /\r\naccept-encoding: gzip, deflate, br\r\ncontent-type: multipart/form-data\r\naccept-language: en-US,en;q=0.9\r\nsec-fetch-mode: cors\r\n";
     std::string body = "{\"param1\":\"value1\",\"param2\":\"value2\"}\n";
     std::string body1 = "{\"param1\":\"value1\",\"param2\":\"value2\"}\n";
     std::string body2 = "username=havel\npassword=sbardila\njwt=34D3F564we3f16e16F651e32164843216482";
@@ -46,16 +46,16 @@ int main(void)
 		// char fileRequest[] = {"POST index.php/tv/home?season=5&episode=62 HTTP/1.1\r\n\r\n"};
 		std::string fileRequest = requestGeneratorByGPT();
 		Request newRequest(fileRequest);
-		std::cout << "this is the raw request: \n";
-		std::cout << fileRequest << std::endl;
+		// std::cout << "this is the raw request: \n";
+		// std::cout << fileRequest << std::endl;
 		std::cout << "\n========================\n";
 		// newRequest.printResult();
-		// std::cout << "request: " << newRequest.getStartLine().requestTarget << std::endl;
-		// std::cout << "hostname: " << newRequest.getStartLine().hostName << std::endl;
-		// std::cout << "ipAdress: " << newRequest.getStartLine().IpAdress << std::endl;
-		// std::cout << "Port: " << newRequest.getStartLine().Port << std::endl;
-		// std::cout << "query: " << newRequest.getStartLine().Query << std::endl;
-		std::cout << "=====================\n";
+		std::cout << "request: " << newRequest.getStartLine().requestTarget << std::endl;
+		std::cout << "hostname: " << newRequest.getStartLine().hostName << std::endl;
+		std::cout << "ipAdress: " << newRequest.getStartLine().IpAdress << std::endl;
+		std::cout << "Port: " << newRequest.getStartLine().Port << std::endl;
+		std::cout << "query: " << newRequest.getStartLine().Query << std::endl;
+		std::cout << "============gf=========\n";
 		stringContainer body = newRequest.getBody();
 		stringContainer::iterator begin = body.begin();
 		stringContainer::iterator end = body.end();
