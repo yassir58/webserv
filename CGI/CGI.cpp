@@ -34,9 +34,10 @@ void    CGIHandler::createEnvList()
     envList["SERVER_ADDR"] = this->server->getHost();
     envList["GATEWAY_INTERFACE"] = CGI_INTERFACE;
     envList["PATH_INFO"] = (this->getFilePath().length() > 0 ? "/" : "") + this->getFilePath();
-    envList["SCRIPT_NAME"] = this->getScriptName();
-    envList["SCRIPT_FILENAME"] = this->location->getRoot() + this->getScriptName();
+    envList["SCRIPT_NAME"] = this->getScriptName(0);
+    envList["SCRIPT_FILENAME"] = this->location->getRoot() + this->getScriptName(1);
     envList["QUERY_STRING"] = this->getQuery();
+    envList["REDIRECT_STATUS"] = "200";
     envList["REQUEST_METHOD"] = this->request->getMethod();
     envList["REQUEST_URI"] = this->request->getRequestTarget();
     envList["REMOTE_IDENT"] = "";
@@ -49,7 +50,8 @@ void    CGIHandler::createEnvList()
 	}
     if (this->request->getHeaderField("content-type") != NULL)
         envList["CONTENT_TYPE"] = this->request->getHeaderField("content-type")->value;
-    envList["CONTENT_LENGTH"] = convertBody(this->request->getBody()).length();
+    envList["CONTENT_LENGTH"] = int2assci(31);
+    // envList["CONTENT_LENGTH"] = convertBody(this->request->getBody()).length();
     this->envList = envList;
 }
 
@@ -61,7 +63,7 @@ const char **CGIHandler::getExecuteArgs()
     if (!table)
         return (NULL);
     table[0] = strdup(this->location->getCGIDefault().c_str());
-    table[1] = strdup((this->location->getRoot() + this->getScriptName()).c_str());
+    table[1] = strdup((this->location->getRoot() + this->getScriptName(1)).c_str());
     table[2] = NULL;
     return (table);
 }
@@ -94,9 +96,7 @@ const char ** CGIHandler::convertEnvList()
 std::string CGIHandler::execute()
 {
     const char **convertedList;
-    int i;
 
-    i = 0;
     this->createEnvList();
     this->getOutput();
 }
@@ -104,11 +104,17 @@ std::string CGIHandler::execute()
 /* @details: in the substr function i started from 1 to remove the backslash from the 
 script name file path
 */
-std::string CGIHandler::getScriptName()
+//! In this function i should check that the extension is available otherwise return null.
+std::string CGIHandler::getScriptName(int status)
 {
     std::string extension = this->location->getCGIExtension();
     std::string urlExample = this->request->getRequestTarget();
-    return (urlExample.substr(urlExample[0] == '/' ? 1 : 0, (urlExample.find(("." + extension).c_str()) + extension.length()) + 1)); 
+    if (urlExample.find(("." + extension)) == std::string::npos)
+    {
+        std::cout << "Error extension does not exists in request error using CGI" << std::endl;
+        exit(1);
+    }
+    return (urlExample.substr(status, (urlExample.find(("." + extension).c_str()) + extension.length()) + !status)); 
 }
 
 std::string CGIHandler::getQuery()
@@ -137,11 +143,12 @@ std::string CGIHandler::getQuery()
     return (std::string());
 }
 
+//! Should check the scriptname function because its not doing any validation.
 std::string CGIHandler::getFilePath()
 {
     std::string urlExample = this->request->getRequestTarget();
     std::string queryStrippedURL = splitSeparator(urlExample, '?')[0];
-    std::string filePath = queryStrippedURL.erase(0, queryStrippedURL.find(this->getScriptName()) + this->getScriptName().length() + 1);
+    std::string filePath = queryStrippedURL.erase(0, queryStrippedURL.find(this->getScriptName(0)) + this->getScriptName(0).length() + 1);
     return (filePath);
 }
 
@@ -149,15 +156,14 @@ std::string    CGIHandler::getOutput()
 {
     int fds[2];
     int fd;
-    std::string output;
     char **envList;
     char **args;
-    char buffer[100];
+    std::string output;
     pid_t pid;
 
     args = (char **)this->getExecuteArgs();
     envList = (char **)this->convertEnvList();
-    print_table(envList);
+    print_table(args);
     if (pipe(fds) < 0)
     {
         std::cout << "Could not use pipe" << std::endl;
@@ -166,7 +172,6 @@ std::string    CGIHandler::getOutput()
     pid = fork();
     if (pid == 0)
     {
-        std::cout << "Child 3" << std::endl;
         close(fds[1]);
         fd = open("/home/sn4r7/Desktop/CGI", O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
         if (fd < 0)
@@ -174,8 +179,9 @@ std::string    CGIHandler::getOutput()
             std::cout << "Could not open tmp file" << std::endl;
             exit(1);
         }
-        dup2(fds[0], STDIN_FILENO);
+        dup2(fds[0], STDIN_FILENO); // Reading from the read end of the pipe.
         dup2(fd, STDOUT_FILENO); // Redirecting the execve output to the file.
+        dup2(fd, STDERR_FILENO); // Redirecting the execve errors to the file.
         execve(this->defaultPath.c_str(), args, envList);
         close(fd);
         close(fds[0]);
@@ -184,7 +190,7 @@ std::string    CGIHandler::getOutput()
     else
     {
         stringContainer str;
-        str.push_back("username=havel");
+        str.push_back("username=havel&password=secure");
         close(fds[0]);
         //? I think i should do some more parsing to request body accoring to the encoding type.
         // write(fds[1], convertBody(this->request->getBody()).c_str(), convertBody(this->request->getBody()).length());
