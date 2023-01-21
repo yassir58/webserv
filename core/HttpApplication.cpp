@@ -8,14 +8,16 @@ HttpApplication::HttpApplication ()
 {
     serverCount = 1;
     connectionCount = 0;
-    logFile.open ("server.log", std::ios_base::app);
+    errorLog.open ("error.log", std::ios_base::app);
+	accessLog.open ("access.log", std::ios_base::app);
     indx = serverCount;
 }
 
 HttpApplication::~HttpApplication ()
 {
     std::cout << "\e[0;31m HTTP APPLICATION CLOSED \e[0m" <<std::endl;
-    logFile.close ();
+    accessLog.close ();
+	errorLog.close ();
     close (queueIdentifier);
 }
 
@@ -41,11 +43,7 @@ void HttpApplication::connectServers (void)
             (*bg)->establish_connection ();
 			fd = (*bg)->getSocketFd();
             serverFds.push_back (fd);
-            EV_SET (&change, fd, EVFILT_READ , EV_ADD | EV_CLEAR , 0, 0, 0);
-			errValue = kevent (this->queueIdentifier, &change, 1, NULL, 0, NULL);
-			if (errValue < 0)
-				throw Connection_error (strerror(errno), "kevent");
-			serverLog (indx);
+			watchedFds.push_back (fd);
         }
         catch(const std::exception& e)
         {
@@ -58,73 +56,121 @@ void HttpApplication::connectServers (void)
         }
 		indx++;
     }
-	
 }
 
-void HttpApplication::checkForConnection(void)
+void HttpApplication::initServerSet (void)
 {
-    int fd;
-    std::vector<int>::iterator it;
-	struct kevent resultEvents[MAX_CONNECT];
+	std::vector <int>::iterator it;
 
-    nfds = kevent(this->queueIdentifier, NULL, 0, resultEvents, MAX_CONNECT, NULL);
-    if (nfds < 0)
-        throw Connection_error (strerror (errno), "kevent");
-    else
-    {
-        for (int i = 0; i < nfds; i++)
-        {
-            fd = resultEvents[i].ident;
-			if (resultEvents[i].flags & EV_ERROR)
-				throw Connection_error (strerror (errno), "EVENT_ERROR");
-            else if (resultEvents[i].filter == EVFILT_READ)
-            {
-            	if (!isServer(fd))
+	FD_ZERO (&readFds);
+	FD_ZERO (&writeFds);
+	for (it = serverFds.begin (); it != serverFds.end (); it++)
+	{
+		FD_SET ((*it), &readFds);
+	}
+}
+
+void HttpApplication::checkForConnection (void)
+{
+	fd_set read, write;
+	int err;
+	char buffer[BUFFER_MAX];
+
+	memset (buffer, 0, BUFFER_MAX);
+	read = readFds;
+	write = writeFds;
+	errValue = select (FD_SETSIZE, &read, &write, NULL, NULL);
+	if (errValue < 0)
+		throw Connection_error(strerror(errno), "SELECT");
+	else
+	{
+		for (int i = 0; i < FD_SETSIZE; i++)
+		{
+			if (FD_ISSET (i, &read))
+			{
+				if (isServer (i))
+					handleNewConnection (i);
+				else
 				{
-            		handleHttpRequest (fd);
-            		errValue = close (fd);
-            		if (errValue == -1)
-                		handleError (CLOSEERR);
+					Connection *newConnection = new Connection (i);
+
+					newConnection->emptyBuffer ();
+					err = newConnection->recieveData ();
+					if (err == -1)
+					{
+						delete newConnection;
+						FD_CLR (i, &readFds);
+						throw Connection_error (strerror (errno), "RECV");
+					}
+					else if (err == 0)
+					{
+						delete newConnection;
+						FD_CLR (i, &readFds);
+						close (i);
+						std::cout << "peer closed connection" << std::endl;
+					}
+					else
+					{
+						// serverBlocks servList = this->config->getHttpContext()->getServers ();
+						// newConnection->setRequest ();
+						// newConnection->generateResolversList (servList);
+						// newConnection->matchRequestHandler (servList);
+						// connections.push_back (newConnection);
+						FD_CLR (i, &readFds);
+						FD_SET (i, &writeFds);
+					}
+				}
+			}
+			if (FD_ISSET (i, &write))
+			{
+				// Connection *connectionInterface = getConnection (i);
+
+				// if (connectionInterface != nullptr)
+				// {
+				// 	connectionInterface->getRequest()->printResult ();
+				// }
+				err = send (i, HTTP_RESPONSE_EXAMPLE, HTTP_LENGTH, 0);
+				if (err == -1)
+				{
+					FD_CLR (i, &writeFds);
+					throw Connection_error (strerror (errno), "SEND");
 				}
 				else
-					handleNewConnection (fd);
-            }
-        }
-    }
+					std::cout << err << " bytes sent succesfully" << std::endl;
+				close (i);
+				//this->watchedFds.erase (std::find (watchedFds.begin (), watchedFds.end (), i));
+				FD_CLR (i, &writeFds);
+			}
+		}
+	}
 }
 
 void HttpApplication::handleNewConnection (int serverFd)
 {
-    int clientSocket;
+    int ConnectionSocket;
     ServerInstance *server;
-	struct kevent change ;
+	struct kevent readEvent ;
 
-    server = findServerByFd (serverFd); 
-    clientSocket = server->accept_connection ();
-	EV_SET (&change, clientSocket, EVFILT_READ , EV_ADD | EV_CLEAR, 0, 0, 0);
-	errValue = kevent (this->queueIdentifier, &change, 1, NULL, 0, NULL);
-	if (errValue < 0)
-		throw Connection_error (strerror (errno), "kevent");
-	EV_SET (&change, clientSocket, EVFILT_WRITE , EV_ADD | EV_CLEAR, 0, 0, 0);
-	errValue = kevent (this->queueIdentifier, &change, 1, NULL, 0, NULL);
-	if (errValue < 0)
-		throw Connection_error (strerror (errno), "kevent");
+    server = findServerByFd (serverFd);
+    ConnectionSocket = server->accept_connection ();
+	watchedFds.push_back (ConnectionSocket);
+	FD_SET (ConnectionSocket, &readFds);
     connectionCount++;
-   	//serverLog (server_indx);
 }
 
 void HttpApplication::handleHttpRequest (int fd)
 {
-    Client clientInfo(fd);
+    Connection ConnectionInfo(fd);
 	int serverHandlerIndx = 0;
 
 
-    clientInfo.emptyBuffer ();
-    clientInfo.recieveData ();
-	clientInfo.setRequest ();
-	clientInfo.generateResolversList (this->getServerBlockList ());
-	serverHandlerIndx = clientInfo.matchRequestHandler (this->getServerBlockList()) ;
-	clientInfo.sendResponse ();
+    ConnectionInfo.emptyBuffer ();
+    ConnectionInfo.recieveData ();
+	std::cout << "\e[0;36m request : \e[0m" << ConnectionInfo.getBuffer () << std::endl;
+	// ConnectionInfo.setRequest ();
+	// ConnectionInfo.generateResolversList (this->getServerBlockList ());
+	// serverHandlerIndx = ConnectionInfo.matchRequestHandler (this->getServerBlockList()) ;
+	// ConnectionInfo.sendResponse ();
 }
 
 int HttpApplication::getConnectionIndx (void)
@@ -228,4 +274,16 @@ ServerInstance *HttpApplication::findServerByFd (int serverFd)
 serverBlocks HttpApplication::getServerBlockList (void) const
 {
 	return (this->config->getHttpContext()->getServers());
+}
+
+Connection *HttpApplication::getConnection (int fd)
+{
+	connectionPool::iterator it;
+
+	for (it  = connections.begin (); it != connections.end (); it++)
+	{
+		if ((*it)->getConnectionSocket () == fd)
+			return ((*it));
+	}
+	return (nullptr);
 }

@@ -24,8 +24,8 @@ all:server
 server:$(OBJS) 
 	$(CCP) $(CFLAGS) $(OBJS) -o server 
 
-# client:	basic_cn_client.o
-# 	$(CC) $(CFLAGS) $< -o client
+# Connection:	basic_cn_Connection.o
+# 	$(CC) $(CFLAGS) $< -o Connection
 
 
 clean:

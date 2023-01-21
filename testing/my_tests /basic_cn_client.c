@@ -1,4 +1,4 @@
-// Client side C/C++ program to demonstrate Socket
+// Connection side C/C++ program to demonstrate Socket
 // programming
 #include <arpa/inet.h>
 #include <stdio.h>
@@ -16,9 +16,9 @@
 
 void *thread_executor (void *test)
 {
-	int sock = 0, valread, client_fd;
+	int sock = 0, valread, Connection_fd;
 	struct sockaddr_in serv_addr;
-	char* hello = "Hello from client";
+	char* hello = "Hello from Connection";
 	char buffer[1024] = { 0 };
 	if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 		printf("\n Socket creation error \n");
@@ -37,7 +37,7 @@ void *thread_executor (void *test)
 		return NULL;
 	}
 
-	if ((client_fd
+	if ((Connection_fd
 		= connect(sock, (struct sockaddr*)&serv_addr,
 				sizeof(serv_addr)))
 		< 0) {
@@ -56,7 +56,7 @@ void *thread_executor (void *test)
 
 	// closing the connected socket
 	close (sock);
-	close(client_fd);
+	close(Connection_fd);
 	return (NULL);
 }
 

@@ -64,7 +64,10 @@ void ServerInstance::bind_socket (void)
 {
     struct addrinfo initAddr;
     struct addrinfo  *servAddr;
-
+	struct linger sl;
+	
+	sl.l_linger = 1;
+	sl.l_onoff = 5;
     memset (&initAddr, 0 , sizeof (initAddr));
     initAddr.ai_family = AF_INET; // this need to be modified
     initAddr.ai_socktype = SOCK_STREAM;
@@ -80,6 +83,9 @@ void ServerInstance::bind_socket (void)
     }
     this->errCheck =  setsockopt (this->serverSocket, SOL_SOCKET, SO_REUSEADDR, &this->enable, sizeof (int));
     if (this->errCheck == -1)
+        throw  Connection_error (strerror (errno), "setsocketopt");
+	this->errCheck = setsockopt (this->serverSocket, SOL_SOCKET, SO_LINGER, &sl, sizeof (sl));
+	if (this->errCheck == -1)
         throw  Connection_error (strerror (errno), "setsocketopt");
     fcntl (this->serverSocket, F_SETFL, O_NONBLOCK);
     // int option = 0;

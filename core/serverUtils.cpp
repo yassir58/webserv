@@ -5,10 +5,10 @@ int ServerInstance::accept_connection (void)
 {
     int new_connection;
     
-    struct sockaddr_storage clientAddr;
-    socklen_t clientLen = sizeof (clientAddr);
+    struct sockaddr_storage ConnectionAddr;
+    socklen_t ConnectionLen = sizeof (ConnectionAddr);
 
-    new_connection = accept (this->serverSocket, (sockaddr *)&clientAddr, (socklen_t *) &clientLen);
+    new_connection = accept (this->serverSocket, (sockaddr *)&ConnectionAddr, (socklen_t *) &ConnectionLen);
     if (new_connection < 0)
         throw Connection_error (strerror (errno), "accept");
     this->requestCount++;
@@ -27,34 +27,27 @@ unsigned int ServerInstance::getServerPort (void)
 }
 
 
-
-void Connection::initFdSet (int fd)
+int Connection::getConnectionSocket (void) const
 {
-    FD_ZERO (&this->timeOutSet);
-    FD_SET (fd, &this->timeOutSet);
+    return (this->ConnectionSocket);
 }
 
-void Connection::setFdType (int type)
-{
-    this->fd_type = type ;
-}
-
-int Client::getClientSocket (void) const
-{
-    return (this->clientSocket);
-}
-
-std::vector <int>Client::getResolversList (void) const
+std::vector <int>Connection::getResolversList (void) const
 {
     return (this->resolversList);
 }
 
-char *Client::getBuffer (void) 
+char *Connection::getBuffer (void) 
 {
-    return (this->buffer);
+    return (this->httpBuffer);
 }
 
-void Client::emptyBuffer (void) 
+void Connection::emptyBuffer (void) 
 {
-    memset (buffer, 0, sizeof (buffer));
+    memset (httpBuffer, 0, sizeof (httpBuffer));
+}
+
+void Connection::setStatus (int status)
+{
+	this->status = status;  
 }

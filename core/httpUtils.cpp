@@ -17,9 +17,9 @@ const std::string currentDateTime() {
 
 void HttpApplication::serverLog (int serverIndx)
 {
-    logFile <<  "\e[0;36mserver interface : \e[0m: " <<     serverList[serverIndx]->getHostName() << " ";
-    logFile << "\e[0;32mserver port: \e[0m:" << serverList[serverIndx]->getServerPort () << " ";
-    logFile << " \e[0;33m" << currentDateTime ()  << "" <<  std::endl;
+    accessLog <<  "\e[0;36mserver interface : \e[0m: " <<     serverList[serverIndx]->getHostName() << " ";
+    accessLog << "\e[0;32mserver port: \e[0m:" << serverList[serverIndx]->getServerPort () << " ";
+    accessLog << " \e[0;33m" << currentDateTime ()  << "" <<  std::endl;
 }
 
 void handleError (int err)
@@ -55,37 +55,33 @@ void handleError (int err)
 }
 
 
-Client::Client ()
+Connection::Connection ()
 {
-    clientSocket = 0;
-	clientPort = 0;
+    ConnectionSocket = 0;
+	ConnectionPort = 0;
 	requestLength = 0;
 	requestHandlerIndx = 0;
 }
 
-Client::Client (int fd)
+Connection::Connection (int fd)
 {
-    clientSocket = fd;
-	clientPort = 0;
+    ConnectionSocket = fd;
+	ConnectionPort = 0;
 	requestLength = 0;
 	requestHandlerIndx = 0;
 }
 
 
-Client::~Client()
+Connection::~Connection()
 {
 	delete this->request;
 }
 
-void Client::recieveData (void)
+int Connection::recieveData (void)
 {
-    dataRecievedLength = recv (clientSocket, buffer, BUFFER_MAX, 0);
-    if (dataRecievedLength == 0)
-        std::cout << "\e[0;31m remote peer closed connection\e[0m" << std::endl;
-    else if (dataRecievedLength == -1)
-        throw Connection_error (strerror (errno), "recv");
-	else
-		requestLength = dataRecievedLength;
+    dataRecievedLength = recv (ConnectionSocket, httpBuffer, BUFFER_MAX, 0);
+	std::cout << "\e[0;31msocket fd " << ConnectionSocket  << "\e[0m" << std::endl;
+	return (dataRecievedLength);
 }
 
 
@@ -102,7 +98,7 @@ int HttpApplication::isServer (int fd)
 	return (FALSE);
 }
 
-void Client::generateResolversList (serverBlocks serverBlockList)
+void Connection::generateResolversList (serverBlocks serverBlockList)
 {
 	serverBlocks::iterator it;
 	int confPort = 0;
@@ -114,7 +110,7 @@ void Client::generateResolversList (serverBlocks serverBlockList)
 	int port;
 	
 	
-	getsockname (this->clientSocket,(sockaddr *) &address, &len);
+	getsockname (this->ConnectionSocket,(sockaddr *) &address, &len);
 	inet_ntop (AF_INET, &address.sin_addr, ipStr, INET6_ADDRSTRLEN);
 	port = ntohs (address.sin_port);
 	for (it = serverBlockList.begin(); it != serverBlockList.end (); it++)
@@ -127,11 +123,12 @@ void Client::generateResolversList (serverBlocks serverBlockList)
 	}
 }
 
-void Client::setRequest (void)
+void Connection::setRequest (void)
 {
 	try
     {
-    	request = new Request (buffer);
+    	request = new Request (httpBuffer);
+
     }
     catch (std::exception &exc)
     {
@@ -139,7 +136,7 @@ void Client::setRequest (void)
     }
 }
 
-void Client::printfResolvers (void)
+void Connection::printfResolvers (void)
 {
 	std::vector<int>::iterator it;
 
@@ -150,7 +147,7 @@ void Client::printfResolvers (void)
 	std::cout << std::endl;
 }
 
-int Client::matchRequestHandler (serverBlocks serverList)
+int Connection::matchRequestHandler (serverBlocks serverList)
 {
 	int servIndx = 0;
 	int hostFlag = this->request->getStartLine().Host;
@@ -170,35 +167,34 @@ int Client::matchRequestHandler (serverBlocks serverList)
 	return (0);
 }
 
-int Client::getHandlerIndx (void) const
+int Connection::getHandlerIndx (void) const
 {
 	return  (this->requestHandlerIndx);
 }
 
-void Client::sendResponse (void)
+void Connection::sendResponse (void)
 {
-	Response newResponse ((*this->request));
-	stringContainer::iterator it;
-	stringContainer response;
-	std::string body;
-	int sendReturn;
+	// Response newResponse ((*this->request));
+	// stringContainer::iterator it;
+	// stringContainer response;
+	// std::string body;
+	// int sendReturn;
 
 	
-	response = newResponse.getResponse ();
-	std::cout << "\e[0;31m response content \e[0m" << std::endl;
-	for (it = response.begin(); it != response.end (); it++)
-	{
-		send (clientSocket, (*it).c_str(), (*it).length(), 0);
-		std::cout << (*it) << std::endl;
-	}
-    //sendReturn = send (clientSocket, HTTP_RESPONSE_EXAMPLE, strlen (HTTP_RESPONSE_EXAMPLE), 0);
-	body = getTestBody ("./testing/indx.html");
-	sendReturn = send (clientSocket, body.c_str (), body.length(), 0);
-	if (sendReturn == -1)
-		throw Connection_error (strerror (errno), "SEND");
-	else if (sendReturn == 0)
-		std::cout << "\e[0;31m server closed connection \e[0m" << std::endl;
-    //logFile << "\e[0;33mbyte sent : \e[0m" << sendReturn << " \e[0;33mexpected : \e[0m" <<  strlen (HTTP_RESPONSE_EXAMPLE) << std::endl;
+	// response = newResponse.getResponse ();
+	// std::cout << "\e[0;31m response content \e[0m" << std::endl;
+	// for (it = response.begin(); it != response.end (); it++)
+	// {
+	// 	send (ConnectionSocket, (*it).c_str(), (*it).length(), 0);
+	// 	std::cout << (*it) << std::endl;
+	// }
+    // //sendReturn = send (ConnectionSocket, HTTP_RESPONSE_EXAMPLE, strlen (HTTP_RESPONSE_EXAMPLE), 0);
+	// body = getTestBody ("./testing/indx.html");
+	// sendReturn = send (ConnectionSocket, body.c_str (), body.length(), 0);
+	// if (sendReturn == -1)
+	// 	throw Connection_error (strerror (errno), "SEND");
+	// else if (sendReturn == 0)
+	// 	std::cout << "\e[0;31m server closed connection \e[0m" << std::endl;
 }
 
 
@@ -218,4 +214,25 @@ std::string getTestBody (std::string filename)
 	}
 	file.close ();
 	return (result);
+}
+
+
+void Connection::connectionAccessLog (std::ofstream &accessLog, int requestLength)
+{
+	accessLog << "\e[0;36m Peer Address : \e[0m" << this->ipAddress << " ";
+	accessLog << "\e[0;32m Connection Port : \e[0m" << this->ConnectionPort << " ";
+	accessLog << "\e[0;33m Request Length : \e[0m" << requestLength << " Bytes ";
+	accessLog << std::endl;
+}
+
+void Connection::connectionErrorLog (std::ofstream &errorLog, std::string errorContext, std::string errorMessage)
+{
+	errorLog << "\e[0;31m Error Context: \e[0m" << errorContext << " ";
+	errorLog << "\e[0;31m Error Context: \e[0m" << errorMessage << " ";
+	errorLog << std::endl;
+}
+
+Request *Connection::getRequest (void) const
+{
+	return (this->request);
 }

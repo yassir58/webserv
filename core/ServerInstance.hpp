@@ -9,7 +9,6 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <iostream>
-#include <sys/select.h>
 #include <poll.h>
 #include <fcntl.h>
 #include <fstream>
@@ -52,6 +51,8 @@
 #define DEFAULT_SERVER_NAME "default"
 #define TRUE 1
 #define FALSE 0
+#define OPEN 1
+#define CLOSE 0
 
 
 typedef std::vector <Server*> serverBlocks;
@@ -62,6 +63,7 @@ typedef std::vector <std::string> stringContainer;
 
 // for testing purpos
 #define HTTP_RESPONSE_EXAMPLE "HTTP/1.1 200 OK\r\nServer: WebServer\r\nContent-Type: text/html\r\nContent-Length: 109\r\nConnection: close\r\n\r\nhello world</br><p>this is a paragraph</p><img src='https://i.ytimg.com/vi/8wWBcs99hTw/hqdefault.jpg' ></img>"
+#define HTTP_LENGTH 225
 class Fatal_error : public std::exception
 {
     const char *err_description ;
@@ -85,18 +87,6 @@ class Connection_error : public std::exception
     public:
         virtual const char *what() const throw();
         Connection_error(const char *desc, const char *context);
-};
-
-class Connection
-{
-    private:
-        int fd;
-        fd_set timeOutSet;
-        int fd_type;
-    public:
-        void setFd (int fd);
-        void initFdSet (int fd);
-        void setFdType (int type);
 };
 
 class ServerInstance
@@ -135,10 +125,50 @@ public:
 
 typedef std::vector <ServerInstance*> serverContainer ;
 
+class Connection {
+    private:
+        Request *request;
+        int ConnectionSocket;
+        std::vector <int> resolversList;
+        char httpBuffer[BUFFER_MAX];
+        int dataRecievedLength;
+        struct addrinfo *requestSourceAddr;
+        int ConnectionPort;
+        std::string hostName;
+		std::string serviceName;
+		std::string ipAddress;
+		int requestHandlerIndx;
+		size_t requestLength;
+		int status;
+		
+
+    public:
+        Connection ();
+		Connection (int fd);
+		~Connection ();
+        int getConnectionSocket (void) const;
+        char *getBuffer (void) ;
+        void emptyBuffer (void);
+        int recieveData (void);
+        void sendResponse (void);
+        std::vector <int> getResolversList (void) const;
+        void generateResolversList (serverBlocks serverList);
+		void setRequest (void);
+		Request *getRequest (void) const;
+		void printfResolvers (void);
+		int matchRequestHandler (serverBlocks serverList);
+		int getHandlerIndx (void) const;
+		void setStatus (int status);
+		void connectionAccessLog (std::ofstream &accessLog, int requestLength);
+		void connectionErrorLog (std::ofstream &errorLog, std::string errorContext, std::string errorMessage);
+
+};
+
+typedef std::vector <Connection *> connectionPool;
+
 class HttpApplication
 {
     private:
-        int epollInstance;
 		int queueIdentifier;
         int nfds;
         int errValue;
@@ -149,9 +179,13 @@ class HttpApplication
         serverContainer serverList;
         std::string httpDefaultErrorPage;
         int HttpMaxBodySize;
-        std::ofstream logFile;
+        std::ofstream accessLog;
+		std::ofstream errorLog ;
         std::vector<int> serverFds;
+		std::vector <int> watchedFds;
         Config *config;
+		connectionPool connections;
+		fd_set readFds, writeFds;
       
 
 public:
@@ -183,41 +217,18 @@ public:
     int checkServerExistance (Server *block);
     ServerInstance *findServerByFd (int serverFd);
 	int isServer (int fd);
+	void initServerSet (void);
+	Connection *getConnection (int fd);
+	// testing 
+	void printServerFds (void)
+	{
+		std::vector <int>::iterator it;
 
-};
+		for (it = serverFds.begin () ; it != serverFds.end (); it++)
+			std ::cout << "\e[0;36m " << (*it) << " \e[0m";
+		std::cout << std::endl;
+	}
 
-
-class Client {
-    private:
-        Request *request;
-        int clientSocket;
-        std::vector <int> resolversList;
-        char buffer[BUFFER_MAX];
-        int dataRecievedLength;
-        struct addrinfo *requestSourceAddr;
-        int clientPort;
-        std::string hostName;
-		std::string serviceName;
-		std::string ipAddress;
-		int requestHandlerIndx ;
-		size_t requestLength;
-		
-
-    public:
-        Client ();
-		Client (int fd);
-		~Client ();
-        int getClientSocket (void) const;
-        char *getBuffer (void) ;
-        void emptyBuffer (void);
-        void recieveData (void);
-        void sendResponse (void);
-        std::vector <int> getResolversList (void) const;
-        void generateResolversList (serverBlocks serverList);
-		void setRequest (void);
-		void printfResolvers (void);
-		int matchRequestHandler (serverBlocks serverList);
-		int getHandlerIndx (void) const;
 };
 
 

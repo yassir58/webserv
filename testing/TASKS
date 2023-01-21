@@ -9,7 +9,7 @@ TASKS :
 --> handle multiple server instances listening on the same port the first server block will bind to port and the others will be ignored [x]
 --> add support for ipv6 [x]
 --> handle errors -1 and 0 for send and recieve []
---> handle client request timeout []
+--> handle Connection request timeout []
 --> integrate request parse with webserv core []
 **
 
@@ -43,4 +43,9 @@ kevent ident (fd) filte (event | EVFILT_READ| EVFILT_WRITE) flags add event to k
 kevent ev;
 
 EV_SET(&ev, sckfd, EVFILT_READ, EV_ADD, 0, 0, 0);
+
+
+
+Connection reset by peer => server writes or closed its end of the socket without or befores reading from socket
+
 

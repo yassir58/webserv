@@ -22,6 +22,7 @@ int main (int argc , char *argv[])
         app.setupAppResources ();
         app.filterServerBlocks ();
         app.connectServers ();
+		app.initServerSet ();
         while (1)
         {
             try 
@@ -36,7 +37,6 @@ int main (int argc , char *argv[])
             catch (std::exception &exc)
             {
                  std::cout << exc.what () << std::endl;
-                 exit (EXIT_FAILURE);
             }
         }    
     }
