@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 14:44:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/18 21:26:38 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/20 16:17:18 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,13 +39,15 @@ class Response
 		std::string		responseBody; // the body of the response 
 		stringContainer	responseToSend; // the all mighty response
 	public:
-		Response(Request &request); // param constractor first argument is the request and second is the response that should be included the response
+		Response(Request &request); // param constractor first argument is the request and here I apply method
+		Response(Request &request, std::string CGIOutput); // param constractor first argument is the request and second is the CGI output that should be included the response body
 		~Response(); // desectrator not used
 		int				applyMethod();
 		stringContainer generateHeaderFields(std::string &responseBody); // generate the necessary header fields
 		std::string 	generateStatusLine(); // generate the status line
 		void			setRequest(Request *request); // seter of the request(look at the private attribute)
 		int				getStatusCode(void); // return the index of the status code
+		void			setResponseBody(std::string responseBody);
 		std::string		getResponse(void);
 };
 

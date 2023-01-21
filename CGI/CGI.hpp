@@ -24,7 +24,7 @@ class CGIHandler
         Request *request;
         Config *configFile;
         mapContainer envList;
-        std::string         getScriptName();
+        std::string         getScriptName(int);
         std::string         getQuery();
         std::string         getFilePath();
         std::string         getRequestURI();
