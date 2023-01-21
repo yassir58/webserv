@@ -347,3 +347,21 @@ void    print_table(char **table)
         i++;
     }
 }
+
+std::string readContent(std::string path)
+{
+    std::string content = "";
+    std::string line;
+
+    std::ifstream file(path);
+    if (file.is_open())
+    {
+        while (getline(file, line))
+        {
+            content.append(line).append("\n");
+        }
+        content.pop_back();
+        file.close();
+    }
+    return (content);
+}

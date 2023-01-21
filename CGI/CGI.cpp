@@ -50,8 +50,7 @@ void    CGIHandler::createEnvList()
 	}
     if (this->request->getHeaderField("content-type") != NULL)
         envList["CONTENT_TYPE"] = this->request->getHeaderField("content-type")->value;
-    envList["CONTENT_LENGTH"] = int2assci(31);
-    // envList["CONTENT_LENGTH"] = convertBody(this->request->getBody()).length();
+    envList["CONTENT_LENGTH"] = int2assci(convertBody(this->request->getBody()).length());
     this->envList = envList;
 }
 
@@ -95,16 +94,13 @@ const char ** CGIHandler::convertEnvList()
 
 std::string CGIHandler::execute()
 {
-    const char **convertedList;
-
     this->createEnvList();
-    this->getOutput();
+    return(this->getOutput());
 }
 
 /* @details: in the substr function i started from 1 to remove the backslash from the 
 script name file path
 */
-//! In this function i should check that the extension is available otherwise return null.
 std::string CGIHandler::getScriptName(int status)
 {
     std::string extension = this->location->getCGIExtension();
@@ -164,7 +160,6 @@ std::string    CGIHandler::getOutput()
 
     args = (char **)this->getExecuteArgs();
     envList = (char **)this->convertEnvList();
-    print_table(args);
     if (pipe(fds) < 0)
     {
         std::cout << "Could not use pipe" << std::endl;
@@ -174,7 +169,7 @@ std::string    CGIHandler::getOutput()
     if (pid == 0)
     {
         close(fds[1]);
-        fd = open("/home/sn4r7/Desktop/CGI", O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+        fd = open("/tmp/CGI", O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
         trash = open("/dev/null", O_WRONLY);
         if (fd < 0 || trash < 0)
         {
@@ -191,16 +186,12 @@ std::string    CGIHandler::getOutput()
     }
     else
     {
-        stringContainer str;
-        str.push_back("username=havel&password=secure");
         close(fds[0]);
-        //? I think i should do some more parsing to request body accoring to the encoding type.
-        // write(fds[1], convertBody(this->request->getBody()).c_str(), convertBody(this->request->getBody()).length());
-        write(fds[1], convertBody(str).c_str(), convertBody(str).length());
+        write(fds[1], convertBody(this->request->getBody()).c_str(), convertBody(this->request->getBody()).length());
         close(fds[1]);
         waitpid(-1, NULL, 0);
     }
-    return (std::string());
+    return (readContent("/tmp/CGI"));
 }
 
 //URL Example: http://localhost/php-cgi/index.php/tv/home?season=5&episode=62
