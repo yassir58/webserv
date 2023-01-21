@@ -39,3 +39,10 @@ class CGIHandler
         std::string         execute();
 };
 
+class CGIError: public std::runtime_error
+{
+    public:
+        CGIError(std::string const& msg):
+            std::runtime_error(msg)
+        {}
+};

@@ -106,10 +106,7 @@ std::string CGIHandler::getScriptName(int status)
     std::string extension = this->location->getCGIExtension();
     std::string urlExample = this->request->getRequestTarget();
     if (urlExample.find(("." + extension)) == std::string::npos)
-    {
-        std::cout << "Error extension does not exists in request error using CGI" << std::endl;
-        exit(1);
-    }
+        throw CGIError("CGI Error: invalid file extension could not execute CGI.");
     return (urlExample.substr(status, (urlExample.find(("." + extension).c_str()) + extension.length()) + !status)); 
 }
 
@@ -161,10 +158,7 @@ std::string    CGIHandler::getOutput()
     args = (char **)this->getExecuteArgs();
     envList = (char **)this->convertEnvList();
     if (pipe(fds) < 0)
-    {
-        std::cout << "Could not use pipe" << std::endl;
-        exit(1);
-    }
+        throw CGIError("CGI Error: Could not open pipe.");
     pid = fork();
     if (pid == 0)
     {
@@ -172,10 +166,7 @@ std::string    CGIHandler::getOutput()
         fd = open("/tmp/CGI", O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
         trash = open("/dev/null", O_WRONLY);
         if (fd < 0 || trash < 0)
-        {
-            std::cout << "Could not open tmp file" << std::endl;
-            exit(1);
-        }
+            throw CGIError("CGI Error: Invalid fd.");
         dup2(fds[0], STDIN_FILENO); // Reading from the read end of the pipe.
         dup2(trash, STDERR_FILENO);
         dup2(fd, STDOUT_FILENO); // Redirecting the execve output to the file.
