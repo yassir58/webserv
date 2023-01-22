@@ -217,16 +217,20 @@ std::string getTestBody (std::string filename)
 }
 
 
-void Connection::connectionAccessLog (std::ofstream &accessLog, int requestLength)
+void HttpApplication::connectionAccessLog (std::string msg, int requestLength, std::string addr, std::string port)
 {
-	accessLog << "\e[0;36m Peer Address : \e[0m" << this->ipAddress << " ";
-	accessLog << "\e[0;32m Connection Port : \e[0m" << this->ConnectionPort << " ";
-	accessLog << "\e[0;33m Request Length : \e[0m" << requestLength << " Bytes ";
+	accessLog << currentDateTime () << " " ;
+	accessLog << "\e[0;36m Peer Address : \e[0m" << addr << " ";
+	accessLog << "\e[0;32m Connection Port : \e[0m" << port << " ";
+	accessLog << "\e[0;33m status : \e[0m" << requestLength << " Bytes " << msg;
 	accessLog << std::endl;
 }
 
-void Connection::connectionErrorLog (std::ofstream &errorLog, std::string errorContext, std::string errorMessage)
+void HttpApplication::connectionErrorLog (std::string errorContext, std::string errorMessage, std::string addr, std::string port)
 {
+	accessLog << currentDateTime () << " " ;
+	accessLog << "\e[0;36m Peer Address : \e[0m" << addr << " ";
+	accessLog << "\e[0;32m Connection Port : \e[0m" << port << " ";
 	errorLog << "\e[0;31m Error Context: \e[0m" << errorContext << " ";
 	errorLog << "\e[0;31m Error Context: \e[0m" << errorMessage << " ";
 	errorLog << std::endl;

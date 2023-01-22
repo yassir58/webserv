@@ -11,6 +11,7 @@ HttpApplication::HttpApplication ()
     errorLog.open ("error.log", std::ios_base::app);
 	accessLog.open ("access.log", std::ios_base::app);
     indx = serverCount;
+	fdMax = 0;
 }
 
 HttpApplication::~HttpApplication ()
@@ -42,6 +43,8 @@ void HttpApplication::connectServers (void)
         {
             (*bg)->establish_connection ();
 			fd = (*bg)->getSocketFd();
+			if (fd > fdMax)
+				fdMax = fd;
             serverFds.push_back (fd);
 			watchedFds.push_back (fd);
         }
@@ -84,7 +87,7 @@ void HttpApplication::checkForConnection (void)
 		throw Connection_error(strerror(errno), "SELECT");
 	else
 	{
-		for (int i = 0; i < FD_SETSIZE; i++)
+		for (int i = 0; i < fdMax; i++)
 		{
 			if (FD_ISSET (i, &read))
 			{
@@ -100,6 +103,7 @@ void HttpApplication::checkForConnection (void)
 					{
 						delete newConnection;
 						FD_CLR (i, &readFds);
+						//connectionErrorLog ("RECV", strerror (errno), newConnection->getRequest()->getStartLine().IpAdress, newConnection->getRequest()->getStartLine().Port);
 						throw Connection_error (strerror (errno), "RECV");
 					}
 					else if (err == 0)
@@ -107,15 +111,16 @@ void HttpApplication::checkForConnection (void)
 						delete newConnection;
 						FD_CLR (i, &readFds);
 						close (i);
-						std::cout << "peer closed connection" << std::endl;
+						//connectionErrorLog ("peer closed connection", strerror (errno), newConnection->getRequest()->getStartLine().IpAdress, newConnection->getRequest()->getStartLine().Port);
 					}
 					else
 					{
 						// serverBlocks servList = this->config->getHttpContext()->getServers ();
 						// newConnection->setRequest ();
-						// newConnection->generateResolversList (servList);
-						// newConnection->matchRequestHandler (servList);
+						// // newConnection->generateResolversList (servList);
+						// // newConnection->matchRequestHandler (servList);
 						// connections.push_back (newConnection);
+						// connectionAccessLog ("recieved", err, newConnection->getRequest()->getStartLine().IpAdress, newConnection->getRequest()->getStartLine().Port);
 						FD_CLR (i, &readFds);
 						FD_SET (i, &writeFds);
 					}
@@ -123,7 +128,7 @@ void HttpApplication::checkForConnection (void)
 			}
 			if (FD_ISSET (i, &write))
 			{
-				// Connection *connectionInterface = getConnection (i);
+				//Connection *connectionInterface = getConnection (i);
 
 				// if (connectionInterface != nullptr)
 				// {
@@ -133,13 +138,17 @@ void HttpApplication::checkForConnection (void)
 				if (err == -1)
 				{
 					FD_CLR (i, &writeFds);
+					close (i);
+					//connectionErrorLog ("RECV", strerror (errno), connectionInterface->getRequest()->getStartLine().IpAdress, connectionInterface->getRequest()->getStartLine().Port);
 					throw Connection_error (strerror (errno), "SEND");
 				}
 				else
-					std::cout << err << " bytes sent succesfully" << std::endl;
-				close (i);
-				//this->watchedFds.erase (std::find (watchedFds.begin (), watchedFds.end (), i));
-				FD_CLR (i, &writeFds);
+				{
+					//connectionAccessLog ("sent", err, connectionInterface->getRequest()->getStartLine().IpAdress, connectionInterface->getRequest()->getStartLine().Port);
+					close (i);
+					FD_CLR (i, &writeFds);
+				}
+				
 			}
 		}
 	}
@@ -153,6 +162,8 @@ void HttpApplication::handleNewConnection (int serverFd)
 
     server = findServerByFd (serverFd);
     ConnectionSocket = server->accept_connection ();
+	if (ConnectionSocket > fdMax)
+		fdMax = ConnectionSocket;
 	watchedFds.push_back (ConnectionSocket);
 	FD_SET (ConnectionSocket, &readFds);
     connectionCount++;

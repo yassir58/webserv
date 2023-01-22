@@ -37,6 +37,7 @@ int main (int argc , char *argv[])
             catch (std::exception &exc)
             {
                  std::cout << exc.what () << std::endl;
+				 // handle error
             }
         }    
     }

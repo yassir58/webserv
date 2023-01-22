@@ -44,7 +44,7 @@
 #define WRITEERR 6
 #define CLOSEERR 7
 #define POLL_INF -1
-#define BACK_LOG_MAX 5 // * max size permitted by most systems
+#define BACK_LOG_MAX 30 // * max size permitted by most systems
 #define ACK_MESSAGE "\e[0;33m acknowledgement message \e[0m"
 #define RESPONSE_LINES 7
 #define DEFAULT_PORT 8080
@@ -159,9 +159,6 @@ class Connection {
 		int matchRequestHandler (serverBlocks serverList);
 		int getHandlerIndx (void) const;
 		void setStatus (int status);
-		void connectionAccessLog (std::ofstream &accessLog, int requestLength);
-		void connectionErrorLog (std::ofstream &errorLog, std::string errorContext, std::string errorMessage);
-
 };
 
 typedef std::vector <Connection *> connectionPool;
@@ -186,6 +183,7 @@ class HttpApplication
         Config *config;
 		connectionPool connections;
 		fd_set readFds, writeFds;
+		int fdMax;
       
 
 public:
@@ -219,6 +217,9 @@ public:
 	int isServer (int fd);
 	void initServerSet (void);
 	Connection *getConnection (int fd);
+	/// testing log
+	void connectionAccessLog (std::string msg, int requestLength, std::string addr, std::string port);
+	void connectionErrorLog (std::string errorContext, std::string errorMessage, std::string addr, std::string port);
 	// testing 
 	void printServerFds (void)
 	{
@@ -237,3 +238,8 @@ void initServers(ServerInstance *serv_list);
 const std::string currentDateTime();
 std::string getTestBody (std::string filename);
 #endif
+
+
+// failed 16
+// succesfull 2399
+// loged 2424
