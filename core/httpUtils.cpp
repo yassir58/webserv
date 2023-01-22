@@ -74,13 +74,12 @@ Connection::Connection (int fd)
 
 Connection::~Connection()
 {
-	delete this->request;
+	//delete this->request;
 }
 
 int Connection::recieveData (void)
 {
     dataRecievedLength = recv (ConnectionSocket, httpBuffer, BUFFER_MAX, 0);
-	std::cout << "\e[0;31msocket fd " << ConnectionSocket  << "\e[0m" << std::endl;
 	return (dataRecievedLength);
 }
 

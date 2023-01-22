@@ -25,13 +25,13 @@ testLoad ()
 
 	AVL=$(siege -b -t10s -c$2  http://$NET_INTERFACE:$PORT > siege.out 2>&1 ; cat siege.out | grep  Availability: | sed 's/[^0-9.]*//g') 
 	RS=$(cat siege.out | grep "Response time");
-	echo -e "server availability under $Cyan $2 $White conccurnet user  in test$Yellow $1 $Green [ Availabilty = $AVL ] $White"
+	echo -e "server availability under $Cyan $2 $White conccurnet users  in test$Yellow $1 $Green [ Availabilty = $AVL ] $White"
 	echo -e "$Yellow $RS"
 	if [ $AVL == '100.00' ] 
 		then 
-			echo -e "$Green test passed $White"
+			echo -e "$Green test passed ✓ $White"
 	else
-		echo -e "$Red test failed $White"
+		echo -e "$Red test failed  X $White"
 	fi
 
 }
