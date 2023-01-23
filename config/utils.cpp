@@ -350,7 +350,7 @@ void    print_table(char **table)
 
 std::string readContent(std::string path)
 {
-    std::string content = "";
+    std::string content = "File:";
     std::string line;
 
     std::ifstream file(path);

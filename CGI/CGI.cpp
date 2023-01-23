@@ -94,8 +94,17 @@ const char ** CGIHandler::convertEnvList()
 
 std::string CGIHandler::execute()
 {
+    std::string result;
+    std::string headers;
+    // This function should be able to format the response and add some http headers.
     this->createEnvList();
-    return(this->getOutput());
+    result = this->getOutput();
+    if (result.find("\r\n\r\n") != std::string::npos)
+    {
+        std::cout << result.find("\r\n\r\n") << std::endl;
+        // Means the response contains headers
+    }
+    return(result); 
 }
 
 /* @details: in the substr function i started from 1 to remove the backslash from the 
@@ -182,7 +191,10 @@ std::string    CGIHandler::getOutput()
         close(fds[1]);
         waitpid(-1, NULL, 0);
     }
-    return (readContent("/tmp/CGI"));
+    output = readContent("/tmp/CGI");
+    close(fd);
+    close(trash);
+    return (output);
 }
 
 //URL Example: http://localhost/php-cgi/index.php/tv/home?season=5&episode=62
