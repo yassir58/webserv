@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:36 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/15 11:44:04 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/23 11:56:09 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,6 @@ class Request
 		std::string		getHTTPVersion(void); // geter of the HTTP version
 		std::string		getRequestTarget(void); // geter of the request target
 		int 			getStatusCode(void); // geter of the status code int repre
-		stringContainer getBody(void); // return the body within the request 
+		std::string		getBody(void); // return the body within the request 
 };
 #endif

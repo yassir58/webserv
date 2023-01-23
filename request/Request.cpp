@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/20 16:23:28 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/23 11:55:46 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -161,8 +161,8 @@ int Request::treatAbsolutePath()
 int Request::checkRequestTarget()
 {
 	treatAbsoluteURI();
-	// if (treatAbsolutePath())
-	// 	return (1);
+	if (treatAbsolutePath())
+		return (1);
 	return (1);
 }
 
@@ -336,9 +336,19 @@ int Request::getStatusCode(void)
 	return (statusCode);
 }
 
-stringContainer Request::getBody(void)
+std::string Request::getBody(void)
 {
-	return (body);
+	std::string toReturn;
+	std::stringstream ss;
+	stringContainer::iterator begin = body.begin();
+	stringContainer::iterator end = body.end();
+	while (end != begin)
+	{
+		ss << *begin;
+		++begin;
+	}
+	toReturn = ss.str();
+	return (toReturn);
 }
 
 headerField *Request::getHeaderField(std::string key)
