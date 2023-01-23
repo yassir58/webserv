@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/20 16:16:41 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/23 11:57:01 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,13 +133,7 @@ int	Response::applyMethod(void)
 		std::ofstream outfile(request->getRequestTarget());
 		if (outfile)
 		{
-			stringContainer::iterator end = request->getBody().end();
-			stringContainer::iterator begin = request->getBody().begin();
-			while (begin != end)
-			{
-				outfile << *begin;
-				++begin;
-			}
+			outfile << request->getBody();
 			outfile.close();
 			request->setStatusCode(OK);
 		}
