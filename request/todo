@@ -1,0 +1,6 @@
+decide wither cgi or not --> server contain location --> endpoint should match the path --> 
+compare it with the cgi extension 
+///////// this is done
+
+check the lenght of request body 1000 is the default and the
+redirection setter of the request target 

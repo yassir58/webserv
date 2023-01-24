@@ -6,21 +6,23 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/23 11:55:46 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/24 19:03:06 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Request.hpp"
 
+
 /*
 ** ------------------------------- CONSTRUCTOR --------------------------------
 */
 
-Request::Request(std::string fileString)
+Request::Request(std::string fileString, Server *serverInst)
 {
 	std::string line;
 	setStatusCode(0);
 	setFileString(fileString);
+	setServerInstance(serverInst);
 	getCRLF(line, (char *)"\r\n");
 	if (!parseFirstLine(line))
 	{
@@ -34,6 +36,7 @@ Request::Request(std::string fileString)
 		if (!parseHeaderField(headerFields, line))
 			statusCode = BAD_REQUEST;
 	}
+	path = startLine.requestTarget;
 	if (!startLine.Query.empty())
 		startLine.requestTarget = startLine.requestTarget +  "?" + startLine.Query;
 	if (startLine.Host == false && startLine.IpAdress.empty())
@@ -49,6 +52,7 @@ Request::Request(std::string fileString)
 				statusCode = BAD_REQUEST;
 		}
 	}
+	this->CGI = checkCGI();
 }
 
 /*
@@ -62,6 +66,53 @@ Request::~Request()
 /*
 ** --------------------------------- METHODS ----------------------------------
 */
+
+Location *Request::matchLocation(void)
+{
+	std::vector<Location *> Locations = serverInstance->getLocations();
+	std::vector<Location *>::iterator begin = Locations.begin();
+	std::vector<Location *>::iterator end = Locations.end();
+	size_t	pos;
+	while (end != begin)
+	{
+		pos = path.find((*begin)->getEndPoint(), 0);
+		if (pos == 0)
+			return (*begin);
+		++begin;
+	}
+	return (NULL);
+}
+
+bool Request::checkExtension(Location *pathLocation)
+{
+	std::string	extension = pathLocation->getCGIExtension();
+	std::string	fileExtension;
+	size_t		dot;
+	if (pathLocation->getCGIStatus() == false || extension.empty())
+		return (false);
+	dot = path.find_last_of('.', std::string::npos);
+	if (dot == std::string::npos)
+		return (false);
+	fileExtension = path.substr(dot + 1, std::string::npos);
+	if (fileExtension == extension)
+		return (true);
+	return (false);
+}
+
+bool Request::checkCGI(void)
+{
+	Location *pathLocation = matchLocation();
+	std::string root = serverInstance->getRoot();
+	if (!pathLocation->getRoot().empty())
+		root = pathLocation->getRoot();
+	if (path.front() == '/' && (*root.end()) == '/')
+		path = path.substr(1, std::string::npos);
+	path = root + path;
+	std::cout << "path: " << path << std::endl;
+	if (!treatAbsolutePath())
+		return (false);
+	return (checkExtension(pathLocation));
+}
 
 int	Request::checkContentParsed()
 {
@@ -140,17 +191,17 @@ int	Request::treatAbsoluteURI()
 
 int Request::treatAbsolutePath()
 {
-	if (access(startLine.requestTarget.c_str(), F_OK) == -1)
+	if (access(path.c_str(), F_OK) == -1)
 	{
 		statusCode = NOT_FOUND;
 		return (0);
 	}
-	if (startLine.method == "POST" && access(startLine.requestTarget.c_str(), W_OK) == -1)
+	if (startLine.method == "POST" && access(path.c_str(), W_OK) == -1)
 	{
 		statusCode = NOT_ALLOWED;
 		return (0);
 	}
-	if (startLine.method == "GET" && access(startLine.requestTarget.c_str(), R_OK) == -1)
+	if (startLine.method == "GET" && access(path.c_str(), R_OK) == -1)
 	{
 		statusCode = NOT_ALLOWED;
 		return (0);
@@ -161,8 +212,6 @@ int Request::treatAbsolutePath()
 int Request::checkRequestTarget()
 {
 	treatAbsoluteURI();
-	if (treatAbsolutePath())
-		return (1);
 	return (1);
 }
 
@@ -307,6 +356,12 @@ void	Request::setStatusCode(int newStatusCode)
 	statusCode = newStatusCode;
 }
 
+void	Request::setServerInstance(Server *server)
+{
+	serverInstance = server;
+	CGI = false;
+}
+
 std::string		Request::getErrorCode(void)
 {
 	std::stringstream	ss;
@@ -362,6 +417,16 @@ headerField *Request::getHeaderField(std::string key)
 		++begin;
 	}
 	return (NULL);
+}
+
+bool Request::getCGIStatus(void)
+{
+	return (CGI);
+}
+
+std::string Request::getPath(void)
+{
+	return (path);
 }
 
 /* ************************************************************************** */

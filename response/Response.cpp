@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/23 11:57:01 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/24 19:07:34 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,7 +117,7 @@ int	Response::applyMethod(void)
 	int			statusCode = request->getStatusCode();
 	if (method == "GET" && statusCode == 0)
 	{
-		std::ifstream resource(request->getRequestTarget());
+		std::ifstream resource(request->getPath());
 		if (resource)
 		{
 			std::ostringstream ss;
@@ -130,7 +130,7 @@ int	Response::applyMethod(void)
 	}
 	else if (method == "POST" && statusCode == 0)
 	{
-		std::ofstream outfile(request->getRequestTarget());
+		std::ofstream outfile(request->getPath());
 		if (outfile)
 		{
 			outfile << request->getBody();
@@ -142,7 +142,7 @@ int	Response::applyMethod(void)
 	}
 	else if (method == "DELETE" && statusCode == 0)
 	{
-		if (remove(request->getRequestTarget().c_str()))
+		if (remove(request->getPath().c_str()))
 			request->setStatusCode(SERVER_ERROR);
 		else
 			request->setStatusCode(OK);
