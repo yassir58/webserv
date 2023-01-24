@@ -67,28 +67,33 @@ void HttpApplication::initServerSet (void)
 
 	FD_ZERO (&readFds);
 	FD_ZERO (&writeFds);
+	FD_ZERO (&errorFds);
 	for (it = serverFds.begin (); it != serverFds.end (); it++)
 	{
 		FD_SET ((*it), &readFds);
+		FD_SET ((*it), &errorFds);
 	}
 }
 
 void HttpApplication::checkForConnection (void)
 {
-	fd_set read, write;
+	fd_set read, write, error;
 	int err;
 	char buffer[BUFFER_MAX];
 
 	memset (buffer, 0, BUFFER_MAX);
 	read = readFds;
 	write = writeFds;
-	errValue = select (FD_SETSIZE, &read, &write, NULL, NULL);
+	error = errorFds;
+	errValue = select (FD_SETSIZE, &read, &write, &error, NULL);
 	if (errValue < 0)
 		throw Connection_error(strerror(errno), "SELECT");
 	else
 	{
 		for (int i = 0; i < fdMax; i++)
 		{
+			if (FD_ISSET (i , &error))
+				std::cout <<  "\e[0;31m SOCKET ERROR \e[0m";
 			if (FD_ISSET (i, &read))
 			{
 				if (isServer (i))
@@ -110,6 +115,7 @@ void HttpApplication::checkForConnection (void)
 					{
 						delete newConnection;
 						FD_CLR (i, &readFds);
+						FD_CLR (i , &errorFds);
 						close (i);
 						//connectionErrorLog ("peer closed connection", strerror (errno), newConnection->getRequest()->getStartLine().IpAdress, newConnection->getRequest()->getStartLine().Port);
 					}
@@ -123,6 +129,7 @@ void HttpApplication::checkForConnection (void)
 						// connectionAccessLog ("recieved", err, newConnection->getRequest()->getStartLine().IpAdress, newConnection->getRequest()->getStartLine().Port);
 						FD_CLR (i, &readFds);
 						FD_SET (i, &writeFds);
+						FD_SET (i, &errorFds);
 					}
 				}
 			}
@@ -138,6 +145,7 @@ void HttpApplication::checkForConnection (void)
 				if (err == -1)
 				{
 					FD_CLR (i, &writeFds);
+					FD_CLR (i, &errorFds);
 					close (i);
 					//connectionErrorLog ("RECV", strerror (errno), connectionInterface->getRequest()->getStartLine().IpAdress, connectionInterface->getRequest()->getStartLine().Port);
 					throw Connection_error (strerror (errno), "SEND");
@@ -145,10 +153,10 @@ void HttpApplication::checkForConnection (void)
 				else
 				{
 					//connectionAccessLog ("sent", err, connectionInterface->getRequest()->getStartLine().IpAdress, connectionInterface->getRequest()->getStartLine().Port);
-					close (i);
 					FD_CLR (i, &writeFds);
+					FD_CLR (i, &errorFds);
+					close (i);
 				}
-				
 			}
 		}
 	}
@@ -166,6 +174,7 @@ void HttpApplication::handleNewConnection (int serverFd)
 		fdMax = ConnectionSocket;
 	watchedFds.push_back (ConnectionSocket);
 	FD_SET (ConnectionSocket, &readFds);
+	FD_SET (ConnectionSocket, &errorFds);
     connectionCount++;
 }
 

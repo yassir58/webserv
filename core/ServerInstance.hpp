@@ -44,7 +44,7 @@
 #define WRITEERR 6
 #define CLOSEERR 7
 #define POLL_INF -1
-#define BACK_LOG_MAX 30 // * max size permitted by most systems
+#define BACK_LOG_MAX 50 // * max size permitted by most systems
 #define ACK_MESSAGE "\e[0;33m acknowledgement message \e[0m"
 #define RESPONSE_LINES 7
 #define DEFAULT_PORT 8080
@@ -182,7 +182,7 @@ class HttpApplication
 		std::vector <int> watchedFds;
         Config *config;
 		connectionPool connections;
-		fd_set readFds, writeFds;
+		fd_set readFds, writeFds, errorFds;
 		int fdMax;
       
 
