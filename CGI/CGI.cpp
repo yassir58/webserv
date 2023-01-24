@@ -101,7 +101,7 @@ std::string CGIHandler::execute()
     result = this->getOutput();
     if (result.find("\r\n\r\n") != std::string::npos)
     {
-        std::cout << result.find("\r\n\r\n") << std::endl;
+        // std::cout << "Body: " << result.substr(result.find("\r\n\r\n") + 4, result.length());
         // Means the response contains headers
     }
     return(result); 

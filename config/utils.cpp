@@ -350,7 +350,7 @@ void    print_table(char **table)
 
 std::string readContent(std::string path)
 {
-    std::string content = "File:";
+    std::string content = "";
     std::string line;
 
     std::ifstream file(path);
@@ -358,8 +358,9 @@ std::string readContent(std::string path)
     {
         while (getline(file, line))
         {
-            content.append(line).append("\n");
+                content.append(line).append("\n");
         }
+        printf("[%c]", content[content.length()]);
         content.pop_back();
         file.close();
     }
