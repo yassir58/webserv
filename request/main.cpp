@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/13 15:35:19 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/20 16:24:03 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/23 12:01:34 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,11 +19,11 @@
 std::string requestGeneratorByGPT()
 {
 	std::string method = "POST";
-    std::string url = "/Users/yait-iaz/Desktop/webserv/request/sbardila"; // a rad lquery
+    std::string url = "/Users/yait-iaz/Desktop/webserv/request/test"; // a rad lquery
     std::string headers = "Content-Type: application/json\r\nAccept: application/json\r\nHost: 192.120.18.0:80\r\nConnection: keep-alive\r\naccept: /\r\naccept-encoding: gzip, deflate, br\r\ncontent-type: multipart/form-data\r\naccept-language: en-US,en;q=0.9\r\nsec-fetch-mode: cors\r\n";
     std::string body = "{\"param1\":\"value1\",\"param2\":\"value2\"}\n";
     std::string body1 = "{\"param1\":\"value1\",\"param2\":\"value2\"}\n";
-    std::string body2 = "username=havel\npassword=sbardila\njwt=34D3F564we3f16e16F651e32164843216482";
+    std::string body2 = "username=havel\npassword=sbardilaadfe16F651e32164843216482\n";
 
     std::stringstream request;
     request << method << " " << url << " HTTP/1.1\r\n";
@@ -46,8 +46,7 @@ int main(void)
 		// char fileRequest[] = {"POST index.php/tv/home?season=5&episode=62 HTTP/1.1\r\n\r\n"};
 		std::string fileRequest = requestGeneratorByGPT();
 		Request newRequest(fileRequest);
-		std::cout << "this is the raw request: \n";
-		std::cout << fileRequest << std::endl;
+		std::cout << newRequest.getBody() << std::endl;
 		std::cout << "\n========================\n";
 		// newRequest.printResult();
 		// std::cout << "============gf=========\n";
@@ -60,7 +59,7 @@ int main(void)
 		// 	++begin;
 		// }
 		std::cout << "=======response===========\n";
-		Response	newResponse(newRequest, "whatever what the cgi return hoho teyoo jotaro");
+		Response	newResponse(newRequest);
 		std::cout << newResponse.getResponse();
 		// std::cout << "===============request==============\n";
 	}
