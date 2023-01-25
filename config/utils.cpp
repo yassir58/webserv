@@ -358,10 +358,10 @@ std::string readContent(std::string path)
     {
         while (getline(file, line))
         {
-                content.append(line).append("\n");
+            content.append(line).append("\n");
         }
-        printf("[%c]", content[content.length()]);
-        content.pop_back();
+        if (content.length() > 0 && content[content.length() - 1] == '\n')
+            content.pop_back();
         file.close();
     }
     return (content);

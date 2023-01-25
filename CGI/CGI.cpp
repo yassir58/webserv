@@ -91,18 +91,61 @@ const char ** CGIHandler::convertEnvList()
     return (table);
 }
 
+std::string getStatusLine(std::string headers)
+{
+    std::string status;
+
+    status = headers.substr(headers.find("Status"), headers.find_first_of('\n', headers.find("Status")));
+    return ("HTTP/1.1" + status.erase(0, 8));
+}
+
+/*
+HTTP/1.1 200 OK
+
+Date: Mon, 28 Jul 2023 12:50:41 GMT
+Server: Webserv/1.0
+Content-Length: 40
+Content-Type: text/html
+
+<html>
+<bod>
+	<h1>Hello world</h1>
+</body>
+</html>
+*/
+
+std::string CGIHandler::formCGIResponse(std::string headers, std::string body)
+{
+    std::stringstream response;
+    std::string statusLine;
+    std::string 
+
+    statusLine = "HTTP/1.1 200 OK";
+    if (headers.length() > 0)
+    {
+        if (headers.find("Status") != std::string::npos)
+            statusLine = getStatusLine(headers);
+    }
+    else 
+    {
+        // Append our own headers.
+    }
+    return (std::string());
+}
 
 std::string CGIHandler::execute()
 {
     std::string result;
     std::string headers;
+    std::string body;
     // This function should be able to format the response and add some http headers.
     this->createEnvList();
     result = this->getOutput();
     if (result.find("\r\n\r\n") != std::string::npos)
     {
-        // std::cout << "Body: " << result.substr(result.find("\r\n\r\n") + 4, result.length());
-        // Means the response contains headers
+        headers = result.substr(0, result.find("\r\n\r\n"));
+        body = result.substr(result.find("\r\n\r\n") + 4, result.length());
+        std::cout << this->formCGIResponse(headers, body) << std::endl;
     }
     return(result); 
 }

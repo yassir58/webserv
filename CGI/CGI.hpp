@@ -29,6 +29,7 @@ class CGIHandler
         std::string         getFilePath();
         std::string         getRequestURI();
         std::string         getOutput();
+        std::string         formCGIResponse(std::string , std::string);
         void                createEnvList();
         const char **             convertEnvList();
         const char **             getExecuteArgs();
