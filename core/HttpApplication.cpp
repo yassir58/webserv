@@ -90,7 +90,7 @@ void HttpApplication::checkForConnection (void)
 		throw Connection_error(strerror(errno), "SELECT");
 	else
 	{
-		for (int i = 0; i < fdMax; i++)
+		for (int i = 0; i < (fdMax + 1); i++)
 		{
 			if (FD_ISSET (i , &error))
 				std::cout <<  "\e[0;31m SOCKET ERROR \e[0m";
@@ -108,7 +108,6 @@ void HttpApplication::checkForConnection (void)
 					{
 						delete newConnection;
 						FD_CLR (i, &readFds);
-						//connectionErrorLog ("RECV", strerror (errno), newConnection->getRequest()->getStartLine().IpAdress, newConnection->getRequest()->getStartLine().Port);
 						throw Connection_error (strerror (errno), "RECV");
 					}
 					else if (err == 0)
@@ -117,42 +116,45 @@ void HttpApplication::checkForConnection (void)
 						FD_CLR (i, &readFds);
 						FD_CLR (i , &errorFds);
 						close (i);
-						//connectionErrorLog ("peer closed connection", strerror (errno), newConnection->getRequest()->getStartLine().IpAdress, newConnection->getRequest()->getStartLine().Port);
 					}
 					else
 					{
-						// serverBlocks servList = this->config->getHttpContext()->getServers ();
-						// newConnection->setRequest ();
-						// // newConnection->generateResolversList (servList);
-						// // newConnection->matchRequestHandler (servList);
-						// connections.push_back (newConnection);
-						// connectionAccessLog ("recieved", err, newConnection->getRequest()->getStartLine().IpAdress, newConnection->getRequest()->getStartLine().Port);
+						serverBlocks servList = this->config->getHttpContext()->getServers ();
+						newConnection->setRequest ();
+						newConnection->generateResolversList (servList);
+						newConnection->matchRequestHandler (servList);
+						connections.push_back (newConnection);
 						FD_CLR (i, &readFds);
 						FD_SET (i, &writeFds);
-						FD_SET (i, &errorFds);
 					}
 				}
 			}
 			if (FD_ISSET (i, &write))
 			{
-				//Connection *connectionInterface = getConnection (i);
+				Connection *connectionInterface = getConnection (i);
+				Server *server;
+				Request *request;
+				std::string dirListBody = listDirectory ("./testing");
+				std::string responseHeader (HTTP_RESPONSE_EXAMPLE);
 
-				// if (connectionInterface != nullptr)
-				// {
-				// 	connectionInterface->getRequest()->printResult ();
-				// }
-				err = send (i, HTTP_RESPONSE_EXAMPLE, HTTP_LENGTH, 0);
+				responseHeader.append (dirListBody);
+				if (connectionInterface != nullptr)
+				{
+					server = connectionInterface->getServer();
+					request = connectionInterface->getRequest ();
+					connectionInterface->printfResolvers ();
+					server->printServer ();
+				}
+				err = send (i, responseHeader.c_str (), responseHeader.length (), 0);
 				if (err == -1)
 				{
 					FD_CLR (i, &writeFds);
 					FD_CLR (i, &errorFds);
 					close (i);
-					//connectionErrorLog ("RECV", strerror (errno), connectionInterface->getRequest()->getStartLine().IpAdress, connectionInterface->getRequest()->getStartLine().Port);
 					throw Connection_error (strerror (errno), "SEND");
 				}
 				else
 				{
-					//connectionAccessLog ("sent", err, connectionInterface->getRequest()->getStartLine().IpAdress, connectionInterface->getRequest()->getStartLine().Port);
 					FD_CLR (i, &writeFds);
 					FD_CLR (i, &errorFds);
 					close (i);

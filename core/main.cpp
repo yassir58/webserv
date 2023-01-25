@@ -19,7 +19,7 @@ int main (int argc , char *argv[])
     
     try
     {
-        app.setupAppResources ();
+		app.handleSigPipe ();
         app.filterServerBlocks ();
         app.connectServers ();
 		app.initServerSet ();

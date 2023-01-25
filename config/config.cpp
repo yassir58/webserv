@@ -203,11 +203,11 @@ void    Server::printLocations()
 
 void    Server::printServer()
 {
-    //std::cout << "HOST: " << this->host << std::endl;
-    //std::cout << "PORT: " << this->port << std::endl;
-    //std::cout << "SERVER NAME: " << this->serverName << std::endl;
-    //std::cout << "ROOT: " << this->root << std::endl;
-    //std::cout << "MAX BODY SIZE: " << this->maxBodySize << std::endl;
+    std::cout << "HOST: " << this->host << std::endl;
+    std::cout << "PORT: " << this->port << std::endl;
+    std::cout << "SERVER NAME: " << this->serverName << std::endl;
+    std::cout << "ROOT: " << this->root << std::endl;
+    std::cout << "MAX BODY SIZE: " << this->maxBodySize << std::endl;
 }
 
 Server * Server::parseServer(stringContainer configFile, int index)
