@@ -49,3 +49,5 @@ testInterface ()
 for i in ${ENDPOINTS[@]}; do
 	testInterface $i
 done
+
+rm -rf siege.out

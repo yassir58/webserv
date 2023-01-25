@@ -27,6 +27,8 @@
 #include <sys/time.h>
 #include <sys/select.h>
 #include <arpa/inet.h>
+#include <signal.h>
+#include <dirent.h>
 
 // MACROS
 #define PORT 8080
@@ -62,7 +64,7 @@ typedef std::vector <std::string> stringContainer;
 
 
 // for testing purpos
-#define HTTP_RESPONSE_EXAMPLE "HTTP/1.1 200 OK\r\nServer: WebServer\r\nContent-Type: text/html\r\nContent-Length: 109\r\nConnection: close\r\n\r\nhello world</br><p>this is a paragraph</p><img src='https://i.ytimg.com/vi/8wWBcs99hTw/hqdefault.jpg' ></img>"
+#define HTTP_RESPONSE_EXAMPLE "HTTP/1.1 200 OK\r\nServer: WebServer\r\nContent-Type: text/html\r\nContent-Length: 109\r\nConnection: close\r\n\r\n"
 #define HTTP_LENGTH 225
 class Fatal_error : public std::exception
 {
@@ -137,9 +139,9 @@ class Connection {
         std::string hostName;
 		std::string serviceName;
 		std::string ipAddress;
-		int requestHandlerIndx;
 		size_t requestLength;
 		int status;
+		Server *server;
 		
 
     public:
@@ -156,8 +158,8 @@ class Connection {
 		void setRequest (void);
 		Request *getRequest (void) const;
 		void printfResolvers (void);
-		int matchRequestHandler (serverBlocks serverList);
-		int getHandlerIndx (void) const;
+		void matchRequestHandler (serverBlocks serverList);
+		Server* getServer (void) const;
 		void setStatus (int status);
 };
 
@@ -229,6 +231,7 @@ public:
 			std ::cout << "\e[0;36m " << (*it) << " \e[0m";
 		std::cout << std::endl;
 	}
+	void handleSigPipe ();
 
 };
 
@@ -237,9 +240,6 @@ void handleError(int err);
 void initServers(ServerInstance *serv_list);
 const std::string currentDateTime();
 std::string getTestBody (std::string filename);
+std::string listDirectory (std::string dirPath);
 #endif
 
-
-// failed 16
-// succesfull 2399
-// loged 2424

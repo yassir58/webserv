@@ -37,12 +37,14 @@ int main(void)
 
     try 
     {
-        Config *file = new Config("./webserv.conf");
+        Config *file = new Config("../testing/configs/webserv.conf");
         file->parseConfig();
-        std::cout << "Server [0] Host: " << file->getHttpContext()->getServers()[0]->getHost() << std::endl;
-        std::cout << "Server [0] Port: " << file->getHttpContext()->getServers()[0]->getPort() << std::endl;
-        std::cout << "Server [1] Host: " << file->getHttpContext()->getServers()[1]->getHost() << std::endl;
-        std::cout << "Server [1] Port: " << file->getHttpContext()->getServers()[1]->getPort() << std::endl;
+        std::cout << "Redirect Link: " << file->getHttpContext()->getServers()[3]->getLocations()[1]->getRedirectLink() << std::endl;
+        std::cout << "Redirect Code: " << file->getHttpContext()->getServers()[3]->getLocations()[1]->getRedirectCode() << std::endl;
+        // std::cout << "Server [0] Host: " << file->getHttpContext()->getServers()[0]->getHost() << std::endl;
+        // std::cout << "Server [0] Port: " << file->getHttpContext()->getServers()[0]->getPort() << std::endl;
+        // std::cout << "Server [1] Host: " << file->getHttpContext()->getServers()[1]->getHost() << std::endl;
+        // std::cout << "Server [1] Port: " << file->getHttpContext()->getServers()[1]->getPort() << std::endl;
         // std::cout << "Server [0] Port: " << file->getHttpContext()->getServers()[0]->getServerName() << std::endl;
         // std::cout << "Global access log: " << file->getHttpContext()->getAccessLog() << std::endl;
         // std::cout << "Global error log: " << file->getHttpContext()->getErrorLog() << std::endl;

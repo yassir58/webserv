@@ -203,11 +203,11 @@ void    Server::printLocations()
 
 void    Server::printServer()
 {
-    //std::cout << "HOST: " << this->host << std::endl;
-    //std::cout << "PORT: " << this->port << std::endl;
-    //std::cout << "SERVER NAME: " << this->serverName << std::endl;
-    //std::cout << "ROOT: " << this->root << std::endl;
-    //std::cout << "MAX BODY SIZE: " << this->maxBodySize << std::endl;
+    std::cout << "HOST: " << this->host << std::endl;
+    std::cout << "PORT: " << this->port << std::endl;
+    std::cout << "SERVER NAME: " << this->serverName << std::endl;
+    std::cout << "ROOT: " << this->root << std::endl;
+    std::cout << "MAX BODY SIZE: " << this->maxBodySize << std::endl;
 }
 
 Server * Server::parseServer(stringContainer configFile, int index)
@@ -450,8 +450,14 @@ void    Location::parseDirective(stringContainer line, Location *instance)
         checkPath(line[1], CHECK_MODE);
         instance->uploadPath = line[1];
     }
-    else if (line[0] == "redirect" && line.size() == 2)
-        instance->redirectLink = line[1];
+    else if (line[0] == "redirect" && line.size() == 3)
+    {
+        instance->redirectLink = line[2];
+        if (line[1].length() == 3 && atoi(line[1].c_str()) < 308 && atoi(line[1].c_str()) > 300)
+            instance->redirectCode = line[1];
+        else
+            throw parseError("Syntax Error: Invalid redirect status code.");
+    }
     else if (line[0] == "cgi_enable" && line.size() == 2)
     {
         if (strcmp(line[1].c_str(), "on") == 0)
@@ -521,6 +527,11 @@ std::string Location::getCGIExtension()
 std::string Location::getRedirectLink()
 {
     return (this->redirectLink);
+}
+
+std::string Location::getRedirectCode()
+{
+    return (this->redirectCode);
 }
 
 bool Location::getUploadStatus()

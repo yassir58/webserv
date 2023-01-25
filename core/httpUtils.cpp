@@ -60,7 +60,6 @@ Connection::Connection ()
     ConnectionSocket = 0;
 	ConnectionPort = 0;
 	requestLength = 0;
-	requestHandlerIndx = 0;
 }
 
 Connection::Connection (int fd)
@@ -68,7 +67,6 @@ Connection::Connection (int fd)
     ConnectionSocket = fd;
 	ConnectionPort = 0;
 	requestLength = 0;
-	requestHandlerIndx = 0;
 }
 
 
@@ -146,30 +144,26 @@ void Connection::printfResolvers (void)
 	std::cout << std::endl;
 }
 
-int Connection::matchRequestHandler (serverBlocks serverList)
+void Connection::matchRequestHandler (serverBlocks serverList)
 {
 	int servIndx = 0;
 	int hostFlag = this->request->getStartLine().Host;
 	std::string servName;
 	intContainer::iterator it;
 
+	servIndx = resolversList[0];
 	servName = this->request->getStartLine().hostName ;
 	if (hostFlag)
 	{
 		for (it = resolversList.begin (); it != resolversList.end (); it++)
 		{
-			servIndx = (*it);
 			if (!serverList[(*it)]->getServerName ().compare(servName))
-				return (*it);
+				servIndx = (*it);
 		}
 	}
-	return (0);
+	server = serverList[servIndx];
 }
 
-int Connection::getHandlerIndx (void) const
-{
-	return  (this->requestHandlerIndx);
-}
 
 void Connection::sendResponse (void)
 {
@@ -238,4 +232,55 @@ void HttpApplication::connectionErrorLog (std::string errorContext, std::string 
 Request *Connection::getRequest (void) const
 {
 	return (this->request);
+}
+
+Server* Connection::getServer (void) const
+{
+	return (this->server);
+}
+
+
+void HttpApplication::handleSigPipe (void) 
+{
+	struct sigaction sa;
+	sa.sa_handler = SIG_IGN;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	sigaction(SIGPIPE, &sa, NULL);
+}
+
+std::string listDirectory (std::string dirPath)
+{
+	DIR *dir = opendir (dirPath.c_str ());
+	struct dirent *dp;
+	stringContainer dirIndex;
+	stringContainer::iterator it;
+	std::string indexHeader("Index of");
+	std::string lineBreak ("</br>");
+	std::string line("<hr>");
+	std::string lsOpen ("<ul>");
+	std::string lsClose ("</ul>");
+	std::string liOpen ("<li>");
+	std::string liClose ("</li>");
+	std::string indexBody;
+
+	if (dir == NULL)
+		throw std::exception ();
+	else
+	{
+		while ((dp = readdir (dir)))
+		{
+			dirIndex.push_back (dp->d_name);
+		}
+	}
+
+	indexHeader.append (dirPath).append (lineBreak).append (line).append (lsOpen);
+	for (it = dirIndex.begin (); it != dirIndex.end (); it++)
+	{
+		indexHeader.append (liOpen).append ((*it)).append (liClose);
+	}
+	indexHeader.append (lsClose);
+	std::cout << indexHeader << std::endl; 
+	closedir (dir);
+	return (indexHeader);
 }
