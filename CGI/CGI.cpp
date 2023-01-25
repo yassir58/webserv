@@ -50,8 +50,7 @@ void    CGIHandler::createEnvList()
 	}
     if (this->request->getHeaderField("content-type") != NULL)
         envList["CONTENT_TYPE"] = this->request->getHeaderField("content-type")->value;
-    envList["CONTENT_LENGTH"] = int2assci(31);
-    // envList["CONTENT_LENGTH"] = convertBody(this->request->getBody()).length();
+    envList["CONTENT_LENGTH"] = int2assci(convertBody(this->request->getBody()).length());
     this->envList = envList;
 }
 
@@ -92,28 +91,78 @@ const char ** CGIHandler::convertEnvList()
     return (table);
 }
 
+std::string getStatusLine(std::string headers)
+{
+    std::string status;
+
+    status = headers.substr(headers.find("Status"), headers.find_first_of('\n', headers.find("Status")));
+    return ("HTTP/1.1 " + status.erase(0, 8));
+}
+
+/*
+HTTP/1.1 200 OK
+
+Date: Mon, 28 Jul 2023 12:50:41 GMT
+Server: Webserv/1.0
+Content-Length: 40
+Content-Type: text/html
+
+<html>
+<bod>
+	<h1>Hello world</h1>
+</body>
+</html>
+*/
+
+std::string CGIHandler::formCGIResponse(std::string headers, std::string body)
+{
+    std::stringstream response;
+    std::stringstream generatedHeaders;
+    std::string statusLine;
+
+    statusLine = "HTTP/1.1 200 OK";
+    generatedHeaders << generateDate();
+    generatedHeaders << "Server: " << SERVER_SOFTWARE_VERSION << "\r\n";
+    generatedHeaders << "Content-length: " << int2assci(body.length()) << "\r\n";
+    if (headers.length() > 0)
+    {
+        if (headers.find("Status") != std::string::npos)
+            statusLine = getStatusLine(headers);
+        generatedHeaders << headers;
+    }
+    response << statusLine << "\r\n\r\n";
+    response << generatedHeaders.str() << "\r\n\r\n";
+    response << body;
+    return (response.str());
+}
 
 std::string CGIHandler::execute()
 {
-    const char **convertedList;
-
+    std::string result;
+    std::string headers;
+    std::string body;
+    // This function should be able to format the response and add some http headers.
     this->createEnvList();
-    this->getOutput();
+    result = this->getOutput();
+    if (result.find("\r\n\r\n") != std::string::npos)
+    {
+        headers = result.substr(0, result.find("\r\n\r\n"));
+        body = result.substr(result.find("\r\n\r\n") + 4, result.length());
+        std::cout << this->formCGIResponse(headers, body) << std::endl;
+    }
+    //! I should fix the function to work in case of empty input.
+    return(result); 
 }
 
 /* @details: in the substr function i started from 1 to remove the backslash from the 
 script name file path
 */
-//! In this function i should check that the extension is available otherwise return null.
 std::string CGIHandler::getScriptName(int status)
 {
     std::string extension = this->location->getCGIExtension();
     std::string urlExample = this->request->getRequestTarget();
     if (urlExample.find(("." + extension)) == std::string::npos)
-    {
-        std::cout << "Error extension does not exists in request error using CGI" << std::endl;
-        exit(1);
-    }
+        throw CGIError("CGI Error: invalid file extension could not execute CGI.");
     return (urlExample.substr(status, (urlExample.find(("." + extension).c_str()) + extension.length()) + !status)); 
 }
 
@@ -156,6 +205,7 @@ std::string    CGIHandler::getOutput()
 {
     int fds[2];
     int fd;
+    int trash;
     char **envList;
     char **args;
     std::string output;
@@ -163,25 +213,19 @@ std::string    CGIHandler::getOutput()
 
     args = (char **)this->getExecuteArgs();
     envList = (char **)this->convertEnvList();
-    print_table(args);
     if (pipe(fds) < 0)
-    {
-        std::cout << "Could not use pipe" << std::endl;
-        exit(1);
-    }
+        throw CGIError("CGI Error: Could not open pipe.");
     pid = fork();
     if (pid == 0)
     {
         close(fds[1]);
-        fd = open("/home/sn4r7/Desktop/CGI", O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
-        if (fd < 0)
-        {
-            std::cout << "Could not open tmp file" << std::endl;
-            exit(1);
-        }
+        fd = open("/tmp/CGI", O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+        trash = open("/dev/null", O_WRONLY);
+        if (fd < 0 || trash < 0)
+            throw CGIError("CGI Error: Invalid fd.");
         dup2(fds[0], STDIN_FILENO); // Reading from the read end of the pipe.
+        dup2(trash, STDERR_FILENO);
         dup2(fd, STDOUT_FILENO); // Redirecting the execve output to the file.
-        dup2(fd, STDERR_FILENO); // Redirecting the execve errors to the file.
         execve(this->defaultPath.c_str(), args, envList);
         close(fd);
         close(fds[0]);
@@ -189,16 +233,15 @@ std::string    CGIHandler::getOutput()
     }
     else
     {
-        stringContainer str;
-        str.push_back("username=havel&password=secure");
         close(fds[0]);
-        //? I think i should do some more parsing to request body accoring to the encoding type.
-        // write(fds[1], convertBody(this->request->getBody()).c_str(), convertBody(this->request->getBody()).length());
-        write(fds[1], convertBody(str).c_str(), convertBody(str).length());
+        write(fds[1], convertBody(this->request->getBody()).c_str(), convertBody(this->request->getBody()).length());
         close(fds[1]);
         waitpid(-1, NULL, 0);
     }
-    return (std::string());
+    output = readContent("/tmp/CGI");
+    close(fd);
+    close(trash);
+    return (output);
 }
 
 //URL Example: http://localhost/php-cgi/index.php/tv/home?season=5&episode=62
