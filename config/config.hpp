@@ -40,6 +40,7 @@ class Location
         std::string cgiDefault;
         std::string cgiExtension;
         std::string redirectLink;
+        std::string redirectCode;
         stringContainer methods;
         bool cgiEnable;
         bool sendFile;
@@ -52,6 +53,7 @@ class Location
         std::string getCGIDefault();
         std::string getCGIExtension();
         std::string getRedirectLink();
+        std::string getRedirectCode();
         bool getCGIStatus();
         bool getUploadStatus();
         bool getListingStatus();
@@ -162,5 +164,6 @@ std::string toUpperCase(std::string str);
 std::string convertBody(stringContainer body);
 std::string readContent(std::string path);
 void    print_table(char **table);
+std::string	generateDate(void);
 
 #endif 

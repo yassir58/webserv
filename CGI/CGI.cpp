@@ -96,7 +96,7 @@ std::string getStatusLine(std::string headers)
     std::string status;
 
     status = headers.substr(headers.find("Status"), headers.find_first_of('\n', headers.find("Status")));
-    return ("HTTP/1.1" + status.erase(0, 8));
+    return ("HTTP/1.1 " + status.erase(0, 8));
 }
 
 /*
@@ -117,20 +117,23 @@ Content-Type: text/html
 std::string CGIHandler::formCGIResponse(std::string headers, std::string body)
 {
     std::stringstream response;
+    std::stringstream generatedHeaders;
     std::string statusLine;
-    std::string 
 
     statusLine = "HTTP/1.1 200 OK";
+    generatedHeaders << generateDate();
+    generatedHeaders << "Server: " << SERVER_SOFTWARE_VERSION << "\r\n";
+    generatedHeaders << "Content-length: " << int2assci(body.length()) << "\r\n";
     if (headers.length() > 0)
     {
         if (headers.find("Status") != std::string::npos)
             statusLine = getStatusLine(headers);
+        generatedHeaders << headers;
     }
-    else 
-    {
-        // Append our own headers.
-    }
-    return (std::string());
+    response << statusLine << "\r\n\r\n";
+    response << generatedHeaders.str() << "\r\n\r\n";
+    response << body;
+    return (response.str());
 }
 
 std::string CGIHandler::execute()
@@ -147,6 +150,7 @@ std::string CGIHandler::execute()
         body = result.substr(result.find("\r\n\r\n") + 4, result.length());
         std::cout << this->formCGIResponse(headers, body) << std::endl;
     }
+    //! I should fix the function to work in case of empty input.
     return(result); 
 }
 
