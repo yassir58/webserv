@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:36 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/24 18:44:04 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/25 12:10:27 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@
 # define OK			   200
 # define CREATED	   201
 # define NO_CONTENT	   204
+# define FOUND		   302
 # define BAD_REQUEST   400
 # define FORBIDDEN	   403
 # define NOT_FOUND	   404
@@ -47,12 +48,13 @@ class Request
 		size_t 					pos; // used in getCRLF() method
 		size_t 					start; // also used in getCRLF() method
 		Server					*serverInstance; // the server instance that handle the request
+		size_t					redirectionCounter; // count how many redirection have been done to not get in a loop
 	public:
 		Request(std::string fileString, Server *serverInstance); //param constructor take a string as param and the server instance 
 		~Request(); // destructor not used 
 		int				checkMethod(void); // check if the method is valid
 		int				treatAbsoluteURI(void); // treat the case where the request contain an absolute URI
-		int				treatAbsolutePath(void); // treat the case where the request contain an absolute path
+		int				treatAbsolutePath(Location *pathLocation); // treat the case where the request contain an absolute path
 		int 			checkRequestTarget(void); // check if the request target is valid
 		int				checkVersion(void); // check the HTTP version
 		int				checkContentParsed(void); // check the content that been parsed

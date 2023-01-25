@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/24 19:03:06 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/25 13:28:39 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,6 @@ Request::Request(std::string fileString, Server *serverInst)
 		if (!parseHeaderField(headerFields, line))
 			statusCode = BAD_REQUEST;
 	}
-	path = startLine.requestTarget;
 	if (!startLine.Query.empty())
 		startLine.requestTarget = startLine.requestTarget +  "?" + startLine.Query;
 	if (startLine.Host == false && startLine.IpAdress.empty())
@@ -108,8 +107,7 @@ bool Request::checkCGI(void)
 	if (path.front() == '/' && (*root.end()) == '/')
 		path = path.substr(1, std::string::npos);
 	path = root + path;
-	std::cout << "path: " << path << std::endl;
-	if (!treatAbsolutePath())
+	if (!treatAbsolutePath(pathLocation))
 		return (false);
 	return (checkExtension(pathLocation));
 }
@@ -189,12 +187,28 @@ int	Request::treatAbsoluteURI()
 	return (0);
 }
 
-int Request::treatAbsolutePath()
+int Request::treatAbsolutePath(Location *pathLocation)
 {
+	stringContainer methods = pathLocation->getMethods();
 	if (access(path.c_str(), F_OK) == -1)
 	{
 		statusCode = NOT_FOUND;
 		return (0);
+	}
+	if (methods.size() != 0)
+	{
+		stringContainer::iterator begin = methods.begin();
+		stringContainer::iterator end = methods.end();
+		for (;begin != end; ++begin)
+		{
+			if ((*begin) == startLine.method)
+				break ;
+		}
+		if (begin == end)
+		{
+			statusCode = NOT_ALLOWED;
+			return (0);
+		}
 	}
 	if (startLine.method == "POST" && access(path.c_str(), W_OK) == -1)
 	{
@@ -212,6 +226,18 @@ int Request::treatAbsolutePath()
 int Request::checkRequestTarget()
 {
 	treatAbsoluteURI();
+	path = startLine.requestTarget;
+	Location *pathLocation = matchLocation();
+	std::string redirectLink;
+	if (pathLocation)
+	{
+		redirectLink = pathLocation->getRedirectLink();
+		if (!redirectLink.empty())
+		{
+			startLine.requestTarget = redirectLink;
+			checkRequestTarget();
+		}
+	}
 	return (1);
 }
 
