@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/13 15:35:19 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/25 11:31:11 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/26 15:14:52 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 std::string requestGeneratorByGPT()
 {
 	std::string method = "GET";
-    std::string url = "/response/test.txt"; // a rad lquery
+    std::string url = "/response/test.php";
     std::string headers = "Content-Type: application/json\r\nAccept: application/json\r\nHost: 192.120.18.0:80\r\nConnection: keep-alive\r\naccept: /\r\naccept-encoding: gzip, deflate, br\r\ncontent-type: multipart/form-data\r\naccept-language: en-US,en;q=0.9\r\nsec-fetch-mode: cors\r\n";
     std::string body = "{\"param1\":\"value1\",\"param2\":\"value2\"}\n";
     std::string body1 = "{\"param1\":\"value1\",\"param2\":\"value2\"}\n";

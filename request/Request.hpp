@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:36 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/25 12:10:27 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/26 15:55:12 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@
 # define OK			   200
 # define CREATED	   201
 # define NO_CONTENT	   204
-# define FOUND		   302
+# define FOUND		   301
 # define BAD_REQUEST   400
 # define FORBIDDEN	   403
 # define NOT_FOUND	   404
@@ -47,11 +47,14 @@ class Request
 		bool					CGI; // bool to check if the request need a CGI handling or not
 		size_t 					pos; // used in getCRLF() method
 		size_t 					start; // also used in getCRLF() method
+		std::string				root; // the root directive if specified
 		Server					*serverInstance; // the server instance that handle the request
-		size_t					redirectionCounter; // count how many redirection have been done to not get in a loop
+		std::string				redirectionLink; // the link of the redirection from the config file if there's any
+		std::string				redirectCode; // the code of the redirection from the config file
+		bool					redirectionStatus; // to check if there's any redirection required
 	public:
 		Request(std::string fileString, Server *serverInstance); //param constructor take a string as param and the server instance 
-		~Request(); // destructor not used 
+		~Request(); // destructor not used
 		int				checkMethod(void); // check if the method is valid
 		int				treatAbsoluteURI(void); // treat the case where the request contain an absolute URI
 		int				treatAbsolutePath(Location *pathLocation); // treat the case where the request contain an absolute path
@@ -66,6 +69,7 @@ class Request
 		bool			checkCGI(); // to check if the request need a cgi handling
 		Location		*matchLocation(); // return the location instance to handle the path specified on the request target
 		bool			checkExtension(Location *pathLocation);
+		void			checkDirectory(Location *pathLocation);
 		void			printResult(void); // print the result produced
 		t_start 		&getStartLine(void); // geter of the startLine
 		headerFieldList &getHeaderFieldlist(void); // geter of the headerFields linked list
@@ -81,5 +85,8 @@ class Request
 		std::string		getBody(void); // return the body within the request 
 		bool			getCGIStatus(void); // return the status of the CGI
 		std::string		getPath(void); // retunr the path
+		bool			getRedirectionStatus(void);
+		std::string		getRedirectionLink(void);
+		std::string		getRedirectionCode(void);
 };
 #endif

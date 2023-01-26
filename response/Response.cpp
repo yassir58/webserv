@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/24 19:07:34 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/25 20:24:04 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,10 @@
 Response::Response(Request &request)
 {
 	setRequest(&request);
-	applyMethod();
+	if (this->request->getRedirectionStatus())
+		this->request->setStatusCode(handleRedirection());
+	else
+		applyMethod();
 	statusIndex = getStatusCode();
 	responseToSend.push_back(generateStatusLine());
 	stringContainer headerFields = generateHeaderFields(responseBody);
@@ -51,6 +54,15 @@ Response::~Response() {}
 /*
 ** --------------------------------- METHODS ----------------------------------
 */
+
+int	Response::handleRedirection(void)
+{
+	std::stringstream ss;
+	int					statusCode;
+	ss << request->getRedirectionCode();
+	ss >> statusCode;
+	return (statusCode);
+}
 
 int	Response::getStatusCode(void)
 {
@@ -102,10 +114,16 @@ stringContainer Response::generateHeaderFields(std::string &responseBody)
 	std::string Lenght = generateLenghtContent(responseBody);
 	toReturn.push_back(Lenght);
 	// I still need to work on the content type
-	// if (this->getStatusCode() == "405")
-	// {
-	// 	// treat the allow mothod
-	// }
+	if (this->getStatusCode() == NOT_ALLOWED)
+	{
+		std::string allow = "Allow: GET, HEAD, DELETE\r\n";
+		toReturn.push_back(allow);
+	}
+	if (request->getRedirectionStatus())
+	{
+		std::string location = "Location: " + request->getRedirectionLink() + " \r\n";
+		toReturn.push_back(location);
+	}
 	std::string Server = "Server: websrv\r\n\r\n";
 	toReturn.push_back(Server);
 	return (toReturn);
@@ -175,6 +193,7 @@ void	Response::setRequest(Request *request)
 	size_t	index = 0;
 	status[index].code = OK; status[index++].status = "OK";
 	status[index].code = CREATED; status[index++].status = "CREATED";
+	status[index].code = FOUND; status[index++].status = "FOUND";
 	status[index].code = NO_CONTENT; status[index++].status = "NO_CONTENT";
 	status[index].code = BAD_REQUEST; status[index++].status = "BAD_REQUEST";
 	status[index].code = FORBIDDEN; status[index++].status = "FORBIDDEN";

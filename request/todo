@@ -4,8 +4,10 @@ compare it with the cgi extension
 
 check the lenght of request body 1000 is the default and the
 
-redirection setter of the request target 
+redirection handle for the response 
 
 request default cgi
 
 index treatment
+
+upload 

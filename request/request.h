@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/14 16:01:13 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/17 17:18:31 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/26 12:08:35 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,8 @@
 # include <iostream>
 # include <cstring>
 # include <vector>
+# include <sys/stat.h>
+# include <sys/types.h>
 
 typedef std::vector<std::string> stringContainer;
 
@@ -47,4 +49,6 @@ typedef struct request
 	headerFieldList	requestField;
 	headerFieldList	entityField;
 } t_request;
+
+int isDir(const char* fileName);
 

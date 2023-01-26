@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/25 13:28:39 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/26 12:35:29 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,11 @@ Request::Request(std::string fileString, Server *serverInst)
 	setStatusCode(0);
 	setFileString(fileString);
 	setServerInstance(serverInst);
-	getCRLF(line, (char *)"\r\n");
+	if (getCRLF(line, (char *)"\r\n"))
+	{
+		statusCode = BAD_REQUEST;
+		return ;
+	}
 	if (!parseFirstLine(line))
 	{
 		statusCode = BAD_REQUEST;
@@ -34,7 +38,10 @@ Request::Request(std::string fileString, Server *serverInst)
 	while (!getCRLF(line, (char *)"\r\n"))
 	{
 		if (!parseHeaderField(headerFields, line))
+		{
 			statusCode = BAD_REQUEST;
+			return ;
+		}
 	}
 	if (!startLine.Query.empty())
 		startLine.requestTarget = startLine.requestTarget +  "?" + startLine.Query;
@@ -48,7 +55,10 @@ Request::Request(std::string fileString, Server *serverInst)
 		while (!getCRLF(line, (char *)"\n"))
 		{
 			if (!parseBody(line))
+			{
 				statusCode = BAD_REQUEST;
+				return ;
+			}
 		}
 	}
 	this->CGI = checkCGI();
@@ -86,6 +96,7 @@ bool Request::checkExtension(Location *pathLocation)
 {
 	std::string	extension = pathLocation->getCGIExtension();
 	std::string	fileExtension;
+	std::string	defaultCGI = pathLocation->getCGIDefault();
 	size_t		dot;
 	if (pathLocation->getCGIStatus() == false || extension.empty())
 		return (false);
@@ -94,19 +105,57 @@ bool Request::checkExtension(Location *pathLocation)
 		return (false);
 	fileExtension = path.substr(dot + 1, std::string::npos);
 	if (fileExtension == extension)
+	{
+		if (defaultCGI.empty())
+			return (false);
+		if (defaultCGI.front() == '/' && (*root.end()) == '/')
+			defaultCGI = defaultCGI.substr(1, std::string::npos);
+		defaultCGI = root + defaultCGI;
+		if (access(defaultCGI.c_str(), F_OK) == -1)
+		{
+			statusCode = NOT_FOUND;
+			return (false);
+		}
+		if (access(defaultCGI.c_str(), X_OK) == -1 || access(path.c_str(), X_OK) == -1)
+		{
+			statusCode = NOT_ALLOWED;
+			return (false);
+		}
 		return (true);
+	}
 	return (false);
+}
+
+void	Request::checkDirectory(Location *pathLocation)
+{
+	int dec = isDir(path.c_str());
+	if (dec == 0)
+	{
+		if (pathLocation) // here I should check for the index is provided
+		{
+			// create the new path based on the path provided in the index directive
+			// return 
+		}
+		// check if the directory listing is enabled if yes mark it and return
+		// else 404 forbiden is set 
+	}
 }
 
 bool Request::checkCGI(void)
 {
 	Location *pathLocation = matchLocation();
-	std::string root = serverInstance->getRoot();
+	if (!pathLocation)
+	{
+		statusCode = NOT_FOUND;
+		return (false);
+	}
+	this->root = serverInstance->getRoot();
 	if (!pathLocation->getRoot().empty())
 		root = pathLocation->getRoot();
 	if (path.front() == '/' && (*root.end()) == '/')
 		path = path.substr(1, std::string::npos);
 	path = root + path;
+	checkDirectory(pathLocation);
 	if (!treatAbsolutePath(pathLocation))
 		return (false);
 	return (checkExtension(pathLocation));
@@ -121,7 +170,8 @@ int	Request::checkContentParsed()
 	}
 	if (!checkRequestTarget())
 	{
-		statusCode = BAD_REQUEST;
+		if (statusCode == 0)
+			statusCode = BAD_REQUEST;
 		return (0);
 	}
 	if (!checkVersion())
@@ -228,15 +278,19 @@ int Request::checkRequestTarget()
 	treatAbsoluteURI();
 	path = startLine.requestTarget;
 	Location *pathLocation = matchLocation();
-	std::string redirectLink;
-	if (pathLocation)
+	if (pathLocation == NULL)
 	{
-		redirectLink = pathLocation->getRedirectLink();
-		if (!redirectLink.empty())
-		{
-			startLine.requestTarget = redirectLink;
-			checkRequestTarget();
-		}
+		statusCode = NOT_FOUND;
+		return (0);
+	}
+	std::string redirect = pathLocation->getRedirectLink();
+	std::string redirCode = pathLocation->getRedirectCode();
+	if (!redirect.empty())
+	{
+		redirectionLink = redirect;
+		this->redirectCode = redirCode;
+		redirectionStatus = true;
+		return (0);
 	}
 	return (1);
 }
@@ -386,6 +440,7 @@ void	Request::setServerInstance(Server *server)
 {
 	serverInstance = server;
 	CGI = false;
+	redirectionStatus = false;
 }
 
 std::string		Request::getErrorCode(void)
@@ -453,6 +508,21 @@ bool Request::getCGIStatus(void)
 std::string Request::getPath(void)
 {
 	return (path);
+}
+
+bool			Request::getRedirectionStatus(void)
+{
+	return (redirectionStatus);
+}
+
+std::string		Request::getRedirectionLink(void)
+{
+	return (redirectionLink);
+}
+
+std::string		Request::getRedirectionCode(void)
+{
+	return (redirectCode);
 }
 
 /* ************************************************************************** */

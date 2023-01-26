@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 14:44:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/20 16:17:18 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/25 20:14:47 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ class Response
 {
 	private:
 		Request			*request; // a pointer on the request that have been parsed by the all mighty ma3ert
-		t_status		status[11]; // table of the available status
+		t_status		status[12]; // table of the available status
 		int				statusIndex; // the index of the appropriate code response in the table
 		std::string		responseBody; // the body of the response 
 		stringContainer	responseToSend; // the all mighty response
@@ -45,6 +45,7 @@ class Response
 		int				applyMethod();
 		stringContainer generateHeaderFields(std::string &responseBody); // generate the necessary header fields
 		std::string 	generateStatusLine(); // generate the status line
+		int				handleRedirection(void);
 		void			setRequest(Request *request); // seter of the request(look at the private attribute)
 		int				getStatusCode(void); // return the index of the status code
 		void			setResponseBody(std::string responseBody);
