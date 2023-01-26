@@ -99,67 +99,11 @@ void HttpApplication::checkForConnection (void)
 				if (isServer (i))
 					handleNewConnection (i);
 				else
-				{
-					Connection *newConnection = new Connection (i);
+					handleHttpRequest (i);
 
-					newConnection->emptyBuffer ();
-					err = newConnection->recieveData ();
-					if (err == -1)
-					{
-						delete newConnection;
-						FD_CLR (i, &readFds);
-						throw Connection_error (strerror (errno), "RECV");
-					}
-					else if (err == 0)
-					{
-						delete newConnection;
-						FD_CLR (i, &readFds);
-						FD_CLR (i , &errorFds);
-						close (i);
-					}
-					else
-					{
-						serverBlocks servList = this->config->getHttpContext()->getServers ();
-						newConnection->setRequest ();
-						newConnection->generateResolversList (servList);
-						newConnection->matchRequestHandler (servList);
-						connections.push_back (newConnection);
-						FD_CLR (i, &readFds);
-						FD_SET (i, &writeFds);
-					}
-				}
 			}
 			if (FD_ISSET (i, &write))
-			{
-				Connection *connectionInterface = getConnection (i);
-				Server *server;
-				Request *request;
-				std::string dirListBody = listDirectory ("./testing");
-				std::string responseHeader (HTTP_RESPONSE_EXAMPLE);
-
-				responseHeader.append (dirListBody);
-				if (connectionInterface != nullptr)
-				{
-					server = connectionInterface->getServer();
-					request = connectionInterface->getRequest ();
-					connectionInterface->printfResolvers ();
-					server->printServer ();
-				}
-				err = send (i, responseHeader.c_str (), responseHeader.length (), 0);
-				if (err == -1)
-				{
-					FD_CLR (i, &writeFds);
-					FD_CLR (i, &errorFds);
-					close (i);
-					throw Connection_error (strerror (errno), "SEND");
-				}
-				else
-				{
-					FD_CLR (i, &writeFds);
-					FD_CLR (i, &errorFds);
-					close (i);
-				}
-			}
+				handleHttpResponse (i);
 		}
 	}
 }
@@ -182,17 +126,33 @@ void HttpApplication::handleNewConnection (int serverFd)
 
 void HttpApplication::handleHttpRequest (int fd)
 {
-    Connection ConnectionInfo(fd);
-	int serverHandlerIndx = 0;
+   Connection *newConnection = new Connection (fd);
 
-
-    ConnectionInfo.emptyBuffer ();
-    ConnectionInfo.recieveData ();
-	std::cout << "\e[0;36m request : \e[0m" << ConnectionInfo.getBuffer () << std::endl;
-	// ConnectionInfo.setRequest ();
-	// ConnectionInfo.generateResolversList (this->getServerBlockList ());
-	// serverHandlerIndx = ConnectionInfo.matchRequestHandler (this->getServerBlockList()) ;
-	// ConnectionInfo.sendResponse ();
+	newConnection->emptyBuffer ();
+	errValue = newConnection->recieveData ();
+	if (errValue == -1)
+	{
+		delete newConnection;
+		FD_CLR (fd, &readFds);
+		throw Connection_error (strerror (errno), "RECV");
+	}
+	else if (errValue == 0)
+	{
+		delete newConnection;
+		FD_CLR (fd, &readFds);
+		FD_CLR (fd , &errorFds);
+		close (fd);
+	}
+	else
+	{
+		serverBlocks servList = this->config->getHttpContext()->getServers ();
+		newConnection->setRequest ();
+		newConnection->generateResolversList (servList);
+		newConnection->matchRequestHandler (servList);
+		connections.push_back (newConnection);
+		FD_CLR (fd, &readFds);
+		FD_SET (fd, &writeFds);
+	}
 }
 
 int HttpApplication::getConnectionIndx (void)
@@ -298,14 +258,56 @@ serverBlocks HttpApplication::getServerBlockList (void) const
 	return (this->config->getHttpContext()->getServers());
 }
 
-Connection *HttpApplication::getConnection (int fd)
+connectionPool::iterator HttpApplication::getConnection (int fd)
 {
-	connectionPool::iterator it;
+	connectionPool::iterator it ;
 
 	for (it  = connections.begin (); it != connections.end (); it++)
 	{
 		if ((*it)->getConnectionSocket () == fd)
-			return ((*it));
+			return it;
 	}
-	return (nullptr);
+	throw Connection_error ("REQUEST ERROR", "CANNOT FIND REQUEST");
+	return (it);
+}
+
+
+void HttpApplication::handleHttpResponse (int fd)
+{
+	connectionPool::iterator it = getConnection (fd);
+	Connection *connectionInterface = (*it);
+	Server *server;
+	Request *request;
+	std::string dirListBody;
+	std::string responseHeader (HTTP_RESPONSE_EXAMPLE);
+
+	dirListBody = listDirectory ("./testing");
+	std::cout << "response length " << dirListBody.length () + responseHeader.length () << std::endl;
+	responseHeader.append (dirListBody);
+	if (connectionInterface != nullptr)
+	{
+		server = connectionInterface->getServer();
+		request = connectionInterface->getRequest();
+		connectionInterface->printfResolvers ();
+		server->printServer ();
+	}
+	std::cout << responseHeader  << std::endl;
+	errValue = send (fd, responseHeader.c_str (), responseHeader.length (), 0);
+	std::cout << "send result : " << errValue << std::endl;
+	std::cout << "response len : " << responseHeader.length ()  << std::endl;
+	if (errValue == -1)
+	{
+		FD_CLR (fd, &writeFds);
+		FD_CLR (fd, &errorFds);
+		close (fd);
+		connections.erase (it);
+		throw Connection_error (strerror (errno), "SEND");
+	}
+	else
+	{
+		FD_CLR (fd, &writeFds);
+		FD_CLR (fd, &errorFds);
+		close (fd);
+		connections.erase (it);
+	}
 }

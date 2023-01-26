@@ -255,14 +255,20 @@ std::string listDirectory (std::string dirPath)
 	struct dirent *dp;
 	stringContainer dirIndex;
 	stringContainer::iterator it;
-	std::string indexHeader("Index of");
+	std::string responseBody("") ;
+	std::string styles ("<style> body { background-color: #F2F2F2;}h1 {color: #0A2647;margin-left: 40px;} a {color:#5463FF; } </style>");
+	std::string indexHeader("<h1> Index of");
 	std::string lineBreak ("</br>");
 	std::string line("<hr>");
 	std::string lsOpen ("<ul>");
 	std::string lsClose ("</ul>");
 	std::string liOpen ("<li>");
 	std::string liClose ("</li>");
+	std::string linkOpen ("<a href=\"");
+	std::string linkClose ("</a>");
+	std::string hrClose ("\">");
 	std::string indexBody;
+	std::string href ("./");
 
 	if (dir == NULL)
 		throw std::exception ();
@@ -273,14 +279,15 @@ std::string listDirectory (std::string dirPath)
 			dirIndex.push_back (dp->d_name);
 		}
 	}
-
-	indexHeader.append (dirPath).append (lineBreak).append (line).append (lsOpen);
+	responseBody.append (styles).append(indexHeader).append (dirPath) .append("</h1>").append (lineBreak).append (line).append (lsOpen);
 	for (it = dirIndex.begin (); it != dirIndex.end (); it++)
 	{
-		indexHeader.append (liOpen).append ((*it)).append (liClose);
+		href.append ((*it));
+		responseBody.append (liOpen).append (linkOpen).append(href).append (hrClose).append ((*it)).append (linkClose).append (liClose);
+		href = "./";
 	}
-	indexHeader.append (lsClose);
-	std::cout << indexHeader << std::endl; 
+	responseBody.append (lsClose);
+	std::cout << "response length" << responseBody.length () << std::endl;
 	closedir (dir);
-	return (indexHeader);
+	return (responseBody);
 }

@@ -1,5 +1,7 @@
 {
   "files.associations": {
-    "exception": "cpp"
+    "exception": "cpp",
+    "filesystem": "cpp",
+    "string": "cpp"
   }
 }

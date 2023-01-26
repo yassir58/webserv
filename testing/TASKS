@@ -49,3 +49,6 @@ EV_SET(&ev, sckfd, EVFILT_READ, EV_ADD, 0, 0, 0);
 Connection reset by peer => server writes or closed its end of the socket without or befores reading from socket
 
 
+// testing GET on /
+// testing GET on on listDirectory
+echo -e ""
