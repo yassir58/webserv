@@ -64,7 +64,7 @@ typedef std::vector <std::string> stringContainer;
 
 
 // for testing purpos
-#define HTTP_RESPONSE_EXAMPLE "HTTP/1.1 200 OK\r\nServer: WebServer\r\nContent-Type: text/html\r\nContent-Length: 109\r\nConnection: close\r\n\r\n"
+#define HTTP_RESPONSE_EXAMPLE "HTTP/1.1 200 OK\r\nServer: WebServer\r\nContent-Type: text/html\r\nContent-Length: 372\r\nConnection: close\r\n\r\n"
 #define HTTP_LENGTH 225
 class Fatal_error : public std::exception
 {
@@ -187,7 +187,6 @@ class HttpApplication
 		fd_set readFds, writeFds, errorFds;
 		int fdMax;
       
-
 public:
     HttpApplication();
     HttpApplication(const HttpApplication &copy);
@@ -205,6 +204,7 @@ public:
     void allocateServers (void);
     void checkForConnection (void);
     void handleHttpRequest (int fd);
+	void handleHttpResponse (int fd);
     int getConnectionIndx (void);
     int getConnectionCount (void);
     // void setConnectionFd (int fd, int type);
@@ -218,7 +218,7 @@ public:
     ServerInstance *findServerByFd (int serverFd);
 	int isServer (int fd);
 	void initServerSet (void);
-	Connection *getConnection (int fd);
+	connectionPool::iterator getConnection (int fd);
 	/// testing log
 	void connectionAccessLog (std::string msg, int requestLength, std::string addr, std::string port);
 	void connectionErrorLog (std::string errorContext, std::string errorMessage, std::string addr, std::string port);

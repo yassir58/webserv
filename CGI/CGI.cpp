@@ -99,21 +99,6 @@ std::string getStatusLine(std::string headers)
     return ("HTTP/1.1 " + status.erase(0, 8));
 }
 
-/*
-HTTP/1.1 200 OK
-
-Date: Mon, 28 Jul 2023 12:50:41 GMT
-Server: Webserv/1.0
-Content-Length: 40
-Content-Type: text/html
-
-<html>
-<bod>
-	<h1>Hello world</h1>
-</body>
-</html>
-*/
-
 std::string CGIHandler::formCGIResponse(std::string headers, std::string body)
 {
     std::stringstream response;
@@ -123,11 +108,12 @@ std::string CGIHandler::formCGIResponse(std::string headers, std::string body)
     statusLine = "HTTP/1.1 200 OK";
     generatedHeaders << generateDate();
     generatedHeaders << "Server: " << SERVER_SOFTWARE_VERSION << "\r\n";
-    generatedHeaders << "Content-length: " << int2assci(body.length()) << "\r\n";
+    generatedHeaders << "Content-length: " << int2assci(body.length());
     if (headers.length() > 0)
     {
         if (headers.find("Status") != std::string::npos)
             statusLine = getStatusLine(headers);
+        generatedHeaders << "\r\n";
         generatedHeaders << headers;
     }
     response << statusLine << "\r\n\r\n";
@@ -139,7 +125,7 @@ std::string CGIHandler::formCGIResponse(std::string headers, std::string body)
 std::string CGIHandler::execute()
 {
     std::string result;
-    std::string headers;
+    std::string headers = "";
     std::string body;
     // This function should be able to format the response and add some http headers.
     this->createEnvList();
@@ -148,10 +134,10 @@ std::string CGIHandler::execute()
     {
         headers = result.substr(0, result.find("\r\n\r\n"));
         body = result.substr(result.find("\r\n\r\n") + 4, result.length());
-        std::cout << this->formCGIResponse(headers, body) << std::endl;
     }
-    //! I should fix the function to work in case of empty input.
-    return(result); 
+    else
+        body = result;
+    return(this->formCGIResponse(headers, body)); 
 }
 
 /* @details: in the substr function i started from 1 to remove the backslash from the 
@@ -223,8 +209,11 @@ std::string    CGIHandler::getOutput()
         trash = open("/dev/null", O_WRONLY);
         if (fd < 0 || trash < 0)
             throw CGIError("CGI Error: Invalid fd.");
+        if (this->location->getCGIExtension() == "php")
+            dup2(trash, STDERR_FILENO);
+        else
+            dup2(fd, STDERR_FILENO);
         dup2(fds[0], STDIN_FILENO); // Reading from the read end of the pipe.
-        dup2(trash, STDERR_FILENO);
         dup2(fd, STDOUT_FILENO); // Redirecting the execve output to the file.
         execve(this->defaultPath.c_str(), args, envList);
         close(fd);

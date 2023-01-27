@@ -360,6 +360,7 @@ Location::Location()
     this->sendFile = false;
     this->cgiEnable = false;
     this->listDirectory = true;
+    this->defaultIndex = "";
 }
 
 Location::~Location()
@@ -445,6 +446,10 @@ void    Location::parseDirective(stringContainer line, Location *instance)
         checkPath(line[1], CHECK_MODE);
         instance->root = line[1];
     }
+    else if (line[0] == "index_default" && line.size() == 2)
+    {
+        instance->defaultIndex = line[1];
+    }
     else if (line[0] == "upload_path" && line.size() == 2)
     {
         checkPath(line[1], CHECK_MODE);
@@ -453,7 +458,7 @@ void    Location::parseDirective(stringContainer line, Location *instance)
     else if (line[0] == "redirect" && line.size() == 3)
     {
         instance->redirectLink = line[2];
-        if (line[1].length() == 3 && atoi(line[1].c_str()) < 308 && atoi(line[1].c_str()) > 300)
+        if (line[1].length() == 3 && atoi(line[1].c_str()) < 302 && atoi(line[1].c_str()) > 300)
             instance->redirectCode = line[1];
         else
             throw parseError("Syntax Error: Invalid redirect status code.");
@@ -532,6 +537,11 @@ std::string Location::getRedirectLink()
 std::string Location::getRedirectCode()
 {
     return (this->redirectCode);
+}
+
+std::string Location::getDefaultIndex()
+{
+    return (this->defaultIndex);
 }
 
 bool Location::getUploadStatus()

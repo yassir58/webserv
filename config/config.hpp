@@ -41,6 +41,7 @@ class Location
         std::string cgiExtension;
         std::string redirectLink;
         std::string redirectCode;
+        std::string defaultIndex;
         stringContainer methods;
         bool cgiEnable;
         bool sendFile;
@@ -54,6 +55,7 @@ class Location
         std::string getCGIExtension();
         std::string getRedirectLink();
         std::string getRedirectCode();
+        std::string getDefaultIndex();
         bool getCGIStatus();
         bool getUploadStatus();
         bool getListingStatus();
