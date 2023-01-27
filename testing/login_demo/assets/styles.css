@@ -1,0 +1,100 @@
+* {
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    background-color: #eee;
+    font-family: "Inter", sans-serif;
+    font-weight: 400;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login_logo {
+    height: 70px;
+}
+
+.login_container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    margin: 20px;
+}
+
+.login_form {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    margin-top: 30px;
+}
+
+.user_container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    margin-top: 30px;
+}
+
+.textbox {
+    border: none;
+    padding: 5px 20px;
+    font-size: 18px;
+    margin-top: 15px;
+    border-radius: 20px;
+}
+
+.textbox:focus {
+    outline-color: #3F88C5;
+    border: 3px;
+}
+
+.btn {
+    background-color: #3F88C5;
+    border: none;
+    font-size: 18px;
+    color: #eee;
+    margin-top: 25px;
+    padding: 5px 10px;
+    border-radius: 20px;
+    text-decoration: none;
+}
+
+.btn:hover {
+    box-shadow: 0 0 10px rgba(51, 51, 51, 0.349);
+    transform: translateY(-1px);
+    cursor: pointer;
+}
+
+.btn:active {
+    box-shadow: 0 0 20px rgba(51, 51, 51, 0.349);
+    transform: translateY(1px);
+    cursor: pointer;
+}
+
+.icon {
+    color: #333;
+    font-size: 35px;
+}
+
+.text--normal {
+    margin-top: 10px;
+    font-size: 18px;
+}
+
+.account_container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    background-color: #fff;
+    padding: 20px;
+    margin-top: 30px;
+}
+
+.error {
+    color: red;
+}
