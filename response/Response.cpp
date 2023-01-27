@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/25 20:24:04 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/27 20:50:46 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -129,10 +129,58 @@ stringContainer Response::generateHeaderFields(std::string &responseBody)
 	return (toReturn);
 }
 
+std::string listDirectory (std::string dirPath)
+{
+	DIR *dir = opendir (dirPath.c_str ());
+	struct dirent *dp;
+	stringContainer dirIndex;
+	stringContainer::iterator it;
+	std::string responseBody("") ;
+	std::string styles ("<style> body { background-color: #F2F2F2;}h1 {color: #0A2647;margin-left: 40px;} a {color:#5463FF; } </style>");
+	std::string indexHeader("<h1> Index of");
+	std::string lineBreak ("</br>");
+	std::string line("<hr>");
+	std::string lsOpen ("<ul>");
+	std::string lsClose ("</ul>");
+	std::string liOpen ("<li>");
+	std::string liClose ("</li>");
+	std::string linkOpen ("<a href=\"");
+	std::string linkClose ("</a>");
+	std::string hrClose ("\">");
+	std::string indexBody;
+	std::string href ("./");
+
+	if (dir == NULL)
+		throw std::exception ();
+	else
+	{
+		while ((dp = readdir (dir)))
+		{
+			dirIndex.push_back (dp->d_name);
+		}
+	}
+	responseBody.append (styles).append(indexHeader).append (dirPath) .append("</h1>").append (lineBreak).append (line).append (lsOpen);
+	for (it = dirIndex.begin (); it != dirIndex.end (); it++)
+	{
+		href.append ((*it));
+		responseBody.append (liOpen).append (linkOpen).append(href).append (hrClose).append ((*it)).append (linkClose).append (liClose);
+		href = "./";
+	}
+	responseBody.append (lsClose);
+	std::cout << "response length" << responseBody.length () << std::endl;
+	closedir (dir);
+	return (responseBody);
+}
+
 int	Response::applyMethod(void)
 {
 	std::string method = request->getMethod();
 	int			statusCode = request->getStatusCode();
+	if (request->getListingStatus())
+	{
+		responseBody = listDirectory(request->getPath());
+		return (0);
+	}
 	if (method == "GET" && statusCode == 0)
 	{
 		std::ifstream resource(request->getPath());

@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:36 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/26 15:55:12 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/27 20:45:38 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,7 @@ class Request
 		std::string				redirectionLink; // the link of the redirection from the config file if there's any
 		std::string				redirectCode; // the code of the redirection from the config file
 		bool					redirectionStatus; // to check if there's any redirection required
+		bool					listingStatus;
 	public:
 		Request(std::string fileString, Server *serverInstance); //param constructor take a string as param and the server instance 
 		~Request(); // destructor not used
@@ -69,7 +70,7 @@ class Request
 		bool			checkCGI(); // to check if the request need a cgi handling
 		Location		*matchLocation(); // return the location instance to handle the path specified on the request target
 		bool			checkExtension(Location *pathLocation);
-		void			checkDirectory(Location *pathLocation);
+		int				checkDirectory(Location *pathLocation);
 		void			printResult(void); // print the result produced
 		t_start 		&getStartLine(void); // geter of the startLine
 		headerFieldList &getHeaderFieldlist(void); // geter of the headerFields linked list
@@ -88,5 +89,6 @@ class Request
 		bool			getRedirectionStatus(void);
 		std::string		getRedirectionLink(void);
 		std::string		getRedirectionCode(void);
+		bool			getListingStatus(void);
 };
 #endif

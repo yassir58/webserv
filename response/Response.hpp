@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 14:44:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/25 20:14:47 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/27 20:47:49 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 # include <string>
 # include <sstream>
 # include "../request/Request.hpp"
+# include "../core/ServerInstance.hpp"
 # include <ctime>
 
 typedef std::vector<std::string> stringContainer;

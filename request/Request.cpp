@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/26 12:35:29 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/27 21:06:52 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,19 +126,36 @@ bool Request::checkExtension(Location *pathLocation)
 	return (false);
 }
 
-void	Request::checkDirectory(Location *pathLocation)
+int isDir(const char* fileName)
+{
+    struct stat path;
+
+    stat(fileName, &path);
+
+    return S_ISREG(path.st_mode);
+}
+
+int	Request::checkDirectory(Location *pathLocation)
 {
 	int dec = isDir(path.c_str());
 	if (dec == 0)
 	{
-		if (pathLocation) // here I should check for the index is provided
+		std::string indexFile = pathLocation->getDefaultIndex();
+		if (!indexFile.empty())
 		{
-			// create the new path based on the path provided in the index directive
-			// return 
+			if (path.front() == '/' && (*indexFile.end()) == '/')
+				path = path.substr(1, std::string::npos);
+			path = path + indexFile;
+			return (1);
 		}
-		// check if the directory listing is enabled if yes mark it and return
-		// else 404 forbiden is set 
+		if (pathLocation->getListingStatus())
+		{
+			listingStatus = true;
+			return (1);
+		}
+		statusCode = FORBIDDEN;
 	}
+	return (0);
 }
 
 bool Request::checkCGI(void)
@@ -152,10 +169,16 @@ bool Request::checkCGI(void)
 	this->root = serverInstance->getRoot();
 	if (!pathLocation->getRoot().empty())
 		root = pathLocation->getRoot();
-	if (path.front() == '/' && (*root.end()) == '/')
+	std::cout << "root: " << root << std::endl;
+	std::cout << "path: " << path << std::endl;
+	if (path.front() == '/' && (*(root.end() - 1)) == '/')
 		path = path.substr(1, std::string::npos);
+	std::cout << "root: " << root << std::endl;
+	std::cout << "path: " << path << std::endl;
 	path = root + path;
-	checkDirectory(pathLocation);
+	if (!checkDirectory(pathLocation))
+		return (false);
+	std::cout << "path: " << path << std::endl;
 	if (!treatAbsolutePath(pathLocation))
 		return (false);
 	return (checkExtension(pathLocation));
@@ -523,6 +546,11 @@ std::string		Request::getRedirectionLink(void)
 std::string		Request::getRedirectionCode(void)
 {
 	return (redirectCode);
+}
+
+bool		Request::getListingStatus(void)
+{
+	return (listingStatus);
 }
 
 /* ************************************************************************** */
