@@ -22,7 +22,7 @@ const char * serverContext[] = {
 const char * locationContext[] = {
         "root",
         "send_file",
-        "index",
+        "index_default",
         "upload_path",
         "allowed_methods",
         "cgi_enable",
