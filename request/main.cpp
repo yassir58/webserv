@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/13 15:35:19 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/23 12:01:34 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/28 21:53:48 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,11 +19,9 @@
 std::string requestGeneratorByGPT()
 {
 	std::string method = "POST";
-    std::string url = "/Users/yait-iaz/Desktop/webserv/request/test"; // a rad lquery
-    std::string headers = "Content-Type: application/json\r\nAccept: application/json\r\nHost: 192.120.18.0:80\r\nConnection: keep-alive\r\naccept: /\r\naccept-encoding: gzip, deflate, br\r\ncontent-type: multipart/form-data\r\naccept-language: en-US,en;q=0.9\r\nsec-fetch-mode: cors\r\n";
-    std::string body = "{\"param1\":\"value1\",\"param2\":\"value2\"}\n";
-    std::string body1 = "{\"param1\":\"value1\",\"param2\":\"value2\"}\n";
-    std::string body2 = "username=havel\npassword=sbardilaadfe16F651e32164843216482\n";
+    std::string url = "/response/test.test";
+    std::string headers = "Content-Type: multipart/form-data\r\nAccept: application/json\r\nHost: 192.120.18.0:80\r\nConnection: keep-alive\r\naccept: /\r\naccept-encoding: gzip, deflate, br\r\ncontent-type: multipart/form-data\r\naccept-language: en-US,en;q=0.9\r\nsec-fetch-mode: cors\r\n";
+    std::string body = "ZAB\n";
 
     std::stringstream request;
     request << method << " " << url << " HTTP/1.1\r\n";
@@ -31,8 +29,8 @@ std::string requestGeneratorByGPT()
     request << "Content-Length: " << body.length() << "\r\n";
     request << "\r\n";
     request << body;
-    request << body1;
-    request << body2;
+    // request << body1;
+    // request << body2;
 
     std::string request_str = request.str();
 	return (request_str);
@@ -44,10 +42,12 @@ int main(void)
 	{
 		// char fileRequest[] = {	"POST /echo/post/json HTTP/1.1\r\nHost: reqbin.com\r\nAccept: application/json\r\nContent-Type: application/json\r\nContent-Length: 81\r\n\r\n{\nId: 78912,\nCustomer: Jason Sweet,\nQuantity: 1,\nPrice: 18.00\n}\n"};
 		// char fileRequest[] = {"POST index.php/tv/home?season=5&episode=62 HTTP/1.1\r\n\r\n"};
+		Config conf("../testing/configs/request.conf");
+		conf.parseConfig();
+		std::vector<Server *> ht = conf.getHttpContext()->getServers();
+		Server	*serv = (*ht.begin());
 		std::string fileRequest = requestGeneratorByGPT();
-		Request newRequest(fileRequest);
-		std::cout << newRequest.getBody() << std::endl;
-		std::cout << "\n========================\n";
+		Request newRequest(fileRequest, (*ht.begin()));
 		// newRequest.printResult();
 		// std::cout << "============gf=========\n";
 		// stringContainer body = newRequest.getBody();
@@ -59,8 +59,13 @@ int main(void)
 		// 	++begin;
 		// }
 		std::cout << "=======response===========\n";
-		Response	newResponse(newRequest);
-		std::cout << newResponse.getResponse();
+		if (!newRequest.getCGIStatus())
+		{
+			Response	newResponse(newRequest);
+			std::cout << newResponse.getResponse();
+		}
+		else
+			std::cout << "this shit need CGI handling\n";
 		// std::cout << "===============request==============\n";
 	}
 	catch(const std::exception& e)

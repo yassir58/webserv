@@ -6,22 +6,28 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/23 11:55:46 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/28 22:01:23 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Request.hpp"
 
+
 /*
 ** ------------------------------- CONSTRUCTOR --------------------------------
 */
 
-Request::Request(std::string fileString)
+Request::Request(std::string fileString, Server *serverInst)
 {
 	std::string line;
 	setStatusCode(0);
 	setFileString(fileString);
-	getCRLF(line, (char *)"\r\n");
+	setServerInstance(serverInst);
+	if (getCRLF(line, (char *)"\r\n"))
+	{
+		statusCode = BAD_REQUEST;
+		return ;
+	}
 	if (!parseFirstLine(line))
 	{
 		statusCode = BAD_REQUEST;
@@ -32,7 +38,10 @@ Request::Request(std::string fileString)
 	while (!getCRLF(line, (char *)"\r\n"))
 	{
 		if (!parseHeaderField(headerFields, line))
+		{
 			statusCode = BAD_REQUEST;
+			return ;
+		}
 	}
 	if (!startLine.Query.empty())
 		startLine.requestTarget = startLine.requestTarget +  "?" + startLine.Query;
@@ -46,9 +55,13 @@ Request::Request(std::string fileString)
 		while (!getCRLF(line, (char *)"\n"))
 		{
 			if (!parseBody(line))
+			{
 				statusCode = BAD_REQUEST;
+				return ;
+			}
 		}
 	}
+	this->CGI = checkCGI();
 }
 
 /*
@@ -63,6 +76,148 @@ Request::~Request()
 ** --------------------------------- METHODS ----------------------------------
 */
 
+Location *Request::matchLocation(void)
+{
+	std::vector<Location *> Locations = serverInstance->getLocations();
+	std::vector<Location *>::iterator begin = Locations.begin();
+	std::vector<Location *>::iterator end = Locations.end();
+	size_t	pos;
+	while (end != begin)
+	{
+		pos = path.find((*begin)->getEndPoint(), 0);
+		if (pos == 0)
+			return (*begin);
+		++begin;
+	}
+	return (NULL);
+}
+
+bool Request::checkExtension(Location *pathLocation)
+{
+	std::string	extension = pathLocation->getCGIExtension();
+	std::string	fileExtension;
+	std::string	defaultCGI = pathLocation->getCGIDefault();
+	size_t		dot;
+	if (pathLocation->getCGIStatus() == false || extension.empty())
+		return (false);
+	dot = path.find_last_of('.', std::string::npos);
+	if (dot == std::string::npos)
+		return (false);
+	fileExtension = path.substr(dot + 1, std::string::npos);
+	if (fileExtension == extension)
+	{
+		if (defaultCGI.empty())
+			return (false);
+		defaultCGI = adjustPath(root, defaultCGI);
+		if (access(defaultCGI.c_str(), F_OK) == -1)
+		{
+			statusCode = NOT_FOUND;
+			return (false);
+		}
+		if (access(defaultCGI.c_str(), X_OK) == -1 || access(path.c_str(), X_OK) == -1)
+		{
+			statusCode = FORBIDDEN;
+			return (false);
+		}
+		return (true);
+	}
+	return (false);
+}
+
+int isDir(const char* fileName)
+{
+    struct stat path;
+
+    stat(fileName, &path);
+
+    return S_ISDIR(path.st_mode);
+}
+
+int	Request::checkDirectory(Location *pathLocation)
+{
+	int dec = isDir(path.c_str());
+	if (dec)
+	{
+		std::cout <<"hohoh\n";
+		std::string indexFile = pathLocation->getDefaultIndex();
+		if (!indexFile.empty())
+		{
+			path = adjustPath(path, indexFile);
+			return (0);
+		}
+		if (pathLocation->getListingStatus())
+		{
+			listingStatus = true;
+			return (0);
+		}
+		statusCode = FORBIDDEN;
+	}
+	return (1);
+}
+
+bool	Request::checkUpload(Location *pathLocation)
+{
+	if (pathLocation->getUploadStatus() && startLine.method == "POST")
+	{
+		headerField *type = getHeaderField("Content-Type");
+		if (!type)
+			return (true);
+		std::string uploadPath = pathLocation->getUploadPath();
+		if (!uploadPath.empty())
+		{
+			size_t pos = path.find_last_of('/', std::string::npos);
+			std::string fileName = path.substr(pos, std::string::npos);
+			path = path.substr(0, pos);
+			path = adjustPath(path, uploadPath);
+			if (access(path.c_str(), F_OK) == -1)
+			{
+				statusCode = NOT_FOUND;
+				return (false);
+			}
+			path = adjustPath(path, fileName);
+		}
+		if (type->value == "multipart/form-data")
+		{
+			std::cout << "path: " << path << std::endl;
+			std::ofstream file;
+			file.open(path, std::ofstream::out | std::ofstream::trunc);
+			if (file.is_open())
+				std::cout << "everything is alright\n";
+			if (access(path.c_str(), W_OK) == -1)
+			{
+				statusCode = FORBIDDEN;
+				return (false);
+			}
+			file << getBody();
+			file.close();
+			upload = true;
+			statusCode = CREATED;
+		}
+	}
+	return (true);
+}
+
+bool Request::checkCGI(void)
+{
+	Location *pathLocation = matchLocation();
+	if (!pathLocation)
+	{
+		statusCode = NOT_FOUND;
+		return (false);
+	}
+	this->root = serverInstance->getRoot();
+	if (!pathLocation->getRoot().empty())
+		root = pathLocation->getRoot();
+	path = adjustPath(root, path);
+	if (!checkDirectory(pathLocation))
+		return (false);
+	if(!checkUpload(pathLocation))
+		return (false);
+	if (!treatAbsolutePath(pathLocation))
+		return (false);
+	return (checkExtension(pathLocation));
+}
+
 int	Request::checkContentParsed()
 {
 	if (!checkMethod())
@@ -72,7 +227,8 @@ int	Request::checkContentParsed()
 	}
 	if (!checkRequestTarget())
 	{
-		statusCode = BAD_REQUEST;
+		if (statusCode == 0)
+			statusCode = BAD_REQUEST;
 		return (0);
 	}
 	if (!checkVersion())
@@ -138,21 +294,37 @@ int	Request::treatAbsoluteURI()
 	return (0);
 }
 
-int Request::treatAbsolutePath()
+int Request::treatAbsolutePath(Location *pathLocation)
 {
-	if (access(startLine.requestTarget.c_str(), F_OK) == -1)
+	stringContainer methods = pathLocation->getMethods();
+	if (access(path.c_str(), F_OK) == -1)
 	{
 		statusCode = NOT_FOUND;
 		return (0);
 	}
-	if (startLine.method == "POST" && access(startLine.requestTarget.c_str(), W_OK) == -1)
+	if (methods.size() != 0)
 	{
-		statusCode = NOT_ALLOWED;
+		stringContainer::iterator begin = methods.begin();
+		stringContainer::iterator end = methods.end();
+		for (;begin != end; ++begin)
+		{
+			if ((*begin) == startLine.method)
+				break ;
+		}
+		if (begin == end)
+		{
+			statusCode = NOT_ALLOWED;
+			return (0);
+		}
+	}
+	if (startLine.method == "POST" && access(path.c_str(), W_OK) == -1)
+	{
+		statusCode = FORBIDDEN;
 		return (0);
 	}
-	if (startLine.method == "GET" && access(startLine.requestTarget.c_str(), R_OK) == -1)
+	if (startLine.method == "GET" && access(path.c_str(), R_OK) == -1)
 	{
-		statusCode = NOT_ALLOWED;
+		statusCode = FORBIDDEN;
 		return (0);
 	}
 	return (1);
@@ -161,8 +333,22 @@ int Request::treatAbsolutePath()
 int Request::checkRequestTarget()
 {
 	treatAbsoluteURI();
-	if (treatAbsolutePath())
-		return (1);
+	path = startLine.requestTarget;
+	Location *pathLocation = matchLocation();
+	if (pathLocation == NULL)
+	{
+		statusCode = NOT_FOUND;
+		return (0);
+	}
+	std::string redirect = pathLocation->getRedirectLink();
+	std::string redirCode = pathLocation->getRedirectCode();
+	if (!redirect.empty())
+	{
+		redirectionLink = redirect;
+		this->redirectCode = redirCode;
+		redirectionStatus = true;
+		return (0);
+	}
 	return (1);
 }
 
@@ -280,6 +466,24 @@ void	Request::printResult(void)
 	}
 }
 
+std::string Request::adjustPath(std::string const &prefix, std::string const &sufix)
+{
+	std::string toReturn;
+	if ((*sufix.begin()) == '/' && (*(prefix.end() - 1)) == '/')
+	{
+		toReturn = sufix.substr(1, std::string::npos);
+		toReturn = prefix + toReturn;
+		return (toReturn);
+	}
+	else if ((*sufix.begin() != '/') && (*(prefix.end() - 1) != '/'))
+	{
+		toReturn = prefix + "/" + sufix;
+		return (toReturn);
+	}
+	toReturn = prefix + sufix;
+	return (toReturn);
+}
+
 /*
 ** --------------------------------- ACCESSOR ---------------------------------
 */
@@ -305,6 +509,15 @@ void	Request::setFileString(std::string &file)
 void	Request::setStatusCode(int newStatusCode)
 {
 	statusCode = newStatusCode;
+}
+
+void	Request::setServerInstance(Server *server)
+{
+	serverInstance = server;
+	CGI = false;
+	redirectionStatus = false;
+	listingStatus = false;
+	upload = false;
 }
 
 std::string		Request::getErrorCode(void)
@@ -362,6 +575,41 @@ headerField *Request::getHeaderField(std::string key)
 		++begin;
 	}
 	return (NULL);
+}
+
+bool Request::getCGIStatus(void)
+{
+	return (CGI);
+}
+
+std::string Request::getPath(void)
+{
+	return (path);
+}
+
+bool			Request::getRedirectionStatus(void)
+{
+	return (redirectionStatus);
+}
+
+std::string		Request::getRedirectionLink(void)
+{
+	return (redirectionLink);
+}
+
+std::string		Request::getRedirectionCode(void)
+{
+	return (redirectCode);
+}
+
+bool		Request::getListingStatus(void)
+{
+	return (listingStatus);
+}
+
+bool		Request::getUploadStatus(void)
+{
+	return (upload);
 }
 
 /* ************************************************************************** */

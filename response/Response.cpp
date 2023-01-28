@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/23 11:57:01 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/28 19:22:39 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,15 @@
 Response::Response(Request &request)
 {
 	setRequest(&request);
-	applyMethod();
+	if (this->request->getRedirectionStatus())
+		this->request->setStatusCode(handleRedirection());
+	else if (this->request->getUploadStatus())
+	{
+		int code = this->request->getStatusCode();
+		this->request->setStatusCode(code);
+	}
+	else
+		applyMethod();
 	statusIndex = getStatusCode();
 	responseToSend.push_back(generateStatusLine());
 	stringContainer headerFields = generateHeaderFields(responseBody);
@@ -51,6 +59,15 @@ Response::~Response() {}
 /*
 ** --------------------------------- METHODS ----------------------------------
 */
+
+int	Response::handleRedirection(void)
+{
+	std::stringstream ss;
+	int					statusCode;
+	ss << request->getRedirectionCode();
+	ss >> statusCode;
+	return (statusCode);
+}
 
 int	Response::getStatusCode(void)
 {
@@ -102,35 +119,90 @@ stringContainer Response::generateHeaderFields(std::string &responseBody)
 	std::string Lenght = generateLenghtContent(responseBody);
 	toReturn.push_back(Lenght);
 	// I still need to work on the content type
-	// if (this->getStatusCode() == "405")
-	// {
-	// 	// treat the allow mothod
-	// }
+	if (this->getStatusCode() == NOT_ALLOWED)
+	{
+		std::string allow = "Allow: GET, HEAD, DELETE\r\n";
+		toReturn.push_back(allow);
+	}
+	if (request->getRedirectionStatus())
+	{
+		std::string location = "Location: " + request->getRedirectionLink() + " \r\n";
+		toReturn.push_back(location);
+	}
 	std::string Server = "Server: websrv\r\n\r\n";
 	toReturn.push_back(Server);
 	return (toReturn);
+}
+
+std::string listDirectory (std::string dirPath)
+{
+	DIR *dir = opendir (dirPath.c_str ());
+	struct dirent *dp;
+	stringContainer dirIndex;
+	stringContainer::iterator it;
+	std::string responseBody("") ;
+	std::string styles ("<style> body { background-color: #F2F2F2;}h1 {color: #0A2647;margin-left: 40px;} a {color:#5463FF; } </style>");
+	std::string indexHeader("<h1> Index of");
+	std::string lineBreak ("</br>");
+	std::string line("<hr>");
+	std::string lsOpen ("<ul>");
+	std::string lsClose ("</ul>");
+	std::string liOpen ("<li>");
+	std::string liClose ("</li>");
+	std::string linkOpen ("<a href=\"");
+	std::string linkClose ("</a>");
+	std::string hrClose ("\">");
+	std::string indexBody;
+	std::string href ("./");
+
+	if (dir == NULL)
+		throw std::exception ();
+	else
+	{
+		while ((dp = readdir (dir)))
+		{
+			dirIndex.push_back (dp->d_name);
+		}
+	}
+	responseBody.append (styles).append(indexHeader).append (dirPath) .append("</h1>").append (lineBreak).append (line).append (lsOpen);
+	for (it = dirIndex.begin (); it != dirIndex.end (); it++)
+	{
+		href.append ((*it));
+		responseBody.append (liOpen).append (linkOpen).append(href).append (hrClose).append ((*it)).append (linkClose).append (liClose);
+		href = "./";
+	}
+	responseBody.append (lsClose);
+	std::cout << "response length" << responseBody.length () << std::endl;
+	closedir (dir);
+	return (responseBody);
 }
 
 int	Response::applyMethod(void)
 {
 	std::string method = request->getMethod();
 	int			statusCode = request->getStatusCode();
+	if (request->getListingStatus())
+	{
+		responseBody = listDirectory(request->getPath());
+		return (0);
+	}
 	if (method == "GET" && statusCode == 0)
 	{
-		std::ifstream resource(request->getRequestTarget());
+		std::ifstream resource(request->getPath());
 		if (resource)
 		{
 			std::ostringstream ss;
 			ss << resource.rdbuf();
 			responseBody = ss.str();
 			request->setStatusCode(OK);
+			resource.close();
 		}
 		else
 			request->setStatusCode(SERVER_ERROR);
 	}
 	else if (method == "POST" && statusCode == 0)
 	{
-		std::ofstream outfile(request->getRequestTarget());
+		std::ofstream outfile(request->getPath());
 		if (outfile)
 		{
 			outfile << request->getBody();
@@ -142,7 +214,7 @@ int	Response::applyMethod(void)
 	}
 	else if (method == "DELETE" && statusCode == 0)
 	{
-		if (remove(request->getRequestTarget().c_str()))
+		if (remove(request->getPath().c_str()))
 			request->setStatusCode(SERVER_ERROR);
 		else
 			request->setStatusCode(OK);
@@ -175,6 +247,7 @@ void	Response::setRequest(Request *request)
 	size_t	index = 0;
 	status[index].code = OK; status[index++].status = "OK";
 	status[index].code = CREATED; status[index++].status = "CREATED";
+	status[index].code = FOUND; status[index++].status = "FOUND";
 	status[index].code = NO_CONTENT; status[index++].status = "NO_CONTENT";
 	status[index].code = BAD_REQUEST; status[index++].status = "BAD_REQUEST";
 	status[index].code = FORBIDDEN; status[index++].status = "FORBIDDEN";
