@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/27 20:50:46 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/28 19:22:39 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,11 @@ Response::Response(Request &request)
 	setRequest(&request);
 	if (this->request->getRedirectionStatus())
 		this->request->setStatusCode(handleRedirection());
+	else if (this->request->getUploadStatus())
+	{
+		int code = this->request->getStatusCode();
+		this->request->setStatusCode(code);
+	}
 	else
 		applyMethod();
 	statusIndex = getStatusCode();
@@ -190,6 +195,7 @@ int	Response::applyMethod(void)
 			ss << resource.rdbuf();
 			responseBody = ss.str();
 			request->setStatusCode(OK);
+			resource.close();
 		}
 		else
 			request->setStatusCode(SERVER_ERROR);
