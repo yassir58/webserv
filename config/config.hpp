@@ -144,7 +144,7 @@ class parseError: public std::runtime_error
         {}
 };
 
-void	validateExtension(const char *path, char *ext);
+bool    validateExtension(std::string path, std::string ext);
 void    checkFileEmpty(std::ifstream & configFile);
 std::string getLine(std::string &line);
 stringContainer   read_config_file(std::string & path);
@@ -164,6 +164,8 @@ stringContainer   stripSemiColon(stringContainer str);
 std::string int2assci(int nb);
 std::string toUpperCase(std::string str);
 std::string convertBody(stringContainer body);
+bool validateCGIExtension(std::string key);
+bool validateIndexExtension(std::string filename);
 std::string readContent(std::string path);
 void    print_table(char **table);
 std::string	generateDate(void);

@@ -448,7 +448,10 @@ void    Location::parseDirective(stringContainer line, Location *instance)
     }
     else if (line[0] == "index_default" && line.size() == 2)
     {
-        instance->defaultIndex = line[1];
+        if (validateIndexExtension(line[1]))
+            instance->defaultIndex = line[1];
+        else
+            throw parseError("Syntax Error: Invalid index extension");
     }
     else if (line[0] == "upload_path" && line.size() == 2)
     {
@@ -478,7 +481,12 @@ void    Location::parseDirective(stringContainer line, Location *instance)
         instance->cgiDefault = line[1];
     }
     else if (line[0] == "cgi_extension" && line.size() == 2)
-        instance->cgiExtension = line[1];
+    {
+        if (validateCGIExtension(line[1]))
+            instance->cgiExtension = line[1];
+        else
+            throw parseError("Syntax Error: Invalid CGI extension");
+    }
     else
         throw parseError("Syntax Error: invalid directive format: Location: " + this->endPoint);
 }

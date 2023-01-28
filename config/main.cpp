@@ -35,6 +35,7 @@ int main(void)
     //     i++;
     // }
 
+
     try 
     {
         Config *file = new Config("../testing/configs/webserv.conf");
@@ -63,5 +64,5 @@ int main(void)
     {
         std::cout << e.what() << std::endl;
     }
-    return (0);
+    // return (0);
 }
