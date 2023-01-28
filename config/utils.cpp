@@ -38,7 +38,6 @@ bool validateCGIExtension(std::string key)
 bool validateIndexExtension(std::string filename)
 {
     int i;
-    int ext;
 
     i = 0;
     while (indexExtensions[i])

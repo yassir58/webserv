@@ -452,12 +452,9 @@ void    Location::parseDirective(stringContainer line, Location *instance)
             instance->defaultIndex = line[1];
         else
             throw parseError("Syntax Error: Invalid index extension");
-    }
+    }     
     else if (line[0] == "upload_path" && line.size() == 2)
-    {
-        checkPath(line[1], CHECK_MODE);
         instance->uploadPath = line[1];
-    }
     else if (line[0] == "redirect" && line.size() == 3)
     {
         instance->redirectLink = line[2];

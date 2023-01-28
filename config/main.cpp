@@ -43,6 +43,7 @@ int main(void)
         std::cout << "Redirect Link: " << file->getHttpContext()->getServers()[3]->getLocations()[1]->getRedirectLink() << std::endl;
         std::cout << "Redirect Code: " << file->getHttpContext()->getServers()[3]->getLocations()[1]->getRedirectCode() << std::endl;
         std::cout << "Default Index: " << file->getHttpContext()->getServers()[3]->getLocations()[2]->getDefaultIndex() << std::endl;
+        delete file;
         // std::cout << "Server [0] Host: " << file->getHttpContext()->getServers()[0]->getHost() << std::endl;
         // std::cout << "Server [0] Port: " << file->getHttpContext()->getServers()[0]->getPort() << std::endl;
         // std::cout << "Server [1] Host: " << file->getHttpContext()->getServers()[1]->getHost() << std::endl;
