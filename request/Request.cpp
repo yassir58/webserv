@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/28 19:41:43 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/28 22:01:23 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,7 +116,7 @@ bool Request::checkExtension(Location *pathLocation)
 		}
 		if (access(defaultCGI.c_str(), X_OK) == -1 || access(path.c_str(), X_OK) == -1)
 		{
-			statusCode = NOT_ALLOWED;
+			statusCode = FORBIDDEN;
 			return (false);
 		}
 		return (true);
@@ -130,28 +130,29 @@ int isDir(const char* fileName)
 
     stat(fileName, &path);
 
-    return S_ISREG(path.st_mode);
+    return S_ISDIR(path.st_mode);
 }
 
 int	Request::checkDirectory(Location *pathLocation)
 {
 	int dec = isDir(path.c_str());
-	if (dec == 0)
+	if (dec)
 	{
+		std::cout <<"hohoh\n";
 		std::string indexFile = pathLocation->getDefaultIndex();
 		if (!indexFile.empty())
 		{
 			path = adjustPath(path, indexFile);
-			return (1);
+			return (0);
 		}
 		if (pathLocation->getListingStatus())
 		{
 			listingStatus = true;
-			return (1);
+			return (0);
 		}
 		statusCode = FORBIDDEN;
 	}
-	return (0);
+	return (1);
 }
 
 bool	Request::checkUpload(Location *pathLocation)
@@ -166,9 +167,14 @@ bool	Request::checkUpload(Location *pathLocation)
 		{
 			size_t pos = path.find_last_of('/', std::string::npos);
 			std::string fileName = path.substr(pos, std::string::npos);
-			path = uploadPath + fileName;
-			// path = path.substr(0, pos);
-			// path = adjustPath(adjustPath(path, uploadPath), fileName);
+			path = path.substr(0, pos);
+			path = adjustPath(path, uploadPath);
+			if (access(path.c_str(), F_OK) == -1)
+			{
+				statusCode = NOT_FOUND;
+				return (false);
+			}
+			path = adjustPath(path, fileName);
 		}
 		if (type->value == "multipart/form-data")
 		{
@@ -179,7 +185,7 @@ bool	Request::checkUpload(Location *pathLocation)
 				std::cout << "everything is alright\n";
 			if (access(path.c_str(), W_OK) == -1)
 			{
-				statusCode = NOT_ALLOWED;
+				statusCode = FORBIDDEN;
 				return (false);
 			}
 			file << getBody();
@@ -313,12 +319,12 @@ int Request::treatAbsolutePath(Location *pathLocation)
 	}
 	if (startLine.method == "POST" && access(path.c_str(), W_OK) == -1)
 	{
-		statusCode = NOT_ALLOWED;
+		statusCode = FORBIDDEN;
 		return (0);
 	}
 	if (startLine.method == "GET" && access(path.c_str(), R_OK) == -1)
 	{
-		statusCode = NOT_ALLOWED;
+		statusCode = FORBIDDEN;
 		return (0);
 	}
 	return (1);
