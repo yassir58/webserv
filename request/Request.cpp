@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/27 21:06:52 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/28 19:41:43 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,9 +108,7 @@ bool Request::checkExtension(Location *pathLocation)
 	{
 		if (defaultCGI.empty())
 			return (false);
-		if (defaultCGI.front() == '/' && (*root.end()) == '/')
-			defaultCGI = defaultCGI.substr(1, std::string::npos);
-		defaultCGI = root + defaultCGI;
+		defaultCGI = adjustPath(root, defaultCGI);
 		if (access(defaultCGI.c_str(), F_OK) == -1)
 		{
 			statusCode = NOT_FOUND;
@@ -143,9 +141,7 @@ int	Request::checkDirectory(Location *pathLocation)
 		std::string indexFile = pathLocation->getDefaultIndex();
 		if (!indexFile.empty())
 		{
-			if (path.front() == '/' && (*indexFile.end()) == '/')
-				path = path.substr(1, std::string::npos);
-			path = path + indexFile;
+			path = adjustPath(path, indexFile);
 			return (1);
 		}
 		if (pathLocation->getListingStatus())
@@ -156,6 +152,43 @@ int	Request::checkDirectory(Location *pathLocation)
 		statusCode = FORBIDDEN;
 	}
 	return (0);
+}
+
+bool	Request::checkUpload(Location *pathLocation)
+{
+	if (pathLocation->getUploadStatus() && startLine.method == "POST")
+	{
+		headerField *type = getHeaderField("Content-Type");
+		if (!type)
+			return (true);
+		std::string uploadPath = pathLocation->getUploadPath();
+		if (!uploadPath.empty())
+		{
+			size_t pos = path.find_last_of('/', std::string::npos);
+			std::string fileName = path.substr(pos, std::string::npos);
+			path = uploadPath + fileName;
+			// path = path.substr(0, pos);
+			// path = adjustPath(adjustPath(path, uploadPath), fileName);
+		}
+		if (type->value == "multipart/form-data")
+		{
+			std::cout << "path: " << path << std::endl;
+			std::ofstream file;
+			file.open(path, std::ofstream::out | std::ofstream::trunc);
+			if (file.is_open())
+				std::cout << "everything is alright\n";
+			if (access(path.c_str(), W_OK) == -1)
+			{
+				statusCode = NOT_ALLOWED;
+				return (false);
+			}
+			file << getBody();
+			file.close();
+			upload = true;
+			statusCode = CREATED;
+		}
+	}
+	return (true);
 }
 
 bool Request::checkCGI(void)
@@ -169,16 +202,11 @@ bool Request::checkCGI(void)
 	this->root = serverInstance->getRoot();
 	if (!pathLocation->getRoot().empty())
 		root = pathLocation->getRoot();
-	std::cout << "root: " << root << std::endl;
-	std::cout << "path: " << path << std::endl;
-	if (path.front() == '/' && (*(root.end() - 1)) == '/')
-		path = path.substr(1, std::string::npos);
-	std::cout << "root: " << root << std::endl;
-	std::cout << "path: " << path << std::endl;
-	path = root + path;
+	path = adjustPath(root, path);
 	if (!checkDirectory(pathLocation))
 		return (false);
-	std::cout << "path: " << path << std::endl;
+	if(!checkUpload(pathLocation))
+		return (false);
 	if (!treatAbsolutePath(pathLocation))
 		return (false);
 	return (checkExtension(pathLocation));
@@ -432,6 +460,24 @@ void	Request::printResult(void)
 	}
 }
 
+std::string Request::adjustPath(std::string const &prefix, std::string const &sufix)
+{
+	std::string toReturn;
+	if ((*sufix.begin()) == '/' && (*(prefix.end() - 1)) == '/')
+	{
+		toReturn = sufix.substr(1, std::string::npos);
+		toReturn = prefix + toReturn;
+		return (toReturn);
+	}
+	else if ((*sufix.begin() != '/') && (*(prefix.end() - 1) != '/'))
+	{
+		toReturn = prefix + "/" + sufix;
+		return (toReturn);
+	}
+	toReturn = prefix + sufix;
+	return (toReturn);
+}
+
 /*
 ** --------------------------------- ACCESSOR ---------------------------------
 */
@@ -464,6 +510,8 @@ void	Request::setServerInstance(Server *server)
 	serverInstance = server;
 	CGI = false;
 	redirectionStatus = false;
+	listingStatus = false;
+	upload = false;
 }
 
 std::string		Request::getErrorCode(void)
@@ -551,6 +599,11 @@ std::string		Request::getRedirectionCode(void)
 bool		Request::getListingStatus(void)
 {
 	return (listingStatus);
+}
+
+bool		Request::getUploadStatus(void)
+{
+	return (upload);
 }
 
 /* ************************************************************************** */

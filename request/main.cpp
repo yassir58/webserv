@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/13 15:35:19 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/27 20:40:36 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/28 19:38:03 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,12 +18,10 @@
 
 std::string requestGeneratorByGPT()
 {
-	std::string method = "GET";
-    std::string url = "/response";
-    std::string headers = "Content-Type: application/json\r\nAccept: application/json\r\nHost: 192.120.18.0:80\r\nConnection: keep-alive\r\naccept: /\r\naccept-encoding: gzip, deflate, br\r\ncontent-type: multipart/form-data\r\naccept-language: en-US,en;q=0.9\r\nsec-fetch-mode: cors\r\n";
-    std::string body = "{\"param1\":\"value1\",\"param2\":\"value2\"}\n";
-    std::string body1 = "{\"param1\":\"value1\",\"param2\":\"value2\"}\n";
-    std::string body2 = "username=havel\npassword=sbardilaadfe16F651e32164843216482\n";
+	std::string method = "POST";
+    std::string url = "/response/testUpload";
+    std::string headers = "Content-Type: multipart/form-data\r\nAccept: application/json\r\nHost: 192.120.18.0:80\r\nConnection: keep-alive\r\naccept: /\r\naccept-encoding: gzip, deflate, br\r\ncontent-type: multipart/form-data\r\naccept-language: en-US,en;q=0.9\r\nsec-fetch-mode: cors\r\n";
+    std::string body = "ZAB\n";
 
     std::stringstream request;
     request << method << " " << url << " HTTP/1.1\r\n";
@@ -31,8 +29,8 @@ std::string requestGeneratorByGPT()
     request << "Content-Length: " << body.length() << "\r\n";
     request << "\r\n";
     request << body;
-    request << body1;
-    request << body2;
+    // request << body1;
+    // request << body2;
 
     std::string request_str = request.str();
 	return (request_str);
