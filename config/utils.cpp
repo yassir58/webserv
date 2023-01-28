@@ -1,15 +1,11 @@
 #include "config.hpp"
 #include "utils.hpp"
 
-void	validateExtension(const char *path, const char *ext)
+bool    validateExtension(std::string path, std::string ext)
 {
-	int size;
-
-	size = strlen(path) - 5;
-    //.. Comparing the last 5 characters to see if its matches the extension
-	if (strcmp(ext, path + size))
-        throw parseError("Usage: ./webserv [configFile]");
-
+    if (!strcmp(path.c_str() + path.find(".", 2) + 1, ext.c_str()))
+        return (1);
+    return (0);
 }
 
 bool    validateHost(std::string ipAddress)
@@ -30,6 +26,27 @@ bool    validateHost(std::string ipAddress)
         index++;
     }
     return (true);
+}
+
+bool validateCGIExtension(std::string key)
+{
+    if (keyExistsInTable(key, cgiExtensions))
+        return (true);
+    return (false);
+}
+
+bool validateIndexExtension(std::string filename)
+{
+    int i;
+
+    i = 0;
+    while (indexExtensions[i])
+    {
+        if (validateExtension(filename, indexExtensions[i]))
+            return (true);
+        i++;
+    }
+    return (false);
 }
 
 void    printContainer(stringContainer table)
@@ -113,15 +130,14 @@ std::string getLine(std::string &line) {
 
 stringContainer   read_config_file(std::string & path)
 {
-    std::string ext;
     std::ifstream config;
     std::string line;
     std::string parsedLine;
     stringContainer configFile;
 
-    ext = ".conf";
     //.. Openning the the config file
-    validateExtension(path.c_str(), ext.c_str());
+    if (!validateExtension(path, "conf"))
+        throw parseError("Usage: ./webserv [configFile]"); 
     config.open(path);
     //.. Checking if its open
     if (config.is_open())
