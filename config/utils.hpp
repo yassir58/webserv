@@ -34,4 +34,19 @@ const char * locationContext[] = {
 };
 
 
+const char * cgiExtensions[] = {
+        "php",
+        "py",
+        "rb",
+        NULL
+};
+
+const char * indexExtensions[] = {
+        "html",
+        "rb",
+        "py",
+        "php",
+        NULL
+};
+
 #endif
