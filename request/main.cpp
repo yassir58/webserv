@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/13 15:35:19 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/29 14:46:07 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/29 19:06:16 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,10 +18,10 @@
 
 std::string requestGeneratorByGPT()
 {
-	std::string method = "GET";
-    std::string url = "/response/test.js";
-    std::string headers = "Content-Type: multipart/form-data\r\nAccept: application/json\r\nHost: 192.120.18.0:80\r\nConnection: keep-alive\r\naccept: /\r\naccept-encoding: gzip, deflate, br\r\ncontent-type: multipart/form-data\r\naccept-language: en-US,en;q=0.9\r\nsec-fetch-mode: cors\r\n";
-    std::string body = "ZAB\n";
+	std::string method = "POST";
+    std::string url = "/response/test.txt";
+    std::string headers = "Accept: application/json\r\nHost: 192.120.18.0:80\r\nConnection: keep-alive\r\naccept: /\r\naccept-encoding: gzip, deflate, br\r\ncontent-type: multipart/form-data\r\naccept-language: en-US,en;q=0.9\r\nsec-fetch-mode: cors\r\n";
+    std::string body = "ZABlkjsdklfjskjfksjdfklsjdlkfjsflksdkfj\n";
 
     std::stringstream request;
     request << method << " " << url << " HTTP/1.1\r\n";

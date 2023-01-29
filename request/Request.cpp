@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/29 15:08:24 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/29 19:24:28 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -305,7 +305,7 @@ int	Request::treatAbsoluteURI()
 		parseHostName(hostName);
 		return (1);
 	}
-	return (0);
+	return (1);
 }
 
 int Request::treatAbsolutePath(Location *pathLocation)
