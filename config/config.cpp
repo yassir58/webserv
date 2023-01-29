@@ -182,7 +182,7 @@ bool Http::getSendFilestatus()
 
 Server::Server()
 {
-    this->maxBodySize = 0;
+    this->maxBodySize = -1;
     this->port = 8080;
     this->host = "127.0.0.1";
     this->serverName = "";
@@ -263,7 +263,13 @@ void    Server::parseDirective(stringContainer config, Server *instance, int lin
     else if (str.size() == 2 && str[0] == "server_name")
         instance->serverName = str[1];
     else if (str.size() == 2 && str[0] == "max_body_size")
+    {
+        if (atoi(str[1].c_str()) < 0)
+            throw parseError("Config Error: max body size must be a positive value");
+        else if (!isNumber(str[1]))
+            throw parseError("Config Error: max body size must be a valid number");
         instance->maxBodySize = atoi(str[1].c_str());
+    }
     else if ((str[0] == "listen" && str.size() == 3) || (str[0] == "listen" && str.size() == 2))
     {
         if (str.size() == 2)
@@ -356,7 +362,7 @@ unsigned int Server::getPort()
     return (this->port);
 }
 
-unsigned int Server::getMaxBodySize()
+short Server::getMaxBodySize()
 {
     return (this->maxBodySize);
 }

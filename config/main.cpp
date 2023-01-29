@@ -43,6 +43,7 @@ int main(void)
         std::cout << "Redirect Link: " << file->getHttpContext()->getServers()[3]->getLocations()[1]->getRedirectLink() << std::endl;
         std::cout << "Redirect Code: " << file->getHttpContext()->getServers()[3]->getLocations()[1]->getRedirectCode() << std::endl;
         std::cout << "Default Index: " << file->getHttpContext()->getServers()[3]->getLocations()[2]->getDefaultIndex() << std::endl;
+        std::cout << "Max body size: " << file->getHttpContext()->getServers()[3]->getMaxBodySize() << std::endl;
         std::cout << "Content-type: " << file->getMimeMap()["html"] << std::endl;
         delete file;
         // std::cout << "Server [0] Host: " << file->getHttpContext()->getServers()[0]->getHost() << std::endl;
