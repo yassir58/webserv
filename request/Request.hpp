@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:36 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/28 19:19:38 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/29 14:54:26 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,8 @@
 # define FORBIDDEN	   403
 # define NOT_FOUND	   404
 # define NOT_ALLOWED   405
+# define TOO_LONG	   414
+# define TOO_LARGE     413
 # define NOT_IMPLENTED 501
 # define SERVER_ERROR  500
 # define HTTP_VERSION  505
@@ -49,11 +51,12 @@ class Request
 		size_t 					start; // also used in getCRLF() method
 		std::string				root; // the root directive if specified
 		Server					*serverInstance; // the server instance that handle the request
+		Location				*pathLocation; // the location instance meant for the request target
 		std::string				redirectionLink; // the link of the redirection from the config file if there's any
 		std::string				redirectCode; // the code of the redirection from the config file
 		bool					redirectionStatus; // to check if there's any redirection required
-		bool					listingStatus;
-		bool					upload;
+		bool					listingStatus; // to check the status of the listing used in the response
+		bool					upload; // to check the status of the upload also used in the response
 	public:
 		Request(std::string fileString, Server *serverInstance); //param constructor take a string as param and the server instance 
 		~Request(); // destructor not used

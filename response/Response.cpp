@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/28 22:39:24 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/29 15:03:21 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,9 @@
 ** ------------------------------- CONSTRUCTOR --------------------------------
 */
 
-Response::Response(Request &request)
+Response::Response(Request &request, Config *config)
 {
-	setRequest(&request);
+	setRequest(&request, config);
 	if (this->request->getRedirectionStatus())
 		this->request->setStatusCode(handleRedirection());
 	else if (this->request->getUploadStatus())
@@ -35,16 +35,16 @@ Response::Response(Request &request)
 	responseToSend.push_back(responseBody);
 }
 
-Response::Response(Request &request, std::string CGIOutput)
-{
-	setRequest(&request);
-	setResponseBody(CGIOutput);
-	statusIndex = getStatusCode();
-	responseToSend.push_back(generateStatusLine());
-	stringContainer headerFields = generateHeaderFields(responseBody);
-	responseToSend.insert(responseToSend.begin() + 1, headerFields.begin(), headerFields.end());
-	responseToSend.push_back(responseBody);
-}
+// Response::Response(Request &request, std::string CGIOutput)
+// {
+// 	setRequest(&request);
+// 	setResponseBody(CGIOutput);
+// 	statusIndex = getStatusCode();
+// 	responseToSend.push_back(generateStatusLine());
+// 	stringContainer headerFields = generateHeaderFields(responseBody);
+// 	responseToSend.insert(responseToSend.begin() + 1, headerFields.begin(), headerFields.end());
+// 	responseToSend.push_back(responseBody);
+// }
 
 /*
 ** -------------------------------- DESTRUCTOR --------------------------------
@@ -111,14 +111,34 @@ std::string generateLenghtContent(std::string &responseBody)
 	return (toReturn);
 }
 
+std::string	Response::generateContentType(void)
+{
+	mapContainer mimeType = configData->getMimeMap();
+	std::string extension;
+	std::string path = request->getPath();
+	size_t		dot;
+	dot = path.find_last_of('.', std::string::npos);
+	if (dot == std::string::npos)
+		return ("Content-Type: text/plain\r\n");
+	extension = path.substr(dot + 1, std::string::npos);
+	mapContainer::iterator pos = mimeType.find(extension);
+	if (pos == mimeType.end())
+		return ("Content-Type: text/plain\r\n");
+	return ("Content-Type: " + pos->second + "\r\n");
+}
+
 stringContainer Response::generateHeaderFields(std::string &responseBody)
 {
 	stringContainer	toReturn;
 	std::string Date = generateDate();
 	toReturn.push_back(Date);
-	std::string Lenght = generateLenghtContent(responseBody);
-	toReturn.push_back(Lenght);
-	// I still need to work on the content type
+	if (!responseBody.empty())
+	{
+		std::string Lenght = generateLenghtContent(responseBody);;
+		toReturn.push_back(Lenght);
+		std::string type = generateContentType();
+		toReturn.push_back(type);
+	}
 	if (this->getStatusCode() == NOT_ALLOWED)
 	{
 		std::string allow = "Allow: GET, HEAD, DELETE\r\n";
@@ -241,21 +261,24 @@ std::string Response::getResponse(void)
 	return (toReturn);
 }
 
-void	Response::setRequest(Request *request)
+void	Response::setRequest(Request *request, Config *config)
 {
 	this->request = request;
+	this->configData = config;
 	size_t	index = 0;
 	status[index].code = OK; status[index++].status = "OK";
 	status[index].code = CREATED; status[index++].status = "CREATED";
 	status[index].code = FOUND; status[index++].status = "FOUND";
 	status[index].code = NO_CONTENT; status[index++].status = "NO_CONTENT";
-	status[index].code = BAD_REQUEST; status[index++].status = "BAD_REQUEST";
-	status[index].code = FORBIDDEN; status[index++].status = "FORBIDDEN";
-	status[index].code = NOT_FOUND; status[index++].status = "NOT_FOUND";
-	status[index].code = NOT_ALLOWED; status[index++].status = "NOT_ALLOWED";
-	status[index].code = NOT_IMPLENTED; status[index++].status = "NOT_IMPLENTED";
-	status[index].code = SERVER_ERROR; status[index++].status = "SERVER_ERROR";
-	status[index].code = HTTP_VERSION; status[index++].status = "HTTP_VERSION";
+	status[index].code = BAD_REQUEST; status[index++].status = "Bad Request";
+	status[index].code = FORBIDDEN; status[index++].status = "Forbidden";
+	status[index].code = NOT_FOUND; status[index++].status = "Not Found";
+	status[index].code = NOT_ALLOWED; status[index++].status = "Method Not Allowed";
+	status[index].code = TOO_LONG; status[index++].status = "Request-URI Too Long";
+	status[index].code = TOO_LARGE; status[index++].status = "Request Entity Too Large";
+	status[index].code = NOT_IMPLENTED; status[index++].status = "Not Implemented";
+	status[index].code = SERVER_ERROR; status[index++].status = "Internal Server Error";
+	status[index].code = HTTP_VERSION; status[index++].status = "HTTP Version Not Supported";
 }
 
 void	Response::setResponseBody(std::string responseBody)
