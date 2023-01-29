@@ -356,6 +356,11 @@ unsigned int Server::getPort()
     return (this->port);
 }
 
+unsigned int Server::getMaxBodySize()
+{
+    return (this->maxBodySize);
+}
+
 Location::Location()
 {
     this->endPoint = "";
