@@ -2,16 +2,7 @@
 #ifndef UTILS_HPP
 #define UTILS_HPP
 #include <iostream>
-#include <exception>
-#include <unistd.h>
-#include <sys/wait.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <map>
 
-typedef std::map<std::string, std::string> mapContainer;
 
 const char * httpContext[] = {
         "send_file",

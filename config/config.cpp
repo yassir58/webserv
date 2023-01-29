@@ -10,6 +10,7 @@ Config::Config()
 Config::Config(std::string path)
 {
     this->configContent = read_config_file(path);
+    this->mimeMap = createMiMe();
     // printContainer(this->configContent);
     checkBrackets(this->configContent);
 }
@@ -79,6 +80,11 @@ Http * Config::getHttpContext()
 std::string Config::getPidPath()
 {
     return (this->pid_path);
+}
+
+mapContainer Config::getMimeMap()
+{
+    return (this->mimeMap);
 }
 
 Http::Http() 
