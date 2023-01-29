@@ -82,7 +82,7 @@ class Server {
     private:
         Pages *pages;
         unsigned int port;
-        unsigned int maxBodySize;
+        short maxBodySize;
         std::string host;
         std::string root;
         std::string serverName;
@@ -90,7 +90,7 @@ class Server {
     public:
         // Getters
         unsigned int getPort();
-        unsigned int getMaxBodySize();
+        short getMaxBodySize();
         std::string getHost();
         std::string getRoot();
         std::string getServerName();
