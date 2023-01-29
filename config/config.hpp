@@ -7,10 +7,16 @@
 #include <istream>
 #include <vector>
 #include <algorithm>
-#include <exception>
-#include <sys/stat.h>
 #include <cstring>
 #include <sstream>
+#include <exception>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <map>
 
 #define MAIN 0
 #define HTTP 1
@@ -24,6 +30,7 @@
 #define PORT_MAX 65535
 
 typedef std::vector<std::string> stringContainer;
+typedef std::map<std::string, std::string> mapContainer;
 
 typedef struct errorPages {
     std::string path_not_found;
@@ -128,9 +135,11 @@ class Config {
         void    printConfig();
         void    parseDirective(stringContainer config, int line);
         Http    *getHttpContext();
+        mapContainer getMimeMap();
         std::string getPidPath();
     private:
         stringContainer configContent;
+        mapContainer mimeMap;
         std::string pid_path;
         Http *mainHttpContext;
     
@@ -169,5 +178,6 @@ bool validateIndexExtension(std::string filename);
 std::string readContent(std::string path);
 void    print_table(char **table);
 std::string	generateDate(void);
+mapContainer createMiMe();
 
 #endif 
