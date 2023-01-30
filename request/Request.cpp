@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/28 22:01:23 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/29 21:06:00 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -138,7 +138,6 @@ int	Request::checkDirectory(Location *pathLocation)
 	int dec = isDir(path.c_str());
 	if (dec)
 	{
-		std::cout <<"hohoh\n";
 		std::string indexFile = pathLocation->getDefaultIndex();
 		if (!indexFile.empty())
 		{
@@ -169,8 +168,10 @@ bool	Request::checkUpload(Location *pathLocation)
 			std::string fileName = path.substr(pos, std::string::npos);
 			path = path.substr(0, pos);
 			path = adjustPath(path, uploadPath);
+			std::cout << "path: " << path << std::endl;
 			if (access(path.c_str(), F_OK) == -1)
 			{
+				std::cout << "hoho\n";
 				statusCode = NOT_FOUND;
 				return (false);
 			}
@@ -181,8 +182,11 @@ bool	Request::checkUpload(Location *pathLocation)
 			std::cout << "path: " << path << std::endl;
 			std::ofstream file;
 			file.open(path, std::ofstream::out | std::ofstream::trunc);
-			if (file.is_open())
-				std::cout << "everything is alright\n";
+			if (!file.is_open())
+			{
+				statusCode = NOT_FOUND;
+				return (false);
+			}
 			if (access(path.c_str(), W_OK) == -1)
 			{
 				statusCode = FORBIDDEN;
@@ -199,10 +203,15 @@ bool	Request::checkUpload(Location *pathLocation)
 
 bool Request::checkCGI(void)
 {
-	Location *pathLocation = matchLocation();
-	if (!pathLocation)
+	this->pathLocation = matchLocation();
+	if (!this->pathLocation)
 	{
 		statusCode = NOT_FOUND;
+		return (false);
+	}
+	if (serverInstance->getMaxBodySize() > 0 && getBody().length() > serverInstance->getMaxBodySize())
+	{
+		statusCode = TOO_LARGE;
 		return (false);
 	}
 	this->root = serverInstance->getRoot();
@@ -281,6 +290,11 @@ int Request::checkMethod()
 int	Request::treatAbsoluteURI()
 {
 	std::string hostName;
+	if (startLine.requestTarget.length() > 1000)
+	{
+		statusCode = TOO_LONG;
+		return (0);
+	}
 	if (!startLine.requestTarget.compare(0, 7, "http://") || !startLine.requestTarget.compare(0, 7, "HTTP://"))
 	{
 		startLine.requestTarget.erase(0, 7);
@@ -291,7 +305,7 @@ int	Request::treatAbsoluteURI()
 		parseHostName(hostName);
 		return (1);
 	}
-	return (0);
+	return (1);
 }
 
 int Request::treatAbsolutePath(Location *pathLocation)
@@ -332,7 +346,8 @@ int Request::treatAbsolutePath(Location *pathLocation)
 
 int Request::checkRequestTarget()
 {
-	treatAbsoluteURI();
+	if (!treatAbsoluteURI())
+		return (0);
 	path = startLine.requestTarget;
 	Location *pathLocation = matchLocation();
 	if (pathLocation == NULL)
