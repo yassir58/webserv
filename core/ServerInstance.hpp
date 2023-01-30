@@ -141,7 +141,6 @@ class Connection {
 		std::string ipAddress;
 		size_t requestLength;
 		int status;
-		Server *server;
 		
 
     public:
@@ -155,11 +154,9 @@ class Connection {
         void sendResponse (void);
         std::vector <int> getResolversList (void) const;
         void generateResolversList (serverBlocks serverList);
-		void setRequest (void);
+		void setRequest (serverBlocks serverList);
 		Request *getRequest (void) const;
 		void printfResolvers (void);
-		void matchRequestHandler (serverBlocks serverList);
-		Server* getServer (void) const;
 		void setStatus (int status);
 };
 
@@ -232,6 +229,7 @@ public:
 		std::cout << std::endl;
 	}
 	void handleSigPipe ();
+	Config *getConfig (void) const;
 
 };
 

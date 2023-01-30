@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
+/*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:36 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/30 18:23:32 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/30 18:40:29 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,8 @@
 
 typedef std::vector<std::string> stringContainer;
 typedef std::list<headerField>	headerFieldList;
+/// changed by gigachad : under review
+typedef std::vector <Server*> serverBlocks;
 
 class Request
 {
@@ -58,14 +60,14 @@ class Request
 		bool					listingStatus; // to check the status of the listing used in the response
 		bool					upload; // to check the status of the upload also used in the response
 	public:
-		Request(std::string fileString); //param constructor take a string as param and the server instance 
+		Request(std::string fileString, serverBlocks serverList, std::vector <int> resolversList); //param constructor take a string as param and the server instance 
 		~Request(); // destructor not used
 		int				checkMethod(void); // check if the method is valid
 		int				treatAbsoluteURI(void); // treat the case where the request contain an absolute URI
 		int				treatAbsolutePath(Location *pathLocation); // treat the case where the request contain an absolute path
-		int 			checkRequestTarget(void); // check if the request target is valid
+		int 			checkRequestTarget(serverBlocks serverList, std::vector <int> resolversList); // check if the request target is valid
 		int				checkVersion(void); // check the HTTP version
-		int				checkContentParsed(void); // check the content that been parsed
+		int				checkContentParsed(serverBlocks serverList, std::vector <int> resolversList); // check the content that been parsed
 		int 			parseFirstLine(std::string line); // parse the first line of the request
 		int 			parseHeaderField(headerFieldList &list, std::string line); // parse the header fields and store it in linked list
 		void			parseHostName(std::string &hostNameValue); // parse the host name and store it on the t_start struct (startLine)
@@ -98,6 +100,8 @@ class Request
 		std::string		getRedirectionCode(void);
 		bool			getListingStatus(void);
 		bool			getUploadStatus(void);
-		Location		*getLocation(void);
+
+		// changed by gigachad  : under review 
+		Server *matchRequestHandler (serverBlocks serverList, std::vector <int> resolversList);
 };
 #endif

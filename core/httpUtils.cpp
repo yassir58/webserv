@@ -14,7 +14,6 @@ const std::string currentDateTime() {
     return buf;
 }
 
-
 void HttpApplication::serverLog (int serverIndx)
 {
     accessLog <<  "\e[0;36mserver interface : \e[0m: " <<     serverList[serverIndx]->getHostName() << " ";
@@ -120,17 +119,16 @@ void Connection::generateResolversList (serverBlocks serverBlockList)
 	}
 }
 
-void Connection::setRequest (void)
+void Connection::setRequest (serverBlocks serverList)
 {
-	// try
-    // {
-    // 	request = new Request (httpBuffer);
-
-    // }
-    // catch (std::exception &exc)
-    // {
-    //     std::cout << "\e[0;31m" << exc.what () << "\e[0m" << std::endl;
-    // }
+	try
+    {
+    	request = new Request (httpBuffer, serverList, resolversList);
+    }
+    catch (std::exception &exc)
+    {
+        std::cout << "\e[0;31m" << exc.what () << "\e[0m" << std::endl;
+    }
 }
 
 void Connection::printfResolvers (void)
@@ -144,15 +142,15 @@ void Connection::printfResolvers (void)
 	std::cout << std::endl;
 }
 
-void Connection::matchRequestHandler (serverBlocks serverList)
+Server *Request::matchRequestHandler (serverBlocks serverList, std::vector <int> resolversList)
 {
 	int servIndx = 0;
-	int hostFlag = this->request->getStartLine().Host;
+	int hostFlag = this->getStartLine().Host;
 	std::string servName;
 	intContainer::iterator it;
 
 	servIndx = resolversList[0];
-	servName = this->request->getStartLine().hostName ;
+	servName = this->getStartLine().hostName ;
 	if (hostFlag)
 	{
 		for (it = resolversList.begin (); it != resolversList.end (); it++)
@@ -161,7 +159,7 @@ void Connection::matchRequestHandler (serverBlocks serverList)
 				servIndx = (*it);
 		}
 	}
-	server = serverList[servIndx];
+	return (serverList[servIndx]);
 }
 
 
@@ -232,11 +230,6 @@ void HttpApplication::connectionErrorLog (std::string errorContext, std::string 
 Request *Connection::getRequest (void) const
 {
 	return (this->request);
-}
-
-Server* Connection::getServer (void) const
-{
-	return (this->server);
 }
 
 

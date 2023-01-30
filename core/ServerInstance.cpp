@@ -165,3 +165,8 @@ int ServerInstance::getStatus (void) const
 {
     return (this->status);
 }
+
+Config *HttpApplication::getConfig (void) const
+{
+	return (this->config);
+}

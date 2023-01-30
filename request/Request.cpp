@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
+/*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/30 18:23:23 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/30 18:42:41 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 ** ------------------------------- CONSTRUCTOR --------------------------------
 */
 
-Request::Request(std::string fileString)
+Request::Request(std::string fileString, serverBlocks serverList, std::vector<int> resolversList)
 {
 	std::string line;
 	setStatusCode(0);
@@ -32,7 +32,7 @@ Request::Request(std::string fileString)
 		statusCode = BAD_REQUEST;
 		return ;
 	}
-	if (!checkContentParsed())
+	if (!checkContentParsed(serverList, resolversList))
 		return ;
 	while (!getCRLF(line, (char *)"\r\n"))
 	{
@@ -226,14 +226,14 @@ bool Request::checkCGI(void)
 	return (checkExtension(pathLocation));
 }
 
-int	Request::checkContentParsed()
+int	Request::checkContentParsed(serverBlocks serverList, std::vector <int> resolversList)
 {
 	if (!checkMethod())
 	{
 		statusCode = NOT_IMPLENTED;
 		return (0);
 	}
-	if (!checkRequestTarget())
+	if (!checkRequestTarget(serverList, resolversList))
 	{
 		if (statusCode == 0)
 			statusCode = BAD_REQUEST;
@@ -343,12 +343,12 @@ int Request::treatAbsolutePath(Location *pathLocation)
 	return (1);
 }
 
-int Request::checkRequestTarget()
+int Request::checkRequestTarget(serverBlocks serverList, std::vector <int> resolversList)
 {
 	if (!treatAbsoluteURI())
 		return (0);
 	path = startLine.requestTarget;
-	Server *serverInst = ;
+	Server *serverInst = matchRequestHandler (serverList, resolversList);
 	setServerInstance(serverInst);
 	Location *pathLocation = matchLocation();
 	if (pathLocation == NULL)
@@ -633,9 +633,9 @@ bool		Request::getUploadStatus(void)
 	return (upload);
 }
 
-Location *Request::getLocation(void)
-{
-	return (pathLocation);
-}
+// Location *Request::getLocation(void)
+// {
+// 	return (pathLocation);
+// }
 
 /* ************************************************************************** */

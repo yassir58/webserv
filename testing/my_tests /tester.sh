@@ -12,11 +12,11 @@ White='\033[0;37m'        # White
 
 HOST_NAME="127.0.0.1"
 HOST_PORT="8080"
-EXEC_PATH="./../../webserv"
-CONF_PATH="../configs/test.conf"
+
+
 ENDPOINT="http://localhost:8080"
 NOT_FOUND_PATH="/test/notFound"
-FORBIDDEN_PATH="/test/forbidden.html"
+FORBIDDEN_PATH="/forbidden"
 NOT_ALLOWED_PATH="/getNotAllowed"
 NORMAL_POST_PATH=""
 NOT_ALLOWED_POST=""
@@ -26,6 +26,11 @@ URI_TOO_LONG=""
 
 
 
+echo "please provide a path for webserv executable : " && read EXEC_PATH
+echo "please provide a path for config file :" && read CONF_PATH
+
+EXEC_PATH="/Users/yelatman/Documents/webserv/webserv"
+CONF_PATH="/Users/yelatman/Documents/webserv/testing/configs/test.conf"
 terminateServer ()
 {
 	echo -e "$Red terminating server $White "
@@ -41,7 +46,6 @@ testGET ()
 	curl -v $ENDPOINT$1 -o test.html &> HEADERS
 	status_message=$(cat HEADERS | grep "<" | grep "HTTP" | cut -d' ' -f4)
 	status_code=$(cat HEADERS | grep "<" | grep "HTTP" | cut -d' ' -f3)
-
 	echo -e " testing $4 on $Yellow $ENDPOINT$1 $White"
 	echo " ------> matching status codes"
 	if [ $3 == $status_code ] ; then
@@ -50,13 +54,13 @@ testGET ()
 		echo -e "$Red status code test failed X $White"
 	fi
 	echo " ------> matching response body"
-	diff test.html 1&> /dev/null $2 > response.diff
+	diff test.html $2 > response.diff
 	if [ -s response.diff ] ; then
 		echo -e "$Red diff test failed X $white"
 	else
 		echo -e "$Green diff test succeded ✓ $White"
 	fi
-	rm -rf HEADERS test.html nohup.out reponse.diff
+	# rm -rf HEADERS test.html nohup.out reponse.diff
 }
 
 
@@ -66,16 +70,16 @@ testPOST ()
 	curl -v $ENDPOINT$NORMAL_POST_PATH -d @testFile -H "Content-Type: application/javascript" &> HEADERS
 }
 
-
-nohup $EXEC_PATH $CONF_PATH > /dev/null &
+exec $EXEC_PATH $CONF_PATH &
 PID=$(ps a | grep {$EXEC_PATH} |tr -s ' ' | cut -d ' ' -f1)
 echo -e " server started on the background :  pid $Green $PID $White"
 echo -e " server listening on port $Yellow $HOST_PORT $White"
 sleep 2
-testGET "/" "./../../www/test.html" "200" "simple GET request"
-# testGET $NOT_FOUND_PATH "" "404" "testing resource not FOUND"
+testGET "/test" "/Users/yelatman/Documents/webserv/www/test/test.html" "200" "simple GET request"
+testGET "/" "../../www/index.html" "200" "simple GET request"
+#testGET $NOT_FOUND_PATH "" "404" "testing resource not FOUND"
 # testGET "bad request" "" "400" "testing BAD REQUEST"
-# testGet $FORBIDDEN_PATH "" "403" "testing forbidden operation"
-# testGet $NOT_ALLOWED_PATH "" "405" "testing not allowed GET method"
+#testGet $FORBIDDEN_PATH "" "403" "testing forbidden operation"
+#testGet $NOT_ALLOWED_PATH "" "405" "testing not allowed GET method"
 
 trap terminateServer EXIT

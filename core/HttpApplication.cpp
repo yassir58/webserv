@@ -146,9 +146,8 @@ void HttpApplication::handleHttpRequest (int fd)
 	else
 	{
 		serverBlocks servList = this->config->getHttpContext()->getServers ();
-		newConnection->setRequest ();
 		newConnection->generateResolversList (servList);
-		newConnection->matchRequestHandler (servList);
+		newConnection->setRequest (servList);
 		connections.push_back (newConnection);
 		FD_CLR (fd, &readFds);
 		FD_SET (fd, &writeFds);
@@ -276,19 +275,20 @@ void HttpApplication::handleHttpResponse (int fd)
 	Connection *connectionInterface = (*it);
 	Server *server;
 	Request *request;
-	Response *newResponse  = new Response ();
-	std::string responseHeader (HTTP_RESPONSE_EXAMPLE);
+	Response *newResponse ;
+	Config *configFile = this->getConfig ();
+	std::string response;
+	int responseLength = 0;
 
 	if (connectionInterface != nullptr)
 	{
-		server = connectionInterface->getServer();
 		request = connectionInterface->getRequest();
-		
+		newResponse = new Response (*request, configFile);
+		response = newResponse->getResponse ();
+		responseLength = response.length ();
 		connectionInterface->printfResolvers ();
-		server->printServer ();
 	}
-	std::cout << responseHeader  << std::endl;
-	errValue = send (fd, responseHeader.c_str (), responseHeader.length (), 0);
+	errValue = send (fd, response.c_str (), responseLength, 0);
 	if (errValue == -1)
 	{
 		FD_CLR (fd, &writeFds);
