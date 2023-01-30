@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/29 21:06:00 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/30 17:15:54 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -579,6 +579,11 @@ std::string Request::getBody(void)
 	return (toReturn);
 }
 
+stringContainer		Request::getBodyStringContainer(void)
+{
+	return (body);
+}
+
 headerField *Request::getHeaderField(std::string key)
 {
 	headerFieldList::iterator begin = headerFields.begin();
@@ -625,6 +630,11 @@ bool		Request::getListingStatus(void)
 bool		Request::getUploadStatus(void)
 {
 	return (upload);
+}
+
+Location *Request::getLocation(void)
+{
+	return (pathLocation);
 }
 
 /* ************************************************************************** */
