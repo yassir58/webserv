@@ -55,10 +55,9 @@ void    printContainer(stringContainer table)
 
     i = 0;
 
-    std::cout << "===============================" << std::endl;
     while (i < table.size())
     {
-        printf("%s", table.at(i).c_str());
+        printf("%s\n", table.at(i).c_str());
         // std::cout << table.at(i) << std::endl;
         i++;
     }
@@ -476,4 +475,15 @@ mapContainer createMiMe()
     MiMeList["avi"] = "video/x-msvideo";
 
     return MiMeList;
+}
+
+bool checkVectorDuplicate(stringContainer container, std::string key)
+{
+    stringContainer::iterator begin = container.begin();
+    stringContainer::iterator end = container.end();
+    stringContainer::iterator it = std::find(begin, end, key);
+
+    if (it == end)
+        return (false);
+    return (true);
 }

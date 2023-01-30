@@ -179,5 +179,6 @@ std::string readContent(std::string path);
 void    print_table(char **table);
 std::string	generateDate(void);
 mapContainer createMiMe();
+bool checkVectorDuplicate(stringContainer container, std::string key);
 
 #endif 
