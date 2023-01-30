@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:36 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/29 14:54:26 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/30 17:14:43 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,6 +90,7 @@ class Request
 		std::string		getRequestTarget(void); // geter of the request target
 		int 			getStatusCode(void); // geter of the status code int repre
 		std::string		getBody(void); // return the body within the request 
+		stringContainer	getBodyStringContainer(void); // return the body within the request 
 		bool			getCGIStatus(void); // return the status of the CGI
 		std::string		getPath(void); // retunr the path
 		bool			getRedirectionStatus(void);
@@ -97,5 +98,6 @@ class Request
 		std::string		getRedirectionCode(void);
 		bool			getListingStatus(void);
 		bool			getUploadStatus(void);
+		Location		*getLocation(void);
 };
 #endif
