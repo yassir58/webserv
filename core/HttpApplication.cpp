@@ -211,11 +211,9 @@ void HttpApplication::filterServerBlocks (void)
     serverBlocks::iterator it;
     ServerInstance *server;
 
-
     serverBlockList = config->getHttpContext ()->getServers ();
     for (it = serverBlockList.begin(); it != serverBlockList.end (); it++)
     {
-    
         if (!checkServerExistance (*it))
         {
             server = new ServerInstance ((*it)->getHost(), (*it)->getPort ());
@@ -278,23 +276,19 @@ void HttpApplication::handleHttpResponse (int fd)
 	Connection *connectionInterface = (*it);
 	Server *server;
 	Request *request;
-	std::string dirListBody;
+	Response *newResponse  = new Response ();
 	std::string responseHeader (HTTP_RESPONSE_EXAMPLE);
 
-	dirListBody = listDirectory ("./testing");
-	std::cout << "response length " << dirListBody.length () + responseHeader.length () << std::endl;
-	responseHeader.append (dirListBody);
 	if (connectionInterface != nullptr)
 	{
 		server = connectionInterface->getServer();
 		request = connectionInterface->getRequest();
+		
 		connectionInterface->printfResolvers ();
 		server->printServer ();
 	}
 	std::cout << responseHeader  << std::endl;
 	errValue = send (fd, responseHeader.c_str (), responseHeader.length (), 0);
-	std::cout << "send result : " << errValue << std::endl;
-	std::cout << "response len : " << responseHeader.length ()  << std::endl;
 	if (errValue == -1)
 	{
 		FD_CLR (fd, &writeFds);

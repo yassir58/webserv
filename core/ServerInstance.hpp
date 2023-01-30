@@ -64,7 +64,7 @@ typedef std::vector <std::string> stringContainer;
 
 
 // for testing purpos
-#define HTTP_RESPONSE_EXAMPLE "HTTP/1.1 200 OK\r\nServer: WebServer\r\nContent-Type: text/html\r\nContent-Length: 372\r\nConnection: close\r\n\r\n"
+#define HTTP_RESPONSE_EXAMPLE "HTTP/1.1 200 OK\r\nServer: WebServer\r\nContent-Type: text/html\r\nContent-Length: 23\r\nConnection: close\r\n\r\n<h1> hello world </h1>"
 #define HTTP_LENGTH 225
 class Fatal_error : public std::exception
 {

@@ -122,15 +122,15 @@ void Connection::generateResolversList (serverBlocks serverBlockList)
 
 void Connection::setRequest (void)
 {
-	try
-    {
-    	request = new Request (httpBuffer);
+	// try
+    // {
+    // 	request = new Request (httpBuffer);
 
-    }
-    catch (std::exception &exc)
-    {
-        std::cout << "\e[0;31m" << exc.what () << "\e[0m" << std::endl;
-    }
+    // }
+    // catch (std::exception &exc)
+    // {
+    //     std::cout << "\e[0;31m" << exc.what () << "\e[0m" << std::endl;
+    // }
 }
 
 void Connection::printfResolvers (void)
@@ -249,45 +249,45 @@ void HttpApplication::handleSigPipe (void)
 	sigaction(SIGPIPE, &sa, NULL);
 }
 
-std::string listDirectory (std::string dirPath)
-{
-	DIR *dir = opendir (dirPath.c_str ());
-	struct dirent *dp;
-	stringContainer dirIndex;
-	stringContainer::iterator it;
-	std::string responseBody("") ;
-	std::string styles ("<style> body { background-color: #F2F2F2;}h1 {color: #0A2647;margin-left: 40px;} a {color:#5463FF; } </style>");
-	std::string indexHeader("<h1> Index of");
-	std::string lineBreak ("</br>");
-	std::string line("<hr>");
-	std::string lsOpen ("<ul>");
-	std::string lsClose ("</ul>");
-	std::string liOpen ("<li>");
-	std::string liClose ("</li>");
-	std::string linkOpen ("<a href=\"");
-	std::string linkClose ("</a>");
-	std::string hrClose ("\">");
-	std::string indexBody;
-	std::string href ("./");
+// std::string listDirectory (std::string dirPath)
+// {
+// 	DIR *dir = opendir (dirPath.c_str ());
+// 	struct dirent *dp;
+// 	stringContainer dirIndex;
+// 	stringContainer::iterator it;
+// 	std::string responseBody("") ;
+// 	std::string styles ("<style> body { background-color: #F2F2F2;}h1 {color: #0A2647;margin-left: 40px;} a {color:#5463FF; } </style>");
+// 	std::string indexHeader("<h1> Index of");
+// 	std::string lineBreak ("</br>");
+// 	std::string line("<hr>");
+// 	std::string lsOpen ("<ul>");
+// 	std::string lsClose ("</ul>");
+// 	std::string liOpen ("<li>");
+// 	std::string liClose ("</li>");
+// 	std::string linkOpen ("<a href=\"");
+// 	std::string linkClose ("</a>");
+// 	std::string hrClose ("\">");
+// 	std::string indexBody;
+// 	std::string href ("./");
 
-	if (dir == NULL)
-		throw std::exception ();
-	else
-	{
-		while ((dp = readdir (dir)))
-		{
-			dirIndex.push_back (dp->d_name);
-		}
-	}
-	responseBody.append (styles).append(indexHeader).append (dirPath) .append("</h1>").append (lineBreak).append (line).append (lsOpen);
-	for (it = dirIndex.begin (); it != dirIndex.end (); it++)
-	{
-		href.append ((*it));
-		responseBody.append (liOpen).append (linkOpen).append(href).append (hrClose).append ((*it)).append (linkClose).append (liClose);
-		href = "./";
-	}
-	responseBody.append (lsClose);
-	std::cout << "response length" << responseBody.length () << std::endl;
-	closedir (dir);
-	return (responseBody);
-}
+// 	if (dir == NULL)
+// 		throw std::exception ();
+// 	else
+// 	{
+// 		while ((dp = readdir (dir)))
+// 		{
+// 			dirIndex.push_back (dp->d_name);
+// 		}
+// 	}
+// 	responseBody.append (styles).append(indexHeader).append (dirPath) .append("</h1>").append (lineBreak).append (line).append (lsOpen);
+// 	for (it = dirIndex.begin (); it != dirIndex.end (); it++)
+// 	{
+// 		href.append ((*it));
+// 		responseBody.append (liOpen).append (linkOpen).append(href).append (hrClose).append ((*it)).append (linkClose).append (liClose);
+// 		href = "./";
+// 	}
+// 	responseBody.append (lsClose);
+// 	std::cout << "response length" << responseBody.length () << std::endl;
+// 	closedir (dir);
+// 	return (responseBody);
+// }

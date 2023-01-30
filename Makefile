@@ -2,6 +2,7 @@ SDIR =tcp
 CFLAGS = #-Wall -Wextra -Werror  -g -fsanitize=address #-std=c++98 
 CCP =c++
 CC =gcc
+EXEC=webserv
 CORE_SRCS =main.cpp  serverUtils.cpp ServerInstance.cpp  HttpApplication.cpp httpUtils.cpp 
 CONF_SRCS = config.cpp utils.cpp
 REQUEST_SRCS = Request.cpp
@@ -14,15 +15,15 @@ OBJS = $(SRCS:.cpp=.o)
 CONF_HEADERS = config.hpp utils.hpp
 HEADERS = $(addprefix ./core/, $(CORE_HEADERS)) $(addprefix ./config/, $(CONF_HEADERS))  $(addprefix ./request/, $(REQUEST_HEADERS)) $(addprefix ./responsee/, $(RESPONSE_HEADERS)) 
 
-all:server
+all:$(EXEC)
 
 %.o : %.cpp $(HEADERS)
 	$(CCP) $(CFLAGS) -c $< -o $@ 
 %.o : %.c $(HEADERS)
 	$(CC) $(CFLAGS) -c $< -o $@ 
 
-server:$(OBJS) 
-	$(CCP) $(CFLAGS) $(OBJS) -o server 
+$(EXEC):$(OBJS) 
+	$(CCP) $(CFLAGS) $(OBJS) -o $(EXEC) 
 
 # Connection:	basic_cn_Connection.o
 # 	$(CC) $(CFLAGS) $< -o Connection
@@ -31,5 +32,5 @@ server:$(OBJS)
 clean:
 	rm -rf $(OBJS)
 fclean: clean
-	rm -rf server
+	rm -rf$(EXEC)
 re:fclean all
