@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:36 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/30 17:14:43 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/30 18:23:32 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ class Request
 		bool					listingStatus; // to check the status of the listing used in the response
 		bool					upload; // to check the status of the upload also used in the response
 	public:
-		Request(std::string fileString, Server *serverInstance); //param constructor take a string as param and the server instance 
+		Request(std::string fileString); //param constructor take a string as param and the server instance 
 		~Request(); // destructor not used
 		int				checkMethod(void); // check if the method is valid
 		int				treatAbsoluteURI(void); // treat the case where the request contain an absolute URI

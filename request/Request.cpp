@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/30 17:15:54 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/30 18:23:23 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,12 +17,11 @@
 ** ------------------------------- CONSTRUCTOR --------------------------------
 */
 
-Request::Request(std::string fileString, Server *serverInst)
+Request::Request(std::string fileString)
 {
 	std::string line;
 	setStatusCode(0);
 	setFileString(fileString);
-	setServerInstance(serverInst);
 	if (getCRLF(line, (char *)"\r\n"))
 	{
 		statusCode = BAD_REQUEST;
@@ -349,6 +348,8 @@ int Request::checkRequestTarget()
 	if (!treatAbsoluteURI())
 		return (0);
 	path = startLine.requestTarget;
+	Server *serverInst = ;
+	setServerInstance(serverInst);
 	Location *pathLocation = matchLocation();
 	if (pathLocation == NULL)
 	{
