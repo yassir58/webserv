@@ -5,12 +5,12 @@ CGIHandler::CGIHandler()
     std::cout << "Calling the default constructor." << std::endl;
 }
 
-CGIHandler::CGIHandler(Location *location, Server *server, Request *request)
+CGIHandler::CGIHandler(Request *request)
 {
-    this->location = location;
-    this->defaultPath = location->getCGIDefault();
-    this->server = server;
-    this->request = request;
+    // this->location = 
+    // this->defaultPath = location->getCGIDefault();
+    // this->server = request.get
+    // this->request = request;
 }
 
 CGIHandler::~CGIHandler()
@@ -50,7 +50,7 @@ void    CGIHandler::createEnvList()
 	}
     if (this->request->getHeaderField("content-type") != NULL)
         envList["CONTENT_TYPE"] = this->request->getHeaderField("content-type")->value;
-    envList["CONTENT_LENGTH"] = int2assci(convertBody(this->request->getBody()).length());
+    envList["CONTENT_LENGTH"] = int2assci(this->request->getBody().length());
     this->envList = envList;
 }
 
@@ -223,7 +223,7 @@ std::string    CGIHandler::getOutput()
     else
     {
         close(fds[0]);
-        write(fds[1], convertBody(this->request->getBody()).c_str(), convertBody(this->request->getBody()).length());
+        write(fds[1], convertBody(this->request->getBodyStringContainer()).c_str(), convertBody(this->request->getBodyStringContainer()).length());
         close(fds[1]);
         waitpid(-1, NULL, 0);
     }
