@@ -130,6 +130,7 @@ void HttpApplication::handleHttpRequest (int fd)
 
 	newConnection->emptyBuffer ();
 	errValue = newConnection->recieveData ();
+	std::cout << newConnection->getBuffer () << std::endl;
 	if (errValue == -1)
 	{
 		delete newConnection;
