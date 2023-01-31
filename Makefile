@@ -5,7 +5,7 @@ CC =gcc
 EXEC=webserv
 CORE_SRCS =main.cpp  serverUtils.cpp ServerInstance.cpp  HttpApplication.cpp httpUtils.cpp 
 CONF_SRCS = config.cpp utils.cpp
-REQUEST_SRCS = Request.cpp
+REQUEST_SRCS = Request.cpp requestTools.cpp requestParser.cpp
 RESPONSE_SRCS = Response.cpp
 CORE_HEADERS = ServerInstance.hpp 
 REQUEST_HEADERS = Request.hpp request.h
@@ -28,6 +28,8 @@ $(EXEC):$(OBJS)
 # Connection:	basic_cn_Connection.o
 # 	$(CC) $(CFLAGS) $< -o Connection
 
+hoho: all clean
+	clear && ./$(EXEC) ./testing/configs/test.conf
 
 clean:
 	rm -rf $(OBJS)
