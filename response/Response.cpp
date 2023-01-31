@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
+/*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/30 22:33:43 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/01/31 12:44:25 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -209,7 +209,7 @@ int	Response::applyMethod(void)
 	if (method == "GET" && statusCode == 0)
 	{
 		std::ifstream resource(request->getPath());
-		if (resource)
+		if (resource.is_open())
 		{
 			std::ostringstream ss;
 			ss << resource.rdbuf();
@@ -223,7 +223,7 @@ int	Response::applyMethod(void)
 	else if (method == "POST" && statusCode == 0)
 	{
 		std::ofstream outfile(request->getPath());
-		if (outfile)
+		if (outfile.is_open())
 		{
 			outfile << request->getBody();
 			outfile.close();

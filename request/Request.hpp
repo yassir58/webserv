@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
+/*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:36 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/30 18:40:29 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/01/31 15:53:53 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,7 @@ class Request
 	public:
 		Request(std::string fileString, serverBlocks serverList, std::vector <int> resolversList); //param constructor take a string as param and the server instance 
 		~Request(); // destructor not used
+		int				parseRequest(serverBlocks serverList, std::vector<int> resolversList);
 		int				checkMethod(void); // check if the method is valid
 		int				treatAbsoluteURI(void); // treat the case where the request contain an absolute URI
 		int				treatAbsolutePath(Location *pathLocation); // treat the case where the request contain an absolute path
@@ -73,8 +74,9 @@ class Request
 		void			parseHostName(std::string &hostNameValue); // parse the host name and store it on the t_start struct (startLine)
 		int				parseBody(std::string line); // parse the body and store it in the body(look at the private attribute)
 		int				getCRLF(std::string &newLine, char *delim); // split the fileString by delim given as argument and store it on the newLine
-		bool			checkCGI(); // to check if the request need a cgi handling
+		bool			checkLocationPath(); // to check if the request need a cgi handling
 		Location		*matchLocation(); // return the location instance to handle the path specified on the request target
+		Server 			*matchRequestHandler (serverBlocks serverList, std::vector <int> resolversList);
 		bool			checkExtension(Location *pathLocation);
 		int				checkDirectory(Location *pathLocation);
 		std::string		adjustPath(std::string const &prefix, std::string const &sufix);
@@ -100,8 +102,7 @@ class Request
 		std::string		getRedirectionCode(void);
 		bool			getListingStatus(void);
 		bool			getUploadStatus(void);
-
-		// changed by gigachad  : under review 
-		Server *matchRequestHandler (serverBlocks serverList, std::vector <int> resolversList);
+		Location		*getLocation(void);
+		Server			*getServerInstance(void);
 };
 #endif
