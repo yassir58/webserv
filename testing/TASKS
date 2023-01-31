@@ -52,3 +52,8 @@ Connection reset by peer => server writes or closed its end of the socket withou
 // testing GET on /
 // testing GET on on listDirectory
 echo -e ""
+
+
+/// problems
+
+location /

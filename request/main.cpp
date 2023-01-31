@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/13 15:35:19 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/29 19:06:16 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/31 12:36:22 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 
 std::string requestGeneratorByGPT()
 {
-	std::string method = "POST";
+	std::string method = "GET";
     std::string url = "/response/test.txt";
     std::string headers = "Accept: application/json\r\nHost: 192.120.18.0:80\r\nConnection: keep-alive\r\naccept: /\r\naccept-encoding: gzip, deflate, br\r\ncontent-type: multipart/form-data\r\naccept-language: en-US,en;q=0.9\r\nsec-fetch-mode: cors\r\n";
     std::string body = "ZABlkjsdklfjskjfksjdfklsjdlkfjsflksdkfj\n";
@@ -42,12 +42,12 @@ int main(void)
 	{
 		// char fileRequest[] = {	"POST /echo/post/json HTTP/1.1\r\nHost: reqbin.com\r\nAccept: application/json\r\nContent-Type: application/json\r\nContent-Length: 81\r\n\r\n{\nId: 78912,\nCustomer: Jason Sweet,\nQuantity: 1,\nPrice: 18.00\n}\n"};
 		// char fileRequest[] = {"POST index.php/tv/home?season=5&episode=62 HTTP/1.1\r\n\r\n"};
-		Config conf("../testing/configs/request.conf");
-		conf.parseConfig();
-		std::vector<Server *> ht = conf.getHttpContext()->getServers();
-		Server	*serv = (*ht.begin());
-		std::string fileRequest = requestGeneratorByGPT();
-		Request newRequest(fileRequest, (*ht.begin()));
+		// Config conf("../testing/configs/request.conf");
+		// conf.parseConfig();
+		// std::vector<Server *> ht = conf.getHttpContext()->getServers();
+		// Server	*serv = (*ht.begin());
+		// std::string fileRequest = requestGeneratorByGPT();
+		// Request newRequest(fileRequest, );
 		// newRequest.printResult();
 		// std::cout << "============gf=========\n";
 		// stringContainer body = newRequest.getBody();
@@ -58,19 +58,19 @@ int main(void)
 		// 	std::cout << *begin;
 		// 	++begin;
 		// }
-		std::cout << "=======response===========\n";
-		if (!newRequest.getCGIStatus())
-		{
-			Response	newResponse(newRequest, &conf);
-			std::cout << newResponse.getResponse();
-		}
-		else
-			std::cout << "this shit need CGI handling\n";
+		// std::cout << "=======response===========\n";
+		// if (!newRequest.getCGIStatus())
+		// {
+		// 	Response	newResponse(newRequest, &conf);
+		// 	std::cout << newResponse.getResponse();
+		// }
+		// else
+		// 	std::cout << "this shit need CGI handling\n";
 		// std::cout << "===============request==============\n";
 	}
 	catch(const std::exception& e)
 	{
-		std::cerr << e.what() << '\n';
+		// std::cerr << e.what() << '\n';
 	}
 	
 	
