@@ -38,13 +38,10 @@ int main(void)
 
     try 
     {
-        Config *file = new Config("../testing/configs/webserv.conf");
+        Config *file = new Config("../testing/configs/default.conf");
         file->parseConfig();
-        std::cout << "Redirect Link: " << file->getHttpContext()->getServers()[3]->getLocations()[1]->getRedirectLink() << std::endl;
-        std::cout << "Redirect Code: " << file->getHttpContext()->getServers()[3]->getLocations()[1]->getRedirectCode() << std::endl;
-        std::cout << "Default Index: " << file->getHttpContext()->getServers()[3]->getLocations()[2]->getDefaultIndex() << std::endl;
-        std::cout << "Max body size: " << file->getHttpContext()->getServers()[3]->getMaxBodySize() << std::endl;
-        std::cout << "Content-type: " << file->getMimeMap()["html"] << std::endl;
+        file->getHttpContext()->getServers()[0]->getLocations()[0]->printLocation();
+        file->getHttpContext()->getServers()[0]->getLocations()[1]->printLocation();
         delete file;
         // std::cout << "Server [0] Host: " << file->getHttpContext()->getServers()[0]->getHost() << std::endl;
         // std::cout << "Server [0] Port: " << file->getHttpContext()->getServers()[0]->getPort() << std::endl;
