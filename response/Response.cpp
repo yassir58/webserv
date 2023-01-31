@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/31 12:44:25 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/31 19:37:47 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -137,6 +137,8 @@ stringContainer Response::generateHeaderFields(std::string &responseBody)
 		std::string Lenght = generateLenghtContent(responseBody);;
 		toReturn.push_back(Lenght);
 		std::string type = generateContentType();
+		if (request->getListingStatus())
+			type = "Content-Type: text/html\r\n";
 		toReturn.push_back(type);
 	}
 	if (this->getStatusCode() == NOT_ALLOWED)
