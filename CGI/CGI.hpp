@@ -35,7 +35,7 @@ class CGIHandler
         const char **             getExecuteArgs();
     public:
         CGIHandler();
-        CGIHandler(Location *location, Server *server, Request *request);
+        CGIHandler(Request *request);
         ~CGIHandler();
         std::string         execute();
 };

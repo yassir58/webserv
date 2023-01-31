@@ -395,7 +395,7 @@ Location::Location(std::string path)
 
 void    Location::printLocation()
 {
-    std::cout << "Location endPoint: " << this->endPoint << std::endl;
+    std::cout << "============ Location: " << this->endPoint << "========================" << std::endl;
     if (!this->root.empty())
         std::cout << "ROOT: " << this->root << std::endl;
     if (!this->uploadPath.empty())
@@ -408,6 +408,10 @@ void    Location::printLocation()
         std::cout << "CGI EXTENSION: " << this->cgiExtension << std::endl;
     if (this->cgiEnable)
         std::cout << "CGI ENABLED" << std::endl;
+    std::cout << "ALLOWED METHODS" << std::endl;
+    printContainer(this->methods);
+    if (!this->defaultIndex.empty())
+        std::cout << "DEFAULT INDEX: " << this->defaultIndex << std::endl;
 }
 
 Location * Location::parseLocation(stringContainer configFile, std::string path, int index)
@@ -514,9 +518,13 @@ void    Location::parseMethods(stringContainer methods)
     while (i < methods.size())
     {
         if (keyExistsInTable(methods[i].c_str(), allowedMethods))
+        {
+            if (checkVectorDuplicate(this->methods, methods[i]))
+                 throw parseError("Syntax Error: duplicated method : " + methods[i]);
             this->methods.push_back(methods[i].c_str());
+        }
         else
-            throw parseError("Syntax Error: invalid Method: " + methods[i]);
+            throw parseError("Syntax Error: invalid method: " + methods[i]);
         i++;
     }
 }
