@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/31 19:37:47 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/01 16:12:55 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -236,6 +236,8 @@ int	Response::applyMethod(void)
 	}
 	else if (method == "DELETE" && statusCode == 0)
 	{
+		if (request->getPath().find("..", 0) != std::string::npos)
+			request->setStatusCode(FORBIDDEN);
 		if (remove(request->getPath().c_str()))
 			request->setStatusCode(SERVER_ERROR);
 		else

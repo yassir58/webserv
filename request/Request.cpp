@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/01 13:36:18 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/01 17:31:57 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -208,7 +208,6 @@ bool Request::checkExtension(Location *pathLocation)
 	{
 		if (defaultCGI.empty())
 			return (false);
-		defaultCGI = adjustPath(root, defaultCGI);
 		if (access(defaultCGI.c_str(), F_OK) == -1)
 		{
 			statusCode = NOT_FOUND;
