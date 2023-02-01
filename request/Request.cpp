@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/31 15:59:35 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/01 12:38:06 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,7 +91,7 @@ Location *Request::matchLocation(void)
 int	Request::checkDirectory(Location *pathLocation)
 {
 	int dec = isDir(path.c_str());
-	if (dec)
+	if (dec && startLine.method == "GET")
 	{
 		std::string indexFile = pathLocation->getDefaultIndex();
 		if (!indexFile.empty())
