@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
+/*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/31 16:17:50 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/01 13:36:18 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,8 +80,8 @@ Location *Request::matchLocation(void)
 	begin = Locations.begin();
 	while (end != begin)
 	{
-		int dec = ((*begin)->getEndPoint().compare("/"));
-		if (!dec)
+		pos = path.find((*begin)->getEndPoint(), 0);
+		if (pos == 0)
 			return (*begin);
 		++begin;
 	}
@@ -91,7 +91,7 @@ Location *Request::matchLocation(void)
 int	Request::checkDirectory(Location *pathLocation)
 {
 	int dec = isDir(path.c_str());
-	if (dec)
+	if (dec && startLine.method == "GET")
 	{
 		std::string indexFile = pathLocation->getDefaultIndex();
 		if (!indexFile.empty())
@@ -138,6 +138,7 @@ bool	Request::checkUpload(Location *pathLocation)
 			file.open(path, std::ofstream::out | std::ofstream::trunc);
 			if (!file.is_open())
 			{
+				std::cout << "hoho\n";
 				statusCode = NOT_FOUND;
 				return (false);
 			}
