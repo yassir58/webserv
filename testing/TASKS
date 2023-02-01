@@ -56,4 +56,4 @@ echo -e ""
 
 /// problems
 
-location /
+BAD request : Invalid HEADER

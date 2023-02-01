@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   requestParser.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
+/*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/31 15:58:58 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/31 15:58:59 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/01/31 16:19:40 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,8 +25,6 @@ int	Request::parseRequest(serverBlocks serverList, std::vector<int> resolversLis
 		statusCode = BAD_REQUEST;
 		return (0);
 	}
-	if (!checkContentParsed(serverList, resolversList))
-		return (0);
 	while (!getCRLF(line, (char *)"\r\n"))
 	{
 		if (!parseHeaderField(headerFields, line))
@@ -42,6 +40,8 @@ int	Request::parseRequest(serverBlocks serverList, std::vector<int> resolversLis
 		statusCode = BAD_REQUEST;
 		return (0);
 	}
+	if (!checkContentParsed(serverList, resolversList))
+		return (0);
 	if (startLine.method == "POST")
 	{
 		while (!getCRLF(line, (char *)"\n"))

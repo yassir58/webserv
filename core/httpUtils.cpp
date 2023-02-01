@@ -151,14 +151,15 @@ Server *Request::matchRequestHandler (serverBlocks serverList, std::vector <int>
 
 	servIndx = resolversList[0];
 	servName = this->getStartLine().hostName ;
-	if (hostFlag)
+	
+	for (it = resolversList.begin (); it != resolversList.end (); it++)
 	{
-		for (it = resolversList.begin (); it != resolversList.end (); it++)
-		{
-			if (!serverList[(*it)]->getServerName ().compare(servName))
-				servIndx = (*it);
-		}
+		std::cout << "Host : " << servName << std::endl;
+		std::cout << "servName : " << serverList[(*it)]->getServerName () << std::endl;
+		if (!serverList[(*it)]->getServerName ().compare(servName))
+			servIndx = (*it);
 	}
+	std::cout << "\e[0;31m server index \e[0m" << servIndx << std::endl;
 	return (serverList[servIndx]);
 }
 

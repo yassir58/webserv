@@ -14,7 +14,8 @@ White='\033[0;37m'        # White
 TEST_NUMBER=5
 NET_INTERFACE=$(ifconfig | grep -w inet | awk 'NR == 2 {print $0}' | cut -d' ' -f2)
 ENDPOINTS=("localhost:8080" "10.11.8.2:1337"  "10.11.8.2:4512")
-
+EXEC_PATH="/Users/yelatman/Documents/webserv/webserv"
+CONF_PATH="/Users/yelatman/Documents/webserv/testing/configs/test.conf"
 
 echo $SERVERS
 
@@ -45,9 +46,11 @@ testInterface ()
 		done
 }
 
+exec $EXEC_PATH $CONF_PATH 1>/dev/null   &
 
 for i in ${ENDPOINTS[@]}; do
 	testInterface $i
 done
 
 rm -rf siege.out
+killall -9 webserv > /dev/null 2>&1

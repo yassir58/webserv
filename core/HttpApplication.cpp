@@ -3,6 +3,7 @@
 #include "../request/request.h"
 #include "../request/Request.hpp"
 #include "../response/Response.hpp"
+#include "../CGI/CGI.hpp"
 
 HttpApplication::HttpApplication ()
 {
@@ -130,6 +131,7 @@ void HttpApplication::handleHttpRequest (int fd)
 
 	newConnection->emptyBuffer ();
 	errValue = newConnection->recieveData ();
+	std::cout << newConnection->getBuffer () << std::endl;
 	if (errValue == -1)
 	{
 		delete newConnection;
@@ -277,12 +279,18 @@ void HttpApplication::handleHttpResponse (int fd)
 	Request *request;
 	Response *newResponse ;
 	Config *configFile = this->getConfig ();
+	CGIHandler *newCgi ;
+
 	std::string response;
 	int responseLength = 0;
 
 	if (connectionInterface != nullptr)
 	{
 		request = connectionInterface->getRequest();
+		// if (request->getCGIStatus ())
+		// {
+		// 	newCgi = new CGIHandler (request);
+		// }
 		newResponse = new Response (*request, configFile);
 		response = newResponse->getResponse ();
 		responseLength = response.length ();

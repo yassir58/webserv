@@ -1,24 +1,0 @@
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0*   Trying ::1...
-* TCP_NODELAY set
-* Connection failed
-* connect to ::1 port 8080 failed: Connection refused
-*   Trying 127.0.0.1...
-* TCP_NODELAY set
-* Connected to localhost (127.0.0.1) port 8080 (#0)
-> GET / HTTP/1.1
-> Host: localhost:8080
-> User-Agent: curl/7.54.0
-> Accept: */*
-> 
-< HTTP/1.1 200 OK
-< Date: Mon, 30 Jan 2023 23:35:01 GMT
-< Content-Lenght: 274
-< Content-Type: text/html
-< Server: websrv
-* no chunk, no close, no size. Assume close to signal end
-< 
-{ [274 bytes data]
-100   274    0   274    0     0  42329      0 --:--:-- --:--:-- --:--:-- 45666
-* Closing connection 0
