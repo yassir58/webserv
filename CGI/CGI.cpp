@@ -35,13 +35,13 @@ void    CGIHandler::createEnvList()
     envList["GATEWAY_INTERFACE"] = CGI_INTERFACE;
     envList["PATH_INFO"] = (this->getFilePath().length() > 0 ? "/" : "") + this->getFilePath();
     envList["SCRIPT_NAME"] = this->getScriptName(0);
-    envList["SCRIPT_FILENAME"] = this->location->getRoot() + this->getScriptName(1);
+    envList["SCRIPT_FILENAME"] = (this->location->getRoot().empty() ? this->server->getRoot() : this->location->getRoot()) + this->getScriptName(1);
     envList["QUERY_STRING"] = this->getQuery();
     envList["REDIRECT_STATUS"] = "200";
     envList["REQUEST_METHOD"] = this->request->getMethod();
     envList["REQUEST_URI"] = this->request->getRequestTarget();
     envList["REMOTE_IDENT"] = "";
-    envList["PATH_TRANSLATED"] = this->location->getRoot() + this->getFilePath();
+    envList["PATH_TRANSLATED"] = (this->location->getRoot().empty() ? this->server->getRoot() : this->location->getRoot()) + this->getFilePath();
     for (; begin != end; ++begin)
 	{
         if (begin->key == "content-type" || begin->key == "content-length")
@@ -62,7 +62,10 @@ const char **CGIHandler::getExecuteArgs()
     if (!table)
         return (NULL);
     table[0] = strdup(this->location->getCGIDefault().c_str());
-    table[1] = strdup((this->location->getRoot() + this->getScriptName(1)).c_str());
+    if (this->location->getRoot().empty())
+        table[1] = strdup((this->server->getRoot() + this->getScriptName(1)).c_str());
+    else
+        table[1] = strdup((this->location->getRoot() + this->getScriptName(1)).c_str());
     table[2] = NULL;
     return (table);
 }
@@ -116,7 +119,7 @@ std::string CGIHandler::formCGIResponse(std::string headers, std::string body)
         generatedHeaders << "\r\n";
         generatedHeaders << headers;
     }
-    response << statusLine << "\r\n\r\n";
+    response << statusLine << "\r\n";
     response << generatedHeaders.str() << "\r\n\r\n";
     response << body;
     return (response.str());
@@ -126,7 +129,7 @@ std::string CGIHandler::execute()
 {
     std::string result;
     std::string headers = "";
-    std::string body;
+    std::string body = "";
     // This function should be able to format the response and add some http headers.
     this->createEnvList();
     result = this->getOutput();
@@ -135,6 +138,8 @@ std::string CGIHandler::execute()
         headers = result.substr(0, result.find("\r\n\r\n"));
         body = result.substr(result.find("\r\n\r\n") + 4, result.length());
     }
+    else if (result.find("Content-type") != std::string::npos)
+        headers = result;
     else
         body = result;
     return(this->formCGIResponse(headers, body)); 
@@ -199,6 +204,7 @@ std::string    CGIHandler::getOutput()
 
     args = (char **)this->getExecuteArgs();
     envList = (char **)this->convertEnvList();
+    print_table(args);
     if (pipe(fds) < 0)
         throw CGIError("CGI Error: Could not open pipe.");
     pid = fork();
