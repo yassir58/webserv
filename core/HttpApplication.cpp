@@ -35,7 +35,6 @@ void HttpApplication::connectServers (void)
 {
     serverContainer::iterator bg;
 	int fd;
-	struct kevent change;
 	int indx = 0;
 	
     for (bg = serverList.begin (); bg != serverList.end (); bg++)
@@ -113,7 +112,6 @@ void HttpApplication::handleNewConnection (int serverFd)
 {
     int ConnectionSocket;
     ServerInstance *server;
-	struct kevent readEvent ;
 
     server = findServerByFd (serverFd);
     ConnectionSocket = server->accept_connection ();
@@ -195,14 +193,6 @@ void HttpApplication::printServerInfo (void)
         std::cout << (*(*bg)).getServerPort () << std::endl;
         std::cout << (*(*bg)).getHostName() << std::endl;
     }
-}
-
-
-void HttpApplication::setupAppResources (void) 
-{
-	queueIdentifier = kqueue ();
-    if (queueIdentifier  < 0)
-        throw Fatal_error (strerror (errno));
 }
 
 
