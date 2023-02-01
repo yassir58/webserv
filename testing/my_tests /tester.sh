@@ -84,7 +84,7 @@ testGET ()
 testPOST ()
 {
 	echo "test" >> testFile
-	curl -v $ENDPOINT$NORMAL_POST_PATH -d @testFile -H "Content-Type: application/javascript" &> HEADERS
+	curl -v $ENDPOINT$NORMAL_POST_PATH -d @testFile -H "Content-Type: text/plain" &> HEADERS
 }
 
 exec $EXEC_PATH $CONF_PATH 1>/dev/null 2>$ERROR_LOG  &

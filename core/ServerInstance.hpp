@@ -190,7 +190,6 @@ public:
     int getServerCount(void) const;
     int getConnectionCount(void) const;
     void connectServers(void);
-    void setupAppResources (void);
     void handleNewConnection(int serverFd);
     void handleConfig (int argc, char *argv[]);
     pollfd *getConnectionPool(void) const;
