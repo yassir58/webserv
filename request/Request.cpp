@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/01 17:31:57 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/01 18:03:26 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -213,7 +213,7 @@ bool Request::checkExtension(Location *pathLocation)
 			statusCode = NOT_FOUND;
 			return (false);
 		}
-		if (access(defaultCGI.c_str(), X_OK) == -1 || access(path.c_str(), X_OK) == -1)
+		if (access(defaultCGI.c_str(), X_OK) == -1)
 		{
 			statusCode = FORBIDDEN; 
 			return (false);
