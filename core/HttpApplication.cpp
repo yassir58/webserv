@@ -277,12 +277,25 @@ void HttpApplication::handleHttpResponse (int fd)
 	if (connectionInterface != nullptr)
 	{
 		request = connectionInterface->getRequest();
-		// if (request->getCGIStatus ())
-		// {
-		// 	newCgi = new CGIHandler (request);
-		// }
-		newResponse = new Response (*request, configFile);
-		response = newResponse->getResponse ();
+		if (!request->getLocation()->getEndPoint().empty())
+		{
+			std::cout << "Location: " << request->getLocation()->getEndPoint() << std::endl;
+			if (request->getCGIStatus())
+				std::cout << "CGI status: Enabled" << std::endl;
+			else
+				std::cout << "CGI status: Disabled" << std::endl;
+		}
+		if (request->getCGIStatus())
+		{
+			std::cout << "Executing CGI." << std::endl;
+			newCgi = new CGIHandler (request);
+			response = newCgi->execute();
+		}
+		else 
+		{
+			newResponse = new Response (*request, configFile);
+			response = newResponse->getResponse ();
+		}
 		responseLength = response.length ();
 		connectionInterface->printfResolvers ();
 	}

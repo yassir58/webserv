@@ -215,7 +215,7 @@ bool Request::checkExtension(Location *pathLocation)
 		}
 		if (access(defaultCGI.c_str(), X_OK) == -1 || access(path.c_str(), X_OK) == -1)
 		{
-			statusCode = FORBIDDEN;
+			statusCode = FORBIDDEN; 
 			return (false);
 		}
 		return (true);
