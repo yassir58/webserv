@@ -7,10 +7,10 @@ CGIHandler::CGIHandler()
 
 CGIHandler::CGIHandler(Request *request)
 {
-    // this->location = 
-    // this->defaultPath = location->getCGIDefault();
-    // this->server = request.get
-    // this->request = request;
+    this->location = request->getLocation();
+    this->defaultPath = request->getLocation()->getCGIDefault();
+    this->server = request->getServerInstance();
+    this->request = request;
 }
 
 CGIHandler::~CGIHandler()
