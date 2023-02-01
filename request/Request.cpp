@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/01 18:03:26 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/01 21:12:14 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,23 +117,21 @@ bool	Request::checkUpload(Location *pathLocation)
 		if (!type)
 			return (true);
 		std::string uploadPath = pathLocation->getUploadPath();
-		if (!uploadPath.empty())
-		{
-			size_t pos = path.find_last_of('/', std::string::npos);
-			std::string fileName = path.substr(pos, std::string::npos);
-			path = path.substr(0, pos);
-			path = adjustPath(path, uploadPath);
-			std::cout << "path: " << path << std::endl;
-			if (access(path.c_str(), F_OK) == -1)
-			{
-				statusCode = NOT_FOUND;
-				return (false);
-			}
-			path = adjustPath(path, fileName);
-		}
 		if (type->value == "multipart/form-data")
 		{
-			std::cout << "path: " << path << std::endl;
+			if (!uploadPath.empty())
+			{
+				size_t pos = path.find_last_of('/', std::string::npos);
+				std::string fileName = path.substr(pos, std::string::npos);
+				path = path.substr(0, pos);
+				path = adjustPath(path, uploadPath);
+				if (access(path.c_str(), F_OK) == -1)
+				{
+					statusCode = NOT_FOUND;
+					return (false);
+				}
+				path = adjustPath(path, fileName);
+			}
 			std::ofstream file;
 			file.open(path, std::ofstream::out | std::ofstream::trunc);
 			if (!file.is_open())
