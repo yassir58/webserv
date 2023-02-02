@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/01 16:12:55 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/02 12:31:39 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,17 +34,6 @@ Response::Response(Request &request, Config *config)
 	responseToSend.insert(responseToSend.begin() + 1, headerFields.begin(), headerFields.end());
 	responseToSend.push_back(responseBody);
 }
-
-// Response::Response(Request &request, std::string CGIOutput)
-// {
-// 	setRequest(&request);
-// 	setResponseBody(CGIOutput);
-// 	statusIndex = getStatusCode();
-// 	responseToSend.push_back(generateStatusLine());
-// 	stringContainer headerFields = generateHeaderFields(responseBody);
-// 	responseToSend.insert(responseToSend.begin() + 1, headerFields.begin(), headerFields.end());
-// 	responseToSend.push_back(responseBody);
-// }
 
 /*
 ** -------------------------------- DESTRUCTOR --------------------------------
@@ -203,7 +192,7 @@ int	Response::applyMethod(void)
 {
 	std::string method = request->getMethod();
 	int			statusCode = request->getStatusCode();
-	if (request->getListingStatus())
+	if (request->getListingStatus() && statusCode == 0)
 	{
 		responseBody = listDirectory(request->getPath());
 		return (0);
@@ -243,6 +232,13 @@ int	Response::applyMethod(void)
 		else
 			request->setStatusCode(OK);
 	}
+	// i should check if the error pages is provided or not, but guess if there's any of them the string would be empty
+	if (request->getStatusCode() == NOT_FOUND)
+		responseBody = request->getServerInstance()->getErrorPages()->path_not_found;
+	else if (request->getStatusCode() == FORBIDDEN)
+		responseBody = request->getServerInstance()->getErrorPages()->path_forbidden;
+	else if (request->getStatusCode() == SERVER_ERROR)
+		responseBody = request->getServerInstance()->getErrorPages()->path_internal_error;
 	return (0);
 }
 
