@@ -81,6 +81,7 @@ class Location
 class Server {
     private:
         Pages *pages;
+        bool errorPages;
         unsigned int port;
         short maxBodySize;
         std::string host;
@@ -94,6 +95,7 @@ class Server {
         std::string getHost();
         std::string getRoot();
         std::string getServerName();
+        bool    getErrorPagesStatus();
         Pages   *getErrorPages();
 
         
