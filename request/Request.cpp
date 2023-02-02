@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/01 21:12:14 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/02 12:23:21 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -136,7 +136,6 @@ bool	Request::checkUpload(Location *pathLocation)
 			file.open(path, std::ofstream::out | std::ofstream::trunc);
 			if (!file.is_open())
 			{
-				std::cout << "hoho\n";
 				statusCode = NOT_FOUND;
 				return (false);
 			}
@@ -149,6 +148,7 @@ bool	Request::checkUpload(Location *pathLocation)
 			file.close();
 			upload = true;
 			statusCode = CREATED;
+			return (false);
 		}
 	}
 	return (true);
@@ -213,7 +213,7 @@ bool Request::checkExtension(Location *pathLocation)
 		}
 		if (access(defaultCGI.c_str(), X_OK) == -1)
 		{
-			statusCode = FORBIDDEN; 
+			statusCode = FORBIDDEN;
 			return (false);
 		}
 		return (true);
