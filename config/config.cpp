@@ -182,6 +182,8 @@ bool Http::getSendFilestatus()
 
 Server::Server()
 {
+    this->pages = NULL;
+    this->errorPages = NULL;
     this->maxBodySize = -1;
     this->port = 8080;
     this->host = "127.0.0.1";
@@ -259,6 +261,7 @@ void    Server::parseDirective(stringContainer config, Server *instance, int lin
     {
         checkPath(str[2], CHECK_MODE);
         instance->parseErrorPages(str);
+        instance->errorPages = true;
     }
     else if (str.size() == 2 && str[0] == "server_name")
         instance->serverName = str[1];
@@ -365,6 +368,11 @@ unsigned int Server::getPort()
 short Server::getMaxBodySize()
 {
     return (this->maxBodySize);
+}
+
+bool Server::getErrorPagesStatus()
+{
+    return (this->errorPages);
 }
 
 Location::Location()
