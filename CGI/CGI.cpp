@@ -48,9 +48,9 @@ void    CGIHandler::createEnvList()
             begin++;
         envList["HTTP_" + toUpperCase(begin->key)] = begin->value;
 	}
-    if (this->request->getHeaderField("content-type") != NULL)
-        envList["CONTENT_TYPE"] = this->request->getHeaderField("content-type")->value;
-    envList["CONTENT_LENGTH"] = int2assci(this->request->getBody().length());
+    if (this->request->getHeaderField("Content-Type") != NULL)
+        envList["CONTENT_TYPE"] = this->request->getHeaderField("Content-Type")->value;
+    envList["CONTENT_LENGTH"] = int2assci(convertBody(this->request->getBodyStringContainer()).length());
     this->envList = envList;
 }
 
@@ -204,7 +204,6 @@ std::string    CGIHandler::getOutput()
 
     args = (char **)this->getExecuteArgs();
     envList = (char **)this->convertEnvList();
-    print_table(args);
     if (pipe(fds) < 0)
         throw CGIError("CGI Error: Could not open pipe.");
     pid = fork();
