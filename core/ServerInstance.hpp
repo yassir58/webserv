@@ -31,7 +31,7 @@
 
 // MACROS
 #define PORT 8080
-#define BUFFER_MAX 8000
+#define BUFFER_MAX 80000
 #define MAX_CONNECT 1024
 #define POLL_TIMEOUT 5000
 #define BUFFER_SIZE 10
@@ -131,6 +131,7 @@ class Connection {
         Request *request;
         int ConnectionSocket;
         std::vector <int> resolversList;
+        std::ofstream file;
         char httpBuffer[BUFFER_MAX];
         int dataRecievedLength;
         struct addrinfo *requestSourceAddr;
@@ -140,6 +141,7 @@ class Connection {
 		std::string ipAddress;
 		size_t requestLength;
 		int status;
+        std::string requestString; 
 		
 
     public:
@@ -157,6 +159,9 @@ class Connection {
 		Request *getRequest (void) const;
 		void printfResolvers (void);
 		void setStatus (int status);
+        void appendBuffer ();
+        std::string getRequestString (void) const;
+        void appendToBinaryFile (void);
 };
 
 typedef std::vector <Connection *> connectionPool;
@@ -176,12 +181,13 @@ class HttpApplication
         int HttpMaxBodySize;
         std::ofstream accessLog;
 		std::ofstream errorLog ;
-        std::vector<int> serverFds;
-		std::vector <int> watchedFds;
+        intContainer serverFds;
+		intContainer watchedFds;
         Config *config;
 		connectionPool connections;
 		fd_set readFds, writeFds, errorFds;
 		int fdMax;
+        intContainer openConnections;
       
 public:
     HttpApplication();

@@ -63,6 +63,7 @@ Connection::Connection ()
 
 Connection::Connection (int fd)
 {
+	file.open ("image.jpeg", std::ios::binary);
     ConnectionSocket = fd;
 	ConnectionPort = 0;
 	requestLength = 0;
@@ -71,12 +72,14 @@ Connection::Connection (int fd)
 
 Connection::~Connection()
 {
+	file.close ();
 	//delete this->request;
 }
 
 int Connection::recieveData (void)
 {
-    dataRecievedLength = recv (ConnectionSocket, httpBuffer, BUFFER_MAX, 0);
+    dataRecievedLength = recv (ConnectionSocket, httpBuffer, BUFFER_MAX - 1, 0);
+	std::cout << "data recieved in bytes \e[0;32m"  << dataRecievedLength << " \e[0m" << std::endl; 
 	return (dataRecievedLength);
 }
 
@@ -123,7 +126,7 @@ void Connection::setRequest (serverBlocks serverList)
 {
 	try
     {
-    	request = new Request (httpBuffer, serverList, resolversList);
+    	request = new Request (requestString, serverList, resolversList);
     }
     catch (std::exception &exc)
     {
@@ -243,45 +246,18 @@ void HttpApplication::handleSigPipe (void)
 	sigaction(SIGPIPE, &sa, NULL);
 }
 
-// std::string listDirectory (std::string dirPath)
-// {
-// 	DIR *dir = opendir (dirPath.c_str ());
-// 	struct dirent *dp;
-// 	stringContainer dirIndex;
-// 	stringContainer::iterator it;
-// 	std::string responseBody("") ;
-// 	std::string styles ("<style> body { background-color: #F2F2F2;}h1 {color: #0A2647;margin-left: 40px;} a {color:#5463FF; } </style>");
-// 	std::string indexHeader("<h1> Index of");
-// 	std::string lineBreak ("</br>");
-// 	std::string line("<hr>");
-// 	std::string lsOpen ("<ul>");
-// 	std::string lsClose ("</ul>");
-// 	std::string liOpen ("<li>");
-// 	std::string liClose ("</li>");
-// 	std::string linkOpen ("<a href=\"");
-// 	std::string linkClose ("</a>");
-// 	std::string hrClose ("\">");
-// 	std::string indexBody;
-// 	std::string href ("./");
+void Connection::appendBuffer ()
+{
+	requestString.append (httpBuffer);
+}
 
-// 	if (dir == NULL)
-// 		throw std::exception ();
-// 	else
-// 	{
-// 		while ((dp = readdir (dir)))
-// 		{
-// 			dirIndex.push_back (dp->d_name);
-// 		}
-// 	}
-// 	responseBody.append (styles).append(indexHeader).append (dirPath) .append("</h1>").append (lineBreak).append (line).append (lsOpen);
-// 	for (it = dirIndex.begin (); it != dirIndex.end (); it++)
-// 	{
-// 		href.append ((*it));
-// 		responseBody.append (liOpen).append (linkOpen).append(href).append (hrClose).append ((*it)).append (linkClose).append (liClose);
-// 		href = "./";
-// 	}
-// 	responseBody.append (lsClose);
-// 	std::cout << "response length" << responseBody.length () << std::endl;
-// 	closedir (dir);
-// 	return (responseBody);
-// }
+std::string Connection::getRequestString (void) const
+{
+	return (this->requestString);
+}
+
+
+void Connection::appendToBinaryFile (void)
+{
+	file.write (httpBuffer, BUFFER_MAX - 1);
+}

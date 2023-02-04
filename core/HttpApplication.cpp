@@ -125,32 +125,58 @@ void HttpApplication::handleNewConnection (int serverFd)
 
 void HttpApplication::handleHttpRequest (int fd)
 {
-   Connection *newConnection = new Connection (fd);
+   	Connection *newConnection ;
+	intContainer::iterator it;
+   	int recvReturn = 0;
 
-	newConnection->emptyBuffer ();
-	errValue = newConnection->recieveData ();
-	std::cout << newConnection->getBuffer () << std::endl;
-	if (errValue == -1)
+	it = std::find (openConnections.begin (), openConnections.end (), fd);
+	if (it != openConnections.end ())
 	{
-		delete newConnection;
-		FD_CLR (fd, &readFds);
-		throw Connection_error (strerror (errno), "RECV");
-	}
-	else if (errValue == 0)
-	{
-		delete newConnection;
-		FD_CLR (fd, &readFds);
-		FD_CLR (fd , &errorFds);
-		close (fd);
+		newConnection = (*getConnection (fd));
 	}
 	else
 	{
-		serverBlocks servList = this->config->getHttpContext()->getServers ();
-		newConnection->generateResolversList (servList);
-		newConnection->setRequest (servList);
+		newConnection = new Connection (fd);
 		connections.push_back (newConnection);
+	}
+	newConnection->emptyBuffer ();
+	recvReturn = newConnection->recieveData ();
+	// std::cout << "\e[0;36m request data : \e[0m" << newConnection->getBuffer () << std::endl;
+	if (recvReturn == -1)
+	{
 		FD_CLR (fd, &readFds);
-		FD_SET (fd, &writeFds);
+		FD_CLR (fd, &errorFds);
+		// openConnections.erase (it);
+		throw Connection_error (strerror (errno), "RECV");
+	}
+	else if (recvReturn == 0)
+	{
+		FD_CLR (fd, &readFds);
+		FD_CLR (fd , &errorFds);
+		close (fd);
+		// openConnections.erase (it);
+	}
+	else
+	{
+		if (recvReturn == BUFFER_MAX - 1)
+		{
+			newConnection->appendBuffer ();
+			newConnection->appendToBinaryFile ();
+			newConnection->emptyBuffer ();
+			std::cout << "\e[0finaltial buffer : \e[0m" << newConnection->getBuffer () << std::endl;
+		}
+		else if (recvReturn < BUFFER_MAX -1)
+		{
+			newConnection->appendBuffer ();
+			newConnection->appendToBinaryFile ();
+			newConnection->emptyBuffer ();
+			std::cout << "\e[0;32 final buffer : \e[0m" << newConnection->getRequestString () << std::endl;
+			serverBlocks servList = this->config->getHttpContext()->getServers ();
+			newConnection->generateResolversList (servList);
+			newConnection->setRequest (servList);
+			FD_CLR (fd, &readFds);
+			FD_SET (fd, &writeFds);
+		}
 	}
 }
 
@@ -256,7 +282,6 @@ connectionPool::iterator HttpApplication::getConnection (int fd)
 		if ((*it)->getConnectionSocket () == fd)
 			return it;
 	}
-	throw Connection_error ("REQUEST ERROR", "CANNOT FIND REQUEST");
 	return (it);
 }
 
@@ -277,6 +302,7 @@ void HttpApplication::handleHttpResponse (int fd)
 	if (connectionInterface != nullptr)
 	{
 		request = connectionInterface->getRequest();
+		std::cout << "\e[0;31m path : \e[0m"  << request->getPath () << std::endl;
 		// if (!request->getLocation()->getEndPoint().empty())
 		// {
 		// 	std::cout << "Location: " << request->getLocation()->getEndPoint() << std::endl;
@@ -285,16 +311,19 @@ void HttpApplication::handleHttpResponse (int fd)
 		// 	else
 		// 		std::cout << "CGI status: Disabled" << std::endl;
 		// }
-		if (request->getCGIStatus())
-		{
-			newCgi = new CGIHandler (request);
-			response = newCgi->execute();
-		}
-		else 
-		{
-			newResponse = new Response (*request, configFile);
-			response = newResponse->getResponse ();
-		}
+		// if (request->getCGIStatus())
+		// {
+		// 	newCgi = new CGIHandler (request);
+		// 	response = newCgi->execute();
+		// }
+		// else 
+		// {
+		// 	newResponse = new Response (*request, configFile);
+		// 	response = newResponse->getResponse ();
+		// }
+		newResponse  = new Response (*request, configFile);
+		response = newResponse->getResponse ();
+		// std::cout << response << std::endl;
 		responseLength = response.length();
 		connectionInterface->printfResolvers ();
 	}
