@@ -241,6 +241,10 @@ void	Request::setFileString(std::string &file)
 	startLine.Host = false;
 	pos = 0;
 	start = 0;
+	CGI = false;
+	redirectionStatus = false;
+	listingStatus = false;
+	upload = false;
 }
 
 void	Request::setStatusCode(int newStatusCode)
@@ -251,10 +255,6 @@ void	Request::setStatusCode(int newStatusCode)
 void	Request::setServerInstance(Server *server)
 {
 	serverInstance = server;
-	CGI = false;
-	redirectionStatus = false;
-	listingStatus = false;
-	upload = false;
 }
 
 std::string		Request::getErrorCode(void)

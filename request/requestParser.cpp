@@ -23,6 +23,7 @@ int	Request::parseRequest(serverBlocks serverList, std::vector<int> resolversLis
 	if (!parseFirstLine(line))
 	{
 		statusCode = BAD_REQUEST;
+		std::cout << "hoho\n";
 		return (0);
 	}
 	while (!getCRLF(line, (char *)"\r\n"))
@@ -41,7 +42,7 @@ int	Request::parseRequest(serverBlocks serverList, std::vector<int> resolversLis
 		return (0);
 	}
 	if (!checkContentParsed(serverList, resolversList))
-		return (0);
+		return (0); 
 	if (startLine.method == "POST")
 	{
 		while (!getCRLF(line, (char *)"\n"))

@@ -28,10 +28,11 @@
 #include <arpa/inet.h>
 #include <signal.h>
 #include <dirent.h>
+#include <sys/ioctl.h>
 
 // MACROS
 #define PORT 8080
-#define BUFFER_MAX 80000
+#define BUFFER_MAX 65000
 #define MAX_CONNECT 1024
 #define POLL_TIMEOUT 5000
 #define BUFFER_SIZE 10
@@ -54,6 +55,7 @@
 #define FALSE 0
 #define OPEN 1
 #define CLOSE 0
+#define CRLF "\r\n\r\n"
 
 
 typedef std::vector <Server*> serverBlocks;
@@ -131,8 +133,7 @@ class Connection {
         Request *request;
         int ConnectionSocket;
         std::vector <int> resolversList;
-        std::ofstream file;
-        char httpBuffer[BUFFER_MAX];
+        char *httpBuffer;
         int dataRecievedLength;
         struct addrinfo *requestSourceAddr;
         int ConnectionPort;
@@ -141,8 +142,13 @@ class Connection {
 		std::string ipAddress;
 		size_t requestLength;
 		int status;
-        std::string requestString; 
-		
+        std::string requestString;
+        int dataReminder;
+        int dataToRead ;
+        int ContentLength;
+        int headerLength;
+        int upload;
+        int bodyRead;
 
     public:
         Connection ();
@@ -160,8 +166,14 @@ class Connection {
 		void printfResolvers (void);
 		void setStatus (int status);
         void appendBuffer ();
+        int getRequestLength (void) const ;
         std::string getRequestString (void) const;
-        void appendToBinaryFile (void);
+        void appendToBinaryFile (size_t n);
+        int getDataToRead (void) const;
+        void setDataTorRead (int dataTorRead) ;
+        int getContentLength (void) const;
+        int getUpload (void) const;
+        int getBodyRead (void) const;
 };
 
 typedef std::vector <Connection *> connectionPool;

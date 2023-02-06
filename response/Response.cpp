@@ -19,6 +19,7 @@
 Response::Response(Request &request, Config *config)
 {
 	setRequest(&request, config);
+	std::cout << "in the response: "  << this->request->getStatusCode() << std::endl;
 	if (this->request->getRedirectionStatus())
 		this->request->setStatusCode(handleRedirection());
 	else if (this->request->getUploadStatus())
@@ -62,6 +63,7 @@ int	Response::getStatusCode(void)
 {
 	size_t index = 0;
 	int		code = request->getStatusCode();
+	std::cout << "this is inside the gsc: "  << code << std::endl;
 	while (code != status[index].code)
 		++index;
 	return (index);
@@ -213,7 +215,9 @@ int	Response::applyMethod(void)
 	}
 	else if (method == "POST" && statusCode == 0)
 	{
-		std::ofstream outfile(request->getPath());
+		std::ofstream outfile;
+
+		outfile.open (request->getPath(), std::ios::binary);
 		if (outfile.is_open())
 		{
 			outfile << request->getBody();
@@ -264,6 +268,7 @@ std::string Response::getResponse(void)
 void	Response::setRequest(Request *request, Config *config)
 {
 	this->request = request;
+	std::cout << "code1: " << this->request->getStatusCode() << std::endl;
 	this->configData = config;
 	size_t	index = 0;
 	status[index].code = OK; status[index++].status = "OK";

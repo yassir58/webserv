@@ -128,25 +128,27 @@ void HttpApplication::handleHttpRequest (int fd)
    	Connection *newConnection ;
 	intContainer::iterator it;
    	int recvReturn = 0;
+	int bytes_available = 0;
+	ioctl(fd, FIONREAD, &bytes_available);
+
 
 	it = std::find (openConnections.begin (), openConnections.end (), fd);
 	if (it != openConnections.end ())
-	{
 		newConnection = (*getConnection (fd));
-	}
 	else
 	{
 		newConnection = new Connection (fd);
 		connections.push_back (newConnection);
+		openConnections.push_back (fd);
 	}
-	newConnection->emptyBuffer ();
+	newConnection->setDataTorRead (bytes_available);
 	recvReturn = newConnection->recieveData ();
 	// std::cout << "\e[0;36m request data : \e[0m" << newConnection->getBuffer () << std::endl;
 	if (recvReturn == -1)
 	{
 		FD_CLR (fd, &readFds);
 		FD_CLR (fd, &errorFds);
-		// openConnections.erase (it);
+		openConnections.pop_back ();
 		throw Connection_error (strerror (errno), "RECV");
 	}
 	else if (recvReturn == 0)
@@ -154,28 +156,32 @@ void HttpApplication::handleHttpRequest (int fd)
 		FD_CLR (fd, &readFds);
 		FD_CLR (fd , &errorFds);
 		close (fd);
-		// openConnections.erase (it);
+		openConnections.pop_back ();
 	}
 	else
 	{
-		if (recvReturn == BUFFER_MAX - 1)
+		// newConnection->appendToBinaryFile (recvReturn);
+		if (newConnection->getBodyRead () < newConnection->getContentLength ())
 		{
 			newConnection->appendBuffer ();
-			newConnection->appendToBinaryFile ();
 			newConnection->emptyBuffer ();
-			std::cout << "\e[0finaltial buffer : \e[0m" << newConnection->getBuffer () << std::endl;
 		}
-		else if (recvReturn < BUFFER_MAX -1)
+		else if (newConnection->getBodyRead () == newConnection->getContentLength() 
+			|| newConnection->getUpload () <= 0)
 		{
 			newConnection->appendBuffer ();
-			newConnection->appendToBinaryFile ();
 			newConnection->emptyBuffer ();
-			std::cout << "\e[0;32 final buffer : \e[0m" << newConnection->getRequestString () << std::endl;
+			std::ofstream file;
+			file.open ("image.jpg", std::ios::binary);
+			std::cout << "request Length : " << newConnection->getRequestLength () << std::endl;
+			file.write (newConnection->getRequestString ().c_str(), newConnection->getRequestLength ());
+			std::cout << "request length : " << newConnection->getRequestLength() << std::endl; 
 			serverBlocks servList = this->config->getHttpContext()->getServers ();
 			newConnection->generateResolversList (servList);
 			newConnection->setRequest (servList);
 			FD_CLR (fd, &readFds);
 			FD_SET (fd, &writeFds);
+			openConnections.pop_back ();
 		}
 	}
 }
@@ -302,6 +308,7 @@ void HttpApplication::handleHttpResponse (int fd)
 	if (connectionInterface != nullptr)
 	{
 		request = connectionInterface->getRequest();
+		std::cout << "\e[0;36m status code after: \e[0m" << request->getStatusCode () << std::endl;
 		std::cout << "\e[0;31m path : \e[0m"  << request->getPath () << std::endl;
 		// if (!request->getLocation()->getEndPoint().empty())
 		// {
@@ -323,7 +330,7 @@ void HttpApplication::handleHttpResponse (int fd)
 		// }
 		newResponse  = new Response (*request, configFile);
 		response = newResponse->getResponse ();
-		// std::cout << response << std::endl;
+		std::cout << response << std::endl;
 		responseLength = response.length();
 		connectionInterface->printfResolvers ();
 	}
@@ -333,14 +340,15 @@ void HttpApplication::handleHttpResponse (int fd)
 		FD_CLR (fd, &writeFds);
 		FD_CLR (fd, &errorFds);
 		close (fd);
-		connections.erase (it);
+		connections.pop_back ();
 		throw Connection_error (strerror (errno), "SEND");
 	}
 	else
 	{
+		std::cout << errValue <<  " Bytes sent" << std::endl;
 		FD_CLR (fd, &writeFds);
 		FD_CLR (fd, &errorFds);
 		close (fd);
-		connections.erase (it);
+		connections.pop_back ();
 	}
 }

@@ -59,27 +59,99 @@ Connection::Connection ()
     ConnectionSocket = 0;
 	ConnectionPort = 0;
 	requestLength = 0;
+	requestString = "";
+	ContentLength = -1;
+	headerLength = -1;
+	upload = -1;
+	bodyRead = 0;
 }
 
 Connection::Connection (int fd)
 {
-	file.open ("image.jpeg", std::ios::binary);
+	
     ConnectionSocket = fd;
 	ConnectionPort = 0;
 	requestLength = 0;
+	requestString = "";
+	ContentLength = -1;
+	headerLength = -1;
+	upload = -1;
+	bodyRead = 0;
 }
 
 
 Connection::~Connection()
 {
-	file.close ();
 	//delete this->request;
 }
 
 int Connection::recieveData (void)
 {
+	httpBuffer = (char *) malloc (sizeof (char) * (BUFFER_MAX));
     dataRecievedLength = recv (ConnectionSocket, httpBuffer, BUFFER_MAX - 1, 0);
 	std::cout << "data recieved in bytes \e[0;32m"  << dataRecievedLength << " \e[0m" << std::endl; 
+	if (dataRecievedLength > 0)
+	{
+		requestLength += dataRecievedLength ;
+		httpBuffer[dataRecievedLength] = 0;
+
+		if (ContentLength == -1 && headerLength == -1)
+		{
+
+			std::string tmpBuffer (httpBuffer);
+			std::string pattern ("Content-Length");
+			size_t method = tmpBuffer.find ("GET");
+			
+			if (method == std::string::npos)
+			{
+				method = tmpBuffer.find ("POST");
+				if (method == 0)
+					upload = 1;
+			}
+			else if (method == 0)
+				upload = 0;
+
+			std::cout << "upload : " << upload << std::endl;
+			size_t headerLen = tmpBuffer.find (CRLF);
+			if (headerLen != std::string::npos)
+			{
+				headerLength = headerLen  + strlen (CRLF);
+					std::cout << "Header Length : " << headerLength << std::endl;
+			}
+			// else
+			// 	upload = -1;
+
+			if (upload == 1)
+			{
+				size_t cn = tmpBuffer.find (pattern);
+
+				if (cn != std::string::npos)
+				{
+					char tmp[1000];
+					int i = cn + pattern.length () + 1;
+					int j = 0;
+
+					while (tmpBuffer[i] && tmpBuffer[i] != '\n')
+					{
+						tmp[j] =tmpBuffer[i];
+						i++;
+						j++;
+					}
+					tmp[j] = 0;
+					ContentLength = atoi (tmp);
+					bodyRead = dataRecievedLength - headerLength;
+					std::cout << "Content Length : " << ContentLength << std::endl;
+					std::cout << "Body read : " << bodyRead << std::endl;
+				}
+			}
+		}
+		else
+		{
+			bodyRead += dataRecievedLength;
+			std::cout << "Body read : " << bodyRead << std::endl;
+		}				
+	}
+
 	return (dataRecievedLength);
 }
 
@@ -126,7 +198,11 @@ void Connection::setRequest (serverBlocks serverList)
 {
 	try
     {
+		std::cout << "\e[0;31m request string length: \e[0m" << std::endl;
+		std::cout << requestString.length () << std::endl;
+		// std::cout << "request string" <<  requestString << std::endl;
     	request = new Request (requestString, serverList, resolversList);
+		std::cout << "wa status code: " << request->getStatusCode() << std::endl;
     }
     catch (std::exception &exc)
     {
@@ -257,7 +333,39 @@ std::string Connection::getRequestString (void) const
 }
 
 
-void Connection::appendToBinaryFile (void)
+// void Connection::appendToBinaryFile (size_t n)
+// {
+// 	file.write (requestString.c_str (), n);
+// }
+
+int Connection::getDataToRead(void) const
 {
-	file.write (httpBuffer, BUFFER_MAX - 1);
+	return (this->dataReminder);
+}
+
+
+void Connection::setDataTorRead (int dataLength)
+{
+	this->dataToRead = dataLength;
+}
+
+
+int Connection::getRequestLength (void) const
+{
+	return (this->requestLength);
+}
+
+int Connection::getBodyRead (void) const
+{
+	return (bodyRead);	
+}
+
+int Connection::getUpload (void) const
+{
+	return (upload);
+}
+
+int Connection::getContentLength (void) const
+{
+	return (ContentLength);
 }
