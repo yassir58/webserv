@@ -287,7 +287,6 @@ void HttpApplication::handleHttpResponse (int fd)
 		// }
 		if (request->getCGIStatus())
 		{
-			std::cout << "Executing CGI" << std::endl;
 			newCgi = new CGIHandler (request);
 			response = newCgi->execute();
 		}
