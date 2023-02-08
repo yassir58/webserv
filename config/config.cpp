@@ -17,6 +17,7 @@ Config::Config(std::string path)
 
 Config::~Config()
 {
+    delete this->mainHttpContext;
     //std::cout << "Config destructor called." << std::endl;
 }
 
@@ -52,7 +53,7 @@ void    Config::parseConfig()
             i = getClosingIndex(this->configContent, i + 1);
         }
         else if (line.size() > 1 && line[0] == "server" && line[1] == "{")
-            throw parseError("Syntax Error: Server context must be wrapped inside http context");
+            throw parseError("Syntax Error: Server context must be wrapped inside an http context");
         else
             this->parseDirective(this->configContent, i);
         i++;
@@ -93,8 +94,14 @@ Http::Http()
 }
 
 Http::~Http() {
-    // Should free up any memeory used by the http context.
-    //std::cout << "Http destructor called" << std::endl;
+    int i;
+
+    i = 0;
+    while (i < this->servers.size())
+    {
+        delete this->servers[i];
+        i++;
+    }
 }
 
 void    Http::printServers(){
@@ -116,7 +123,6 @@ void    Http::parseHttpContext(stringContainer & configContent, int index)
     int size;
     Server server;
     stringContainer line;
-    
     
     size = configContent.size();
     while (index < size)
@@ -193,7 +199,15 @@ Server::Server()
 
 Server::~Server()
 {
-//std::cout << "Called the default destructor of server" << std::endl;
+    int i;
+    
+    i = 0;
+    while (i < this->locations.size())
+    {
+        delete this->locations[i];
+        i++;
+    }
+    delete this->pages;
 }
 
 void    Server::printLocations()

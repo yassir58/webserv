@@ -38,22 +38,15 @@ int main(void)
 
     try 
     {
-        Config *file = new Config("../testing/configs/default.conf");
+        Config *file = new Config("../testing/configs/home.conf");
         file->parseConfig();
-        if (file->getHttpContext()->getServers()[0]->getErrorPagesStatus())
-        {
-            std::cout << "Server [0] 404 not found: " << file->getHttpContext()->getServers()[0]->getErrorPages()->path_not_found << std::endl;
-            std::cout << "Server [0] 403 forbidden: " << file->getHttpContext()->getServers()[0]->getErrorPages()->path_forbidden << std::endl;
-            std::cout << "Server [0] 500 internal error: " << file->getHttpContext()->getServers()[0]->getErrorPages()->path_internal_error << std::endl;
-        }
-        file->getHttpContext()->getServers()[0]->getLocations()[0]->printLocation();
-        file->getHttpContext()->getServers()[0]->getLocations()[1]->printLocation();
+        std::cout << "Server [0] Host: " << file->getHttpContext()->getServers()[0]->getHost() << std::endl;
+        std::cout << "Server [0] Port: " << file->getHttpContext()->getServers()[0]->getPort() << std::endl;
+        std::cout << "Server [0] Server name: " << file->getHttpContext()->getServers()[0]->getServerName() << std::endl;
+        std::cout << "Server [0] Root: " << file->getHttpContext()->getServers()[0]->getRoot() << std::endl;
         delete file;
-        // std::cout << "Server [0] Host: " << file->getHttpContext()->getServers()[0]->getHost() << std::endl;
-        // std::cout << "Server [0] Port: " << file->getHttpContext()->getServers()[0]->getPort() << std::endl;
         // std::cout << "Server [1] Host: " << file->getHttpContext()->getServers()[1]->getHost() << std::endl;
         // std::cout << "Server [1] Port: " << file->getHttpContext()->getServers()[1]->getPort() << std::endl;
-        // std::cout << "Server [0] Port: " << file->getHttpContext()->getServers()[0]->getServerName() << std::endl;
         // std::cout << "Global access log: " << file->getHttpContext()->getAccessLog() << std::endl;
         // std::cout << "Global error log: " << file->getHttpContext()->getErrorLog() << std::endl;
         // std::cout << "Server [1] 404 not found: " << file->getHttpContext()->getServers()[1]->getErrorPages()->path_not_found << std::endl;
