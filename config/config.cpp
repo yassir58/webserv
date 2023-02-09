@@ -17,7 +17,6 @@ Config::Config(std::string path)
 
 Config::~Config()
 {
-    std::cout << "Config destructor called." << std::endl;
     delete this->mainHttpContext;
 }
 
@@ -94,7 +93,6 @@ Http::Http()
 }
 
 Http::~Http() {
-    std::cout << "HTPP Destructor called" << std::endl;
     int i;
 
     i = 0;
@@ -200,8 +198,7 @@ Server::Server()
 
 Server::~Server()
 {
-    std::cout << "Server destructor called" << std::endl;
-    int i;
+    unsigned int i;
     
     i = 0;
     while (i < this->locations.size())
@@ -406,7 +403,6 @@ Location::Location()
 
 Location::~Location()
 {
-    std::cout << "Location destructor called" << std::endl;
     // Free any allocated memory by the location object
     //std::cout << "Default destructor of location called" << std::endl;
 }

@@ -230,11 +230,11 @@ std::string    CGIHandler::getOutput()
         close(fds[0]);
         write(fds[1], convertBody(this->request->getBodyStringContainer()).c_str(), convertBody(this->request->getBodyStringContainer()).length());
         close(fds[1]);
+        freeTable(args);
+        freeTable(envList);
         waitpid(-1, NULL, 0);
     }
     output = readContent("/tmp/CGI");
-    close(fd);
-    close(trash);
     return (output);
 }
 
