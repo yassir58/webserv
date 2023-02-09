@@ -38,7 +38,7 @@ int main(void)
 
     try 
     {
-        Config *file = new Config("../testing/configs/home.conf");
+        Config *file = new Config("../testing/configs/default.conf");
         file->parseConfig();
         std::cout << "Server [0] Host: " << file->getHttpContext()->getServers()[0]->getHost() << std::endl;
         std::cout << "Server [0] Port: " << file->getHttpContext()->getServers()[0]->getPort() << std::endl;
