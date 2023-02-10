@@ -3,12 +3,11 @@ body {
 	color: #00337C;
 }
 
-h1 {
-	font-size: 4rem;
-	text-align: center;
+header h3 {
+	text-align: left;
 }
 
-.div {
+.main {
   margin: auto;
   width: 50%;
   padding: 10px;
@@ -17,8 +16,20 @@ h1 {
   flex-direction: column;
 }
 
+.main h2
+{
+	font-family: ;
+	
+}
+
 img {
 	border-radius: 4px;
-	width: 500px;
+	width: 200px;
 	margin: auto;
+}
+
+video {
+	width: 400px;
+	padding: 15px ;
+	margin: 10px auto;
 }

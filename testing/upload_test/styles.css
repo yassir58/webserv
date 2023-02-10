@@ -1,0 +1,42 @@
+* {
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    background-color: #eee;
+    font-family: "Inter", sans-serif;
+    font-weight: 400;
+}
+
+.upload_header {
+    margin: 20px;
+}
+
+.upload_form {
+    background-color: #fff;
+    margin: 10px;
+    width: 600px;
+    padding: 20px;
+    border-radius: 5px;
+}
+
+.btn {
+    background-color: #3F88C5;
+    color: #fff;
+    border-radius: 5px;
+    border: none;
+    padding: 10px 20px;
+}
+
+.btn:hover {
+    box-shadow: 0 0 10px rgba(51, 51, 51, 0.349);
+    transform: translateY(-1px);
+    cursor: pointer;
+}
+
+.btn:active {
+    box-shadow: 0 0 20px rgba(51, 51, 51, 0.349);
+    transform: translateY(1px);
+    cursor: pointer;
+}

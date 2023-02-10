@@ -153,7 +153,7 @@ std::string CGIHandler::getScriptName(int status)
     std::string extension = this->location->getCGIExtension();
     std::string urlExample = this->request->getRequestTarget();
     if (urlExample.find(("." + extension)) == std::string::npos)
-        throw CGIError("CGI Error: invalid file extension could not execute CGI.");
+        return (urlExample + this->request->getLocation()->getDefaultIndex());
     return (urlExample.substr(status, (urlExample.find(("." + extension).c_str()) + extension.length()) + !status)); 
 }
 

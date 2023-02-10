@@ -8,6 +8,8 @@
         header("Location:". $location);
         exit;
     }
+    if (isset($_SESSION["user"]))
+        redirectTo("./account.php");
     if (isset($_POST["submit"]))
     {
         $username = $_POST["username"];

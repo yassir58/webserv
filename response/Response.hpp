@@ -36,7 +36,7 @@ class Response
 {
 	private:
 		Request			*request; // a pointer on the request that have been parsed by the all mighty ma3ert
-		t_status		status[13]; // table of the available status
+		t_status		status[14]; // table of the available status
 		int				statusIndex; // the index of the appropriate code response in the table
 		std::string		responseBody; // the body of the response 
 		stringContainer	responseToSend; // the all mighty response

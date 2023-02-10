@@ -18,26 +18,27 @@
 
 std::string requestGeneratorByGPT()
 {
-	std::string method = "GET";
-    std::string url = "/response/test.txt";
-    std::string headers = "Accept: application/json\r\nHost: 192.120.18.0:80\r\nConnection: keep-alive\r\naccept: /\r\naccept-encoding: gzip, deflate, br\r\ncontent-type: multipart/form-data\r\naccept-language: en-US,en;q=0.9\r\nsec-fetch-mode: cors\r\n";
-    std::string body = "ZABlkjsdklfjskjfksjdfklsjdlkfjsflksdkfj\n";
+	std::string method = "POST";
+	std::ofstream test("request");
+    std::string url = "/test/img.jpeg";
+    std::string headers = "Accept: application/json\r\nHost: localhost:8080\r\nConnection: keep-alive\r\naccept: /\r\naccept-encoding: gzip, deflate, br\r\ncontent-type: multipart/form-data\r\naccept-language: en-US,en;q=0.9\r\nsec-fetch-mode: cors\r\n";
 
     std::stringstream request;
     request << method << " " << url << " HTTP/1.1\r\n";
     request << headers;
-    request << "Content-Length: " << body.length() << "\r\n";
     request << "\r\n";
-    request << body;
     // request << body1;
     // request << body2;
 
     std::string request_str = request.str();
+
+	test << request_str ;
 	return (request_str);
 }
 
 int main(void)
 {
+	requestGeneratorByGPT ();
 	try
 	{
 		// char fileRequest[] = {	"POST /echo/post/json HTTP/1.1\r\nHost: reqbin.com\r\nAccept: application/json\r\nContent-Type: application/json\r\nContent-Length: 81\r\n\r\n{\nId: 78912,\nCustomer: Jason Sweet,\nQuantity: 1,\nPrice: 18.00\n}\n"};
