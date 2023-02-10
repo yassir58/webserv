@@ -85,7 +85,7 @@ Connection::~Connection()
 	//delete this->request;
 }
 
-int Connection::recieveData (void)
+int Connection::recieveData (int *start, int *len)
 {
 	httpBuffer = (char *) malloc (sizeof (char) * (BUFFER_MAX));
     dataRecievedLength = recv (ConnectionSocket, httpBuffer, BUFFER_MAX - 1, 0);
@@ -97,7 +97,6 @@ int Connection::recieveData (void)
 
 		if (ContentLength == -1 && headerLength == -1)
 		{
-
 			std::string tmpBuffer (httpBuffer);
 			std::string pattern ("Content-Length");
 			size_t method = tmpBuffer.find ("GET");
@@ -116,7 +115,10 @@ int Connection::recieveData (void)
 			if (headerLen != std::string::npos)
 			{
 				headerLength = headerLen  + strlen (CRLF);
-					std::cout << "Header Length : " << headerLength << std::endl;
+				*start = headerLength;
+				*len  = dataRecievedLength - headerLength;
+				requestHeader = tmpBuffer.substr (0, headerLength);
+				std::cout << "Header Length : " << headerLength << std::endl;
 			}
 			// else
 			// 	upload = -1;
@@ -148,6 +150,8 @@ int Connection::recieveData (void)
 		else
 		{
 			bodyRead += dataRecievedLength;
+			*start = 0;
+			*len = dataRecievedLength;
 			std::cout << "Body read : " << bodyRead << std::endl;
 		}				
 	}
@@ -201,7 +205,7 @@ void Connection::setRequest (serverBlocks serverList)
 		std::cout << "\e[0;31m request string length: \e[0m" << std::endl;
 		std::cout << requestString.length () << std::endl;
 		// std::cout << "request string" <<  requestString << std::endl;
-    	request = new Request (requestString, serverList, resolversList);
+    	request = new Request (requestHeader, serverList, resolversList);
 		std::cout << "wa status code: " << request->getStatusCode() << std::endl;
     }
     catch (std::exception &exc)
@@ -322,9 +326,16 @@ void HttpApplication::handleSigPipe (void)
 	sigaction(SIGPIPE, &sa, NULL);
 }
 
-void Connection::appendBuffer ()
+void Connection::appendBuffer (size_t start, int dataRecived)
 {
-	requestString.append (httpBuffer);
+	int i = start;
+
+	std::cout << "start : " << start << std::endl;
+	while (dataRecived--)
+	{
+		requestData.push_back(httpBuffer[i]);
+		i++;
+	}
 }
 
 std::string Connection::getRequestString (void) const
@@ -368,4 +379,14 @@ int Connection::getUpload (void) const
 int Connection::getContentLength (void) const
 {
 	return (ContentLength);
+}
+
+std::vector <char> Connection::getRequestData (void) const
+{
+	return (this->requestData);
+}
+
+std::string Connection::getRequestHeader (void) const
+{
+	return (this->requestHeader);
 }
