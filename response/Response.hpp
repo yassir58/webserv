@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 14:44:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/29 15:04:30 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/11 13:45:10 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,6 @@ class Response
 		Config			*configData; // the data from the configuration file
 	public:
 		Response(Request &request, Config *configFile); // param constractor first argument is the request and here I apply method
-		// Response(Request &request, std::string CGIOutput); // param constractor first argument is the request and second is the CGI output that should be included the response body
 		~Response(); // desectrator not used
 		int				applyMethod(); // apply the method if it's required
 		stringContainer generateHeaderFields(std::string &responseBody); // generate the necessary header fields

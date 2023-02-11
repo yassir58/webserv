@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:36 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/11 13:28:53 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/11 13:55:07 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 # include <string>
 # include "request.h"
 # include <sstream>
-# include "../config/config.hpp"
+# include "../core/ServerInstance.hpp"
 
 # define OK			   200
 # define CREATED	   201
@@ -61,7 +61,8 @@ class Request
 		bool					upload; // to check the status of the upload also used in the response
 	public:
 		// Request(std::string fileString, serverBlocks serverList, std::vector <int> resolversList); //param constructor take a string as param and the server instance 
-		Request(std::string header, serverBlocks serverList, std::vector <int> resolversList, std::vector <char> body); //param constructor take a string as param and the server instance 
+		// Request(std::string header, serverBlocks serverList, std::vector <int> resolversList, std::vector <char> body); //param constructor take a string as param and the server instance 
+		Request(Connection &newConnection); //param constructor take a string as param and the server instance 
 		~Request(); // destructor not used
 		int				parseRequest(serverBlocks serverList, std::vector<int> resolversList);
 		int				checkMethod(void); // check if the method is valid

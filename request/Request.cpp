@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/11 13:37:41 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/11 13:53:48 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,10 +17,10 @@
 ** ------------------------------- CONSTRUCTOR --------------------------------
 */
 
-Request::Request(std::string header, serverBlocks serverList, std::vector<int> resolversList, std::vector<char> requestBody)
+Request::Request(Connection &newConnection)
 {
 	setStatusCode(0);
-	setFileString(header, requestBody);
+	setFileString(newConnection.header, requestBody);
 	if (!parseRequest(serverList, resolversList))
 		return ;
 	this->CGI = checkLocationPath();
@@ -117,6 +117,7 @@ bool	Request::checkUpload(Location *pathLocation)
 		if (!type)
 			return (true);
 		std::string uploadPath = pathLocation->getUploadPath();
+		
 		if (type->value == "multipart/form-data")
 		{
 			if (!uploadPath.empty())
