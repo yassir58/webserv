@@ -11,6 +11,7 @@ HttpApplication::HttpApplication ()
     connectionCount = 0;
     errorLog.open ("error.log", std::ios_base::app);
 	accessLog.open ("access.log", std::ios_base::app);
+	binFile.open ("capy.mp4", std::ios::out | std::ios::app);
     indx = serverCount;
 	fdMax = 0;
 }
@@ -20,7 +21,7 @@ HttpApplication::~HttpApplication ()
     std::cout << "\e[0;31m HTTP APPLICATION CLOSED \e[0m" <<std::endl;
     accessLog.close ();
 	errorLog.close ();
-    close (queueIdentifier);
+    binFile.close ();
 }
 
 HttpApplication::HttpApplication (const HttpApplication &copy)
@@ -112,6 +113,7 @@ void HttpApplication::handleNewConnection (int serverFd)
 {
     int ConnectionSocket;
     ServerInstance *server;
+	
 
     server = findServerByFd (serverFd);
     ConnectionSocket = server->accept_connection ();
@@ -125,32 +127,61 @@ void HttpApplication::handleNewConnection (int serverFd)
 
 void HttpApplication::handleHttpRequest (int fd)
 {
-   Connection *newConnection = new Connection (fd);
+   	Connection *newConnection ;
+	intContainer::iterator it;
+   	int recvReturn = 0;
+	int bytes_available = 0;
+	int start = 0;
+	int length  = 0;
 
-	newConnection->emptyBuffer ();
-	errValue = newConnection->recieveData ();
-	std::cout << newConnection->getBuffer () << std::endl;
-	if (errValue == -1)
+
+	it = std::find (openConnections.begin (), openConnections.end (), fd);
+	if (it != openConnections.end ())
+		newConnection = (*getConnection (fd));
+	else
 	{
-		delete newConnection;
+		newConnection = new Connection (fd);
+		connections.push_back (newConnection);
+		openConnections.push_back (fd);
+	}
+	newConnection->setDataTorRead (bytes_available);
+	recvReturn = newConnection->recieveData (&start, &length);
+	if (recvReturn == -1)
+	{
 		FD_CLR (fd, &readFds);
+		FD_CLR (fd, &errorFds);
+		openConnections.pop_back ();
 		throw Connection_error (strerror (errno), "RECV");
 	}
-	else if (errValue == 0)
+	else if (recvReturn == 0)
 	{
-		delete newConnection;
 		FD_CLR (fd, &readFds);
 		FD_CLR (fd , &errorFds);
 		close (fd);
+		openConnections.pop_back ();
 	}
 	else
 	{
-		serverBlocks servList = this->config->getHttpContext()->getServers ();
-		newConnection->generateResolversList (servList);
-		newConnection->setRequest (servList);
-		connections.push_back (newConnection);
-		FD_CLR (fd, &readFds);
-		FD_SET (fd, &writeFds);
+		if (newConnection->getBodyRead () < newConnection->getContentLength ())
+		{
+			newConnection->appendBuffer (start, length);
+			newConnection->emptyBuffer ();
+		}
+		else if (newConnection->getBodyRead () == newConnection->getContentLength() 
+			|| newConnection->getUpload () <= 0)
+		{
+			newConnection->appendBuffer (start, length);
+			newConnection->emptyBuffer ();
+			std::cout << "\e[0;31m request header \e[0m" << newConnection->getRequestHeader () << std::endl;
+			std::cout << "request body " << newConnection->getRequestData().size () << std::endl;
+			binFile.write (newConnection->getRequestData().data(), newConnection->getRequestData().size());
+			serverBlocks servList = this->config->getHttpContext()->getServers ();
+			newConnection->generateResolversList (servList);
+			newConnection->setRequest (servList);
+			FD_CLR (fd, &readFds);
+			FD_SET (fd, &writeFds);
+			openConnections.pop_back ();
+		}
 	}
 }
 
@@ -256,7 +287,6 @@ connectionPool::iterator HttpApplication::getConnection (int fd)
 		if ((*it)->getConnectionSocket () == fd)
 			return it;
 	}
-	throw Connection_error ("REQUEST ERROR", "CANNOT FIND REQUEST");
 	return (it);
 }
 
@@ -277,6 +307,8 @@ void HttpApplication::handleHttpResponse (int fd)
 	if (connectionInterface != nullptr)
 	{
 		request = connectionInterface->getRequest();
+		std::cout << "\e[0;36m status code after: \e[0m" << request->getStatusCode () << std::endl;
+		std::cout << "\e[0;31m path : \e[0m"  << request->getPath () << std::endl;
 		// if (!request->getLocation()->getEndPoint().empty())
 		// {
 		// 	std::cout << "Location: " << request->getLocation()->getEndPoint() << std::endl;
@@ -285,16 +317,19 @@ void HttpApplication::handleHttpResponse (int fd)
 		// 	else
 		// 		std::cout << "CGI status: Disabled" << std::endl;
 		// }
-		if (request->getCGIStatus())
-		{
-			newCgi = new CGIHandler (request);
-			response = newCgi->execute();
-		}
-		else 
-		{
-			newResponse = new Response (*request, configFile);
-			response = newResponse->getResponse ();
-		}
+		// if (request->getCGIStatus())
+		// {
+		// 	newCgi = new CGIHandler (request);
+		// 	response = newCgi->execute();
+		// }
+		// else 
+		// {
+		// 	newResponse = new Response (*request, configFile);
+		// 	response = newResponse->getResponse ();
+		// }
+		newResponse  = new Response (*request, configFile);
+		response = newResponse->getResponse ();
+		// std::cout << response << std::endl;
 		responseLength = response.length();
 		connectionInterface->printfResolvers ();
 	}
@@ -304,14 +339,15 @@ void HttpApplication::handleHttpResponse (int fd)
 		FD_CLR (fd, &writeFds);
 		FD_CLR (fd, &errorFds);
 		close (fd);
-		connections.erase (it);
+		connections.pop_back ();
 		throw Connection_error (strerror (errno), "SEND");
 	}
 	else
 	{
+		std::cout << errValue <<  " Bytes sent" << std::endl;
 		FD_CLR (fd, &writeFds);
 		FD_CLR (fd, &errorFds);
 		close (fd);
-		connections.erase (it);
+		connections.pop_back ();
 	}
 }

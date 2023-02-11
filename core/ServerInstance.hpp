@@ -28,10 +28,11 @@
 #include <arpa/inet.h>
 #include <signal.h>
 #include <dirent.h>
+#include <sys/ioctl.h>
 
 // MACROS
 #define PORT 8080
-#define BUFFER_MAX 8000
+#define BUFFER_MAX 65000
 #define MAX_CONNECT 1024
 #define POLL_TIMEOUT 5000
 #define BUFFER_SIZE 10
@@ -54,6 +55,7 @@
 #define FALSE 0
 #define OPEN 1
 #define CLOSE 0
+#define CRLF "\r\n\r\n"
 
 
 typedef std::vector <Server*> serverBlocks;
@@ -131,7 +133,8 @@ class Connection {
         Request *request;
         int ConnectionSocket;
         std::vector <int> resolversList;
-        char httpBuffer[BUFFER_MAX];
+        char *httpBuffer;
+        std::vector <char> requestData;
         int dataRecievedLength;
         struct addrinfo *requestSourceAddr;
         int ConnectionPort;
@@ -140,8 +143,15 @@ class Connection {
 		std::string ipAddress;
 		size_t requestLength;
 		int status;
-		
-
+        std::string requestString;
+        int dataReminder;
+        int dataToRead ;
+        int ContentLength;
+        int headerLength;
+        int upload;
+        int bodyRead;
+        int readStatus;
+        std::string requestHeader;
     public:
         Connection ();
 		Connection (int fd);
@@ -149,7 +159,7 @@ class Connection {
         int getConnectionSocket (void) const;
         char *getBuffer (void) ;
         void emptyBuffer (void);
-        int recieveData (void);
+        int recieveData (int *start, int *len);
         void sendResponse (void);
         std::vector <int> getResolversList (void) const;
         void generateResolversList (serverBlocks serverList);
@@ -157,6 +167,16 @@ class Connection {
 		Request *getRequest (void) const;
 		void printfResolvers (void);
 		void setStatus (int status);
+        void appendBuffer (size_t start, int dataRecived);
+        int getRequestLength (void) const ;
+        std::string getRequestString (void) const;
+        int getDataToRead (void) const;
+        void setDataTorRead (int dataTorRead) ;
+        int getContentLength (void) const;
+        int getUpload (void) const;
+        int getBodyRead (void) const;
+        std::vector<char> getRequestData (void) const;
+        std::string getRequestHeader (void) const;
 };
 
 typedef std::vector <Connection *> connectionPool;
@@ -176,13 +196,15 @@ class HttpApplication
         int HttpMaxBodySize;
         std::ofstream accessLog;
 		std::ofstream errorLog ;
-        std::vector<int> serverFds;
-		std::vector <int> watchedFds;
+        std::ofstream binFile;
+        intContainer serverFds;
+		intContainer watchedFds;
         Config *config;
 		connectionPool connections;
 		fd_set readFds, writeFds, errorFds;
 		int fdMax;
-      
+        intContainer openConnections;
+    
 public:
     HttpApplication();
     HttpApplication(const HttpApplication &copy);

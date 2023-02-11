@@ -59,13 +59,24 @@ Connection::Connection ()
     ConnectionSocket = 0;
 	ConnectionPort = 0;
 	requestLength = 0;
+	requestString = "";
+	ContentLength = -1;
+	headerLength = -1;
+	upload = -1;
+	bodyRead = 0;
 }
 
 Connection::Connection (int fd)
 {
+	
     ConnectionSocket = fd;
 	ConnectionPort = 0;
 	requestLength = 0;
+	requestString = "";
+	ContentLength = -1;
+	headerLength = -1;
+	upload = -1;
+	bodyRead = 0;
 }
 
 
@@ -74,9 +85,77 @@ Connection::~Connection()
 	//delete this->request;
 }
 
-int Connection::recieveData (void)
+int Connection::recieveData (int *start, int *len)
 {
-    dataRecievedLength = recv (ConnectionSocket, httpBuffer, BUFFER_MAX, 0);
+	httpBuffer = (char *) malloc (sizeof (char) * (BUFFER_MAX));
+    dataRecievedLength = recv (ConnectionSocket, httpBuffer, BUFFER_MAX - 1, 0);
+	std::cout << "data recieved in bytes \e[0;32m"  << dataRecievedLength << " \e[0m" << std::endl; 
+	if (dataRecievedLength > 0)
+	{
+		requestLength += dataRecievedLength ;
+		httpBuffer[dataRecievedLength] = 0;
+
+		if (ContentLength == -1 && headerLength == -1)
+		{
+			std::string tmpBuffer (httpBuffer);
+			std::string pattern ("Content-Length");
+			size_t method = tmpBuffer.find ("GET");
+			
+			if (method == std::string::npos)
+			{
+				method = tmpBuffer.find ("POST");
+				if (method == 0)
+					upload = 1;
+			}
+			else if (method == 0)
+				upload = 0;
+
+			std::cout << "upload : " << upload << std::endl;
+			size_t headerLen = tmpBuffer.find (CRLF);
+			if (headerLen != std::string::npos)
+			{
+				headerLength = headerLen  + strlen (CRLF);
+				*start = headerLength;
+				*len  = dataRecievedLength - headerLength;
+				requestHeader = tmpBuffer.substr (0, headerLength);
+				std::cout << "Header Length : " << headerLength << std::endl;
+			}
+			// else
+			// 	upload = -1;
+
+			if (upload == 1)
+			{
+				size_t cn = tmpBuffer.find (pattern);
+
+				if (cn != std::string::npos)
+				{
+					char tmp[1000];
+					int i = cn + pattern.length () + 1;
+					int j = 0;
+
+					while (tmpBuffer[i] && tmpBuffer[i] != '\n')
+					{
+						tmp[j] =tmpBuffer[i];
+						i++;
+						j++;
+					}
+					tmp[j] = 0;
+					ContentLength = atoi (tmp);
+					bodyRead = dataRecievedLength - headerLength;
+					std::cout << "Content Length : " << ContentLength << std::endl;
+					std::cout << "Body read : " << bodyRead << std::endl;
+				}
+			}
+		}
+		else
+		{
+			bodyRead += dataRecievedLength;
+			*start = 0;
+			*len = dataRecievedLength;
+			std::cout << "Body read : " << bodyRead << std::endl;
+		}				
+	}
+
 	return (dataRecievedLength);
 }
 
@@ -123,7 +202,11 @@ void Connection::setRequest (serverBlocks serverList)
 {
 	try
     {
-    	request = new Request (httpBuffer, serverList, resolversList);
+		std::cout << "\e[0;31m request string length: \e[0m" << std::endl;
+		std::cout << requestString.length () << std::endl;
+		// std::cout << "request string" <<  requestString << std::endl;
+    	request = new Request (requestHeader, serverList, resolversList, requestData);
+		std::cout << "wa status code: " << request->getStatusCode() << std::endl;
     }
     catch (std::exception &exc)
     {
@@ -243,45 +326,67 @@ void HttpApplication::handleSigPipe (void)
 	sigaction(SIGPIPE, &sa, NULL);
 }
 
-// std::string listDirectory (std::string dirPath)
-// {
-// 	DIR *dir = opendir (dirPath.c_str ());
-// 	struct dirent *dp;
-// 	stringContainer dirIndex;
-// 	stringContainer::iterator it;
-// 	std::string responseBody("") ;
-// 	std::string styles ("<style> body { background-color: #F2F2F2;}h1 {color: #0A2647;margin-left: 40px;} a {color:#5463FF; } </style>");
-// 	std::string indexHeader("<h1> Index of");
-// 	std::string lineBreak ("</br>");
-// 	std::string line("<hr>");
-// 	std::string lsOpen ("<ul>");
-// 	std::string lsClose ("</ul>");
-// 	std::string liOpen ("<li>");
-// 	std::string liClose ("</li>");
-// 	std::string linkOpen ("<a href=\"");
-// 	std::string linkClose ("</a>");
-// 	std::string hrClose ("\">");
-// 	std::string indexBody;
-// 	std::string href ("./");
+void Connection::appendBuffer (size_t start, int dataRecived)
+{
+	int i = start;
 
-// 	if (dir == NULL)
-// 		throw std::exception ();
-// 	else
-// 	{
-// 		while ((dp = readdir (dir)))
-// 		{
-// 			dirIndex.push_back (dp->d_name);
-// 		}
-// 	}
-// 	responseBody.append (styles).append(indexHeader).append (dirPath) .append("</h1>").append (lineBreak).append (line).append (lsOpen);
-// 	for (it = dirIndex.begin (); it != dirIndex.end (); it++)
-// 	{
-// 		href.append ((*it));
-// 		responseBody.append (liOpen).append (linkOpen).append(href).append (hrClose).append ((*it)).append (linkClose).append (liClose);
-// 		href = "./";
-// 	}
-// 	responseBody.append (lsClose);
-// 	std::cout << "response length" << responseBody.length () << std::endl;
-// 	closedir (dir);
-// 	return (responseBody);
+	std::cout << "start : " << start << std::endl;
+	while (dataRecived--)
+	{
+		requestData.push_back(httpBuffer[i]);
+		i++;
+	}
+}
+
+std::string Connection::getRequestString (void) const
+{
+	return (this->requestString);
+}
+
+
+// void Connection::appendToBinaryFile (size_t n)
+// {
+// 	file.write (requestString.c_str (), n);
 // }
+
+int Connection::getDataToRead(void) const
+{
+	return (this->dataReminder);
+}
+
+
+void Connection::setDataTorRead (int dataLength)
+{
+	this->dataToRead = dataLength;
+}
+
+
+int Connection::getRequestLength (void) const
+{
+	return (this->requestLength);
+}
+
+int Connection::getBodyRead (void) const
+{
+	return (bodyRead);	
+}
+
+int Connection::getUpload (void) const
+{
+	return (upload);
+}
+
+int Connection::getContentLength (void) const
+{
+	return (ContentLength);
+}
+
+std::vector <char> Connection::getRequestData (void) const
+{
+	return (this->requestData);
+}
+
+std::string Connection::getRequestHeader (void) const
+{
+	return (this->requestHeader);
+}

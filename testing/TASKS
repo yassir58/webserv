@@ -57,3 +57,5 @@ echo -e ""
 /// problems
 
 BAD request : Invalid HEADER
+
+handle bad request in case of a test like  "hello world"

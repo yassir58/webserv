@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/01 16:12:55 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/02 17:11:02 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 Response::Response(Request &request, Config *config)
 {
 	setRequest(&request, config);
+	std::cout << "in the response: "  << this->request->getStatusCode() << std::endl;
 	if (this->request->getRedirectionStatus())
 		this->request->setStatusCode(handleRedirection());
 	else if (this->request->getUploadStatus())
@@ -34,17 +35,6 @@ Response::Response(Request &request, Config *config)
 	responseToSend.insert(responseToSend.begin() + 1, headerFields.begin(), headerFields.end());
 	responseToSend.push_back(responseBody);
 }
-
-// Response::Response(Request &request, std::string CGIOutput)
-// {
-// 	setRequest(&request);
-// 	setResponseBody(CGIOutput);
-// 	statusIndex = getStatusCode();
-// 	responseToSend.push_back(generateStatusLine());
-// 	stringContainer headerFields = generateHeaderFields(responseBody);
-// 	responseToSend.insert(responseToSend.begin() + 1, headerFields.begin(), headerFields.end());
-// 	responseToSend.push_back(responseBody);
-// }
 
 /*
 ** -------------------------------- DESTRUCTOR --------------------------------
@@ -73,6 +63,7 @@ int	Response::getStatusCode(void)
 {
 	size_t index = 0;
 	int		code = request->getStatusCode();
+	std::cout << "this is inside the gsc: "  << code << std::endl;
 	while (code != status[index].code)
 		++index;
 	return (index);
@@ -203,7 +194,7 @@ int	Response::applyMethod(void)
 {
 	std::string method = request->getMethod();
 	int			statusCode = request->getStatusCode();
-	if (request->getListingStatus())
+	if (request->getListingStatus() && statusCode == 0)
 	{
 		responseBody = listDirectory(request->getPath());
 		return (0);
@@ -224,7 +215,9 @@ int	Response::applyMethod(void)
 	}
 	else if (method == "POST" && statusCode == 0)
 	{
-		std::ofstream outfile(request->getPath());
+		std::ofstream outfile;
+
+		outfile.open (request->getPath(), std::ios::binary);
 		if (outfile.is_open())
 		{
 			outfile << request->getBody();
@@ -242,6 +235,15 @@ int	Response::applyMethod(void)
 			request->setStatusCode(SERVER_ERROR);
 		else
 			request->setStatusCode(OK);
+	}
+	if (request->getServerInstance()->getErrorPagesStatus())
+	{
+		if (request->getStatusCode() == NOT_FOUND)
+			responseBody = request->getServerInstance()->getErrorPages()->path_not_found;
+		else if (request->getStatusCode() == FORBIDDEN)
+			responseBody = request->getServerInstance()->getErrorPages()->path_forbidden;
+		else if (request->getStatusCode() == SERVER_ERROR)
+			responseBody = request->getServerInstance()->getErrorPages()->path_internal_error;	
 	}
 	return (0);
 }
@@ -268,6 +270,7 @@ std::string Response::getResponse(void)
 void	Response::setRequest(Request *request, Config *config)
 {
 	this->request = request;
+	std::cout << "code1: " << this->request->getStatusCode() << std::endl;
 	this->configData = config;
 	size_t	index = 0;
 	status[index].code = OK; status[index++].status = "OK";

@@ -44,7 +44,7 @@ char *Connection::getBuffer (void)
 
 void Connection::emptyBuffer (void) 
 {
-    memset (httpBuffer, 0, sizeof (httpBuffer));
+   free (httpBuffer);
 }
 
 void Connection::setStatus (int status)

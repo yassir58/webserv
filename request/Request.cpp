@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/01 21:12:14 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/11 13:37:41 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,10 +17,10 @@
 ** ------------------------------- CONSTRUCTOR --------------------------------
 */
 
-Request::Request(std::string fileString, serverBlocks serverList, std::vector<int> resolversList)
+Request::Request(std::string header, serverBlocks serverList, std::vector<int> resolversList, std::vector<char> requestBody)
 {
 	setStatusCode(0);
-	setFileString(fileString);
+	setFileString(header, requestBody);
 	if (!parseRequest(serverList, resolversList))
 		return ;
 	this->CGI = checkLocationPath();
@@ -136,7 +136,6 @@ bool	Request::checkUpload(Location *pathLocation)
 			file.open(path, std::ofstream::out | std::ofstream::trunc);
 			if (!file.is_open())
 			{
-				std::cout << "hoho\n";
 				statusCode = NOT_FOUND;
 				return (false);
 			}
@@ -149,6 +148,7 @@ bool	Request::checkUpload(Location *pathLocation)
 			file.close();
 			upload = true;
 			statusCode = CREATED;
+			return (false);
 		}
 	}
 	return (true);
@@ -213,7 +213,7 @@ bool Request::checkExtension(Location *pathLocation)
 		}
 		if (access(defaultCGI.c_str(), X_OK) == -1)
 		{
-			statusCode = FORBIDDEN; 
+			statusCode = FORBIDDEN;
 			return (false);
 		}
 		return (true);
@@ -235,12 +235,17 @@ t_start &Request::getStartLine(void)
 	return (startLine);
 }
 
-void	Request::setFileString(std::string &file)
+void	Request::setFileString(std::string &file, std::vector<char> &newBody)
 {
 	fileString = file;
 	startLine.Host = false;
+	body = newBody;
 	pos = 0;
 	start = 0;
+	CGI = false;
+	redirectionStatus = false;
+	listingStatus = false;
+	upload = false;
 }
 
 void	Request::setStatusCode(int newStatusCode)
@@ -251,10 +256,6 @@ void	Request::setStatusCode(int newStatusCode)
 void	Request::setServerInstance(Server *server)
 {
 	serverInstance = server;
-	CGI = false;
-	redirectionStatus = false;
-	listingStatus = false;
-	upload = false;
 }
 
 std::string		Request::getErrorCode(void)
@@ -290,8 +291,8 @@ std::string Request::getBody(void)
 {
 	std::string toReturn;
 	std::stringstream ss;
-	stringContainer::iterator begin = body.begin();
-	stringContainer::iterator end = body.end();
+	std::vector<char>::iterator begin = body.begin();
+	std::vector<char>::iterator end = body.end();
 	while (end != begin)
 	{
 		ss << *begin;
@@ -301,7 +302,7 @@ std::string Request::getBody(void)
 	return (toReturn);
 }
 
-stringContainer		Request::getBodyStringContainer(void)
+std::vector<char>	Request::getBodyVector(void)
 {
 	return (body);
 }
