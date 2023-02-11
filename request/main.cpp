@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/13 15:35:19 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/31 12:36:22 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/11 13:41:41 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,6 @@
 std::string requestGeneratorByGPT()
 {
 	std::string method = "POST";
-	std::ofstream test("request");
     std::string url = "/test/img.jpeg";
     std::string headers = "Accept: application/json\r\nHost: localhost:8080\r\nConnection: keep-alive\r\naccept: /\r\naccept-encoding: gzip, deflate, br\r\ncontent-type: multipart/form-data\r\naccept-language: en-US,en;q=0.9\r\nsec-fetch-mode: cors\r\n";
 
@@ -27,18 +26,12 @@ std::string requestGeneratorByGPT()
     request << method << " " << url << " HTTP/1.1\r\n";
     request << headers;
     request << "\r\n";
-    // request << body1;
-    // request << body2;
-
     std::string request_str = request.str();
-
-	test << request_str ;
 	return (request_str);
 }
 
 int main(void)
 {
-	requestGeneratorByGPT ();
 	try
 	{
 		// char fileRequest[] = {	"POST /echo/post/json HTTP/1.1\r\nHost: reqbin.com\r\nAccept: application/json\r\nContent-Type: application/json\r\nContent-Length: 81\r\n\r\n{\nId: 78912,\nCustomer: Jason Sweet,\nQuantity: 1,\nPrice: 18.00\n}\n"};

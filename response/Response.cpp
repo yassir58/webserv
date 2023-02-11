@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/02 12:31:39 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/02 17:11:02 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -236,13 +236,15 @@ int	Response::applyMethod(void)
 		else
 			request->setStatusCode(OK);
 	}
-	// i should check if the error pages is provided or not, but guess if there's any of them the string would be empty
-	if (request->getStatusCode() == NOT_FOUND)
-		responseBody = request->getServerInstance()->getErrorPages()->path_not_found;
-	else if (request->getStatusCode() == FORBIDDEN)
-		responseBody = request->getServerInstance()->getErrorPages()->path_forbidden;
-	else if (request->getStatusCode() == SERVER_ERROR)
-		responseBody = request->getServerInstance()->getErrorPages()->path_internal_error;
+	if (request->getServerInstance()->getErrorPagesStatus())
+	{
+		if (request->getStatusCode() == NOT_FOUND)
+			responseBody = request->getServerInstance()->getErrorPages()->path_not_found;
+		else if (request->getStatusCode() == FORBIDDEN)
+			responseBody = request->getServerInstance()->getErrorPages()->path_forbidden;
+		else if (request->getStatusCode() == SERVER_ERROR)
+			responseBody = request->getServerInstance()->getErrorPages()->path_internal_error;	
+	}
 	return (0);
 }
 

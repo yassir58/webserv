@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   reqeustTools.cpp                                   :+:      :+:    :+:   */
+/*   requestTools.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/31 15:57:54 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/31 15:58:29 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/11 13:22:39 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,12 +54,13 @@ void	Request::printResult(void)
 		std::cout << "value: " << begin->value << std::endl;
 	}
 	std::cout << "\n=============this body field===============\n";
-	std::vector<std::string>::iterator vend = body.end();
-	std::vector<std::string>::iterator vbegin = body.begin();
-	for (; vbegin != vend; ++vbegin)
-	{
-		std::cout << *vbegin;
-	}
+	// std::vector<std::string>::iterator vend = body.end();
+	// std::vector<std::string>::iterator vbegin = body.begin();
+	// for (; vbegin != vend; ++vbegin)
+	// {
+	// 	std::cout << *vbegin;
+	// }
+	std::cout << getBody();
 }
 
 std::string Request::adjustPath(std::string const &prefix, std::string const &sufix)

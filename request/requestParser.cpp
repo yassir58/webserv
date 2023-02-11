@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/31 15:58:58 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/02 12:27:17 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/11 13:28:44 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,18 +42,7 @@ int	Request::parseRequest(serverBlocks serverList, std::vector<int> resolversLis
 		return (0);
 	}
 	if (!checkContentParsed(serverList, resolversList))
-		return (0); 
-	if (startLine.method == "POST")
-	{
-		while (!getCRLF(line, (char *)"\n"))
-		{
-			if (!parseBody(line))
-			{
-				statusCode = BAD_REQUEST;
-				return (0);
-			}
-		}
-	}
+		return (0);
 	return (1);
 }
 
@@ -226,12 +215,5 @@ int Request::parseHeaderField(headerFieldList &list, std::string line)
 	if (field.key == "Host" && startLine.hostName.empty())
 		parseHostName(field.value);
 	list.push_back(field);
-	return (1);
-}
-
-int	Request::parseBody(std::string line)
-{
-	body.push_back(line);
-	body.push_back("\n");
 	return (1);
 }
