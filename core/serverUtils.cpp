@@ -51,3 +51,9 @@ void Connection::setStatus (int status)
 {
 	this->status = status;  
 }
+
+
+// std::string Connection::getrequestString (void) const
+// {
+// 	return  (this->requestString);
+// }

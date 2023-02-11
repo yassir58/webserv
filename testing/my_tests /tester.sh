@@ -13,24 +13,25 @@ White='\033[0;37m'        # White
 HOST_NAME="127.0.0.1"
 HOST_PORT="8080"
 
-
 ENDPOINT="http://localhost:8080"
 NOT_FOUND_PATH="/test/notFound"
-FORBIDDEN_PATH="/forbidden/forbidden.txt"
-NOT_ALLOWED_PATH="/getNotAllowed"
+FORBIDDEN_PATH="/test/forbidden/forbidden.txt"
+NOT_ALLOWED_PATH="/test/getNotAllowed"
 NORMAL_PATH="/test"
 DIFFERENT_ROOT="/differenteRoot"
-SERVNAME_TEST="/servNameTest"
-SERVNAME_PATH="/Users/yelatman/Documents/webserv/www/servNameTest/serverName.html"
-NORMAL_POST_PATH=""
-NOT_ALLOWED_POST=""
-FORBIDDEN_POST=""
-PAYLOAD_TOO_LARGE=""
+SERVNAME_TEST="/test/servNameTest"
+SERVNAME_PATH="/Users/yelatman/Documents/webserv/www/test/servNameTest/serverName.html"
+NORMAL_POST_PATH="/upload/test.txt"
+POST_DEST_PATH="/Users/yelatman/Documents/webserv/www/upload/uploadTest/test.txt"
+NOT_ALLOWED_POST="/upload/notAllowed"
+FORBIDDEN_POST="/upload/forbidden/forbidden.txt"
+PAYLOAD_TOO_LARGE="/upload/toLarge"
 URI_TOO_LONG=""
 EXEC_PATH="/Users/yelatman/Documents/webserv/webserv"
 CONF_PATH="/Users/yelatman/Documents/webserv/testing/configs/test.conf"
 ERROR_LOG="/Users/yelatman/Documents/webserv/error.log"
 SERVNAME_REQ="GET /servNameTest HTTP/1.1\r\nHost: servName\r\nUser-Agent: MyHTTPClient/1.0\r\nAccept: text/html\r\nConnection: keep-alive\r\n\r\n"
+POST_REQ="HTTP/1.1\r\nHost: localhost:8080\r\nUser-Agent: MyHTTPClient/1.0\r\nContent-Type: multipart/form-data\r\nConnection: keep-alive\r\n\r\n"
 
 if [ -z "$EXEC_PATH" ] ; then
 	echo "please provide a path for webserv executable : " && read EXEC_PATH
@@ -71,20 +72,46 @@ testGET ()
 		echo -e "$Red status code test failed X $White"
 	fi
 	echo -n " matching response body : "
-	diff test 2>/dev/null > response.diff
+	diff test $3 2>/dev/null > response.diff
 	if [ -s response.diff ] ; then
 		echo -e "$Red diff test failed X $white"
 	else
 		echo -e "$Green diff test succeded ✓ $White"
 	fi
-	rm -rf HEADERS test nohup.out reponse.diff
+	
+	# rm -rf HEADERS test nohup.out reponse.diff
 }
 
 
 testPOST ()
 {
-	echo "test" >> testFile
-	curl -v $ENDPOINT$NORMAL_POST_PATH -d @testFile -H "Content-Type: text/plain" &> HEADERS
+	POST_BODY=$2
+	POST_PATH=$1
+	if [ "$1" == "/toLarge" ]; then
+		POST_BODY=$(for i in {1.1000000./})
+	fi
+	echo -e "POST $1 $POST_REQ$2" | nc localhost 8080 > HEADERS;
+	status_code=$(cat HEADERS | grep HTTP | cut -d' ' -f2)
+	echo -e " testing $4 on $Yellow $ENDPOINT$1 $White"
+	echo -n " matching status codes  : "
+	
+	if [ "$status_code" = "$3" ]; then
+		echo -e "$Green status code test succeded ✓ $White"
+	else
+		echo -e "$Red status code test failed X $White"
+	fi
+	if [ -f "$5" ]; then
+		echo $2 > testFile
+		diff $5 testFile 2>/dev/null > response.diff
+		echo -n " matching response body : "
+		if [ -s response.diff ]; then 
+			 echo -e "$Red diff test failed X $White"
+		else
+			echo -e "$Green diff test succeded ✓ $White"
+		fi
+		rm -rf testFile $5 response.diff
+	fi
+	# rm -rf HEADERS 
 }
 
 exec $EXEC_PATH $CONF_PATH 1>/dev/null 2>$ERROR_LOG  &
@@ -92,13 +119,15 @@ PID=$(ps a | grep {$EXEC_PATH} |tr -s ' ' | cut -d ' ' -f1)
 echo -e " server started on the background :  pid $Green $PID $White"
 echo -e " server listening on port $Cyan $HOST_PORT $White"
 sleep 2
-testGET $NORMAL_PATH "/Users/yelatman/Documents/webserv/www/test/test.html" "200" "simple GET request"
+testGET $NORMAL_PATH "/Users/yelatman/Documents/webserv/www/test/index.html" "200" "simple GET request"
 testGET "/" "../../www/index.html" "200" "simple GET request"
 testGET $NOT_FOUND_PATH "" "404" "resource not FOUND"
 testGET "" "" "400" "bad request"
 testGET $FORBIDDEN_PATH "" "403" "forbidden operation"
 testGET $NOT_ALLOWED_PATH "" "405" "not allowed GET method"
 testGET $SERVNAME_TEST $SERVNAME_PATH "200" "server name"
-
-
+# testPOST $NORMAL_POST_PATH "hello world" "201" "upload" "/Users/yelatman/Documents/webserv/www/upload/testUpload/test.txt"
+# testPOST $NOT_ALLOWED_POST "" "405" "not allowed post method" ""
+# testPOST $FORBIDDEN_POST "" "403" "forbidden post method" ""
+# testPOST "toLarge"  "413" "l"
 trap terminateServer EXIT
