@@ -6,12 +6,11 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/11 13:53:48 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/11 20:30:48 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Request.hpp"
-
 
 /*
 ** ------------------------------- CONSTRUCTOR --------------------------------
@@ -20,7 +19,7 @@
 Request::Request(Connection &newConnection)
 {
 	setStatusCode(0);
-	setFileString(newConnection.header, requestBody);
+	setFileString(newConnection.getRequestHeader(), newConnection.get);
 	if (!parseRequest(serverList, resolversList))
 		return ;
 	this->CGI = checkLocationPath();
