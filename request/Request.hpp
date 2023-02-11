@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:36 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/11 13:28:53 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/11 21:47:23 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 # include <string>
 # include "request.h"
 # include <sstream>
-# include "../config/config.hpp"
+#include "../core/ServerInstance.hpp"
 
 # define OK			   200
 # define CREATED	   201
@@ -35,7 +35,6 @@
 
 typedef std::vector<std::string> stringContainer;
 typedef std::list<headerField>	headerFieldList;
-/// changed by gigachad : under review
 typedef std::vector <Server*> serverBlocks;
 
 class Request
@@ -59,9 +58,11 @@ class Request
 		bool					redirectionStatus; // to check if there's any redirection required
 		bool					listingStatus; // to check the status of the listing used in the response
 		bool					upload; // to check the status of the upload also used in the response
+		Config					*configFile;
 	public:
 		// Request(std::string fileString, serverBlocks serverList, std::vector <int> resolversList); //param constructor take a string as param and the server instance 
-		Request(std::string header, serverBlocks serverList, std::vector <int> resolversList, std::vector <char> body); //param constructor take a string as param and the server instance 
+		// Request(std::string header, serverBlocks serverList, std::vector <int> resolversList, std::vector <char> body); //param constructor take a string as param and the server instance 
+		Request(Connection *newConnection); //param constructor take a string as param and the server instance 
 		~Request(); // destructor not used
 		int				parseRequest(serverBlocks serverList, std::vector<int> resolversList);
 		int				checkMethod(void); // check if the method is valid
@@ -84,7 +85,7 @@ class Request
 		void			printResult(void); // print the result produced
 		t_start 		&getStartLine(void); // geter of the startLine
 		headerFieldList &getHeaderFieldlist(void); // geter of the headerFields linked list
-		void			setFileString(std::string &file, std::vector<char> &newBody); // seter of the file string
+		void			setFileString(std::string const &file, std::vector<char> const &newBody); // seter of the file string
 		void			setServerInstance(Server *server);
 		void			setStatusCode(int newStatusCode); // seter of the status code
 		headerField		*getHeaderField(std::string key); // return a pointer on headerField struct specified in the key param return NULL if not found
