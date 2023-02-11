@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/11 20:30:48 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/11 20:39:11 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,11 +16,11 @@
 ** ------------------------------- CONSTRUCTOR --------------------------------
 */
 
-Request::Request(Connection &newConnection)
+Request::Request(Connection *newConnection)
 {
 	setStatusCode(0);
-	setFileString(newConnection.getRequestHeader(), newConnection.get);
-	if (!parseRequest(serverList, resolversList))
+	setFileString(newConnection->getRequestHeaders(), newConnection->getRequestBody());
+	if (!parseRequest(newConnection->get, newConnection->getResolversList()))
 		return ;
 	this->CGI = checkLocationPath();
 }
@@ -235,7 +235,7 @@ t_start &Request::getStartLine(void)
 	return (startLine);
 }
 
-void	Request::setFileString(std::string &file, std::vector<char> &newBody)
+void	Request::setFileString(std::string const &file, std::vector<char> const &newBody)
 {
 	fileString = file;
 	startLine.Host = false;
