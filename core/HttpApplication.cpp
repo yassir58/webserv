@@ -9,9 +9,10 @@ HttpApplication::HttpApplication ()
 {
     serverCount = 1;
     connectionCount = 0;
-    errorLog.open ("error.log", std::ios_base::app);
-	accessLog.open ("access.log", std::ios_base::app);
-	binFile.open ("capy.mp4", std::ios::out | std::ios::app);
+    // errorLog.open ("error.log", std::ios_base::app);
+	// accessLog.open ("access.log", std::ios_base::app);
+	// binFile.open ("capy.mp4", std::ios::out | std::ios::app);
+	// file.open ("received_file.png", std::ios::binary);
     indx = serverCount;
 	fdMax = 0;
 }
@@ -21,7 +22,6 @@ HttpApplication::~HttpApplication ()
     std::cout << "\e[0;31m HTTP APPLICATION CLOSED \e[0m" <<std::endl;
     accessLog.close ();
 	errorLog.close ();
-    binFile.close ();
 }
 
 HttpApplication::HttpApplication (const HttpApplication &copy)
@@ -183,6 +183,7 @@ void HttpApplication::handleHttpRequest (int fd)
 			openConnections.pop_back ();
 		}
 	}
+	
 }
 
 int HttpApplication::getConnectionIndx (void)
@@ -333,7 +334,8 @@ void HttpApplication::handleHttpResponse (int fd)
 		responseLength = response.length();
 		connectionInterface->printfResolvers ();
 	}
-	errValue = send (fd, response.c_str (), responseLength, 0);
+	errValue = send (fd, response.c_str (), response.length (), 0);
+	std::cout << "-------- bytes sent " << errValue << " --------" << std::endl;
 	if (errValue == -1)
 	{
 		FD_CLR (fd, &writeFds);

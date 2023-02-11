@@ -5,6 +5,14 @@
 
 int main (int argc , char *argv[])
 {
+
+	/// test
+
+	std::string test = getTestBody ("/Users/yelatman/Desktop/test.png");
+	std::ofstream testF ;
+
+	testF.open ("/Users/yelatman/Desktop/v.png");
+	testF << test;
     HttpApplication app;
 
     try 
@@ -19,7 +27,7 @@ int main (int argc , char *argv[])
     
     try
     {
-		app.handleSigPipe ();
+		// app.handleSigPipe ();
         app.filterServerBlocks ();
         app.connectServers ();
 		app.initServerSet ();

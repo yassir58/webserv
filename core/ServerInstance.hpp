@@ -202,6 +202,7 @@ class HttpApplication
         Config *config;
 		connectionPool connections;
 		fd_set readFds, writeFds, errorFds;
+		 std::ofstream file;
 		int fdMax;
         intContainer openConnections;
     
