@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:36 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/01/31 15:53:53 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/11 13:28:53 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ class Request
 		std::string				fileString; // the string that contain the request received
 		t_start					startLine; // struct contain all the info in the first line of the request
 		headerFieldList			headerFields; // linked list store the header fields of the request
-		stringContainer			body; // contain the body of the request
+		std::vector<char>		body;
 		std::string				path; // the path without the query if there's any
 		std::string				fileName; // file name specified in the request target
 		int						statusCode; // the error code or the status code
@@ -60,7 +60,8 @@ class Request
 		bool					listingStatus; // to check the status of the listing used in the response
 		bool					upload; // to check the status of the upload also used in the response
 	public:
-		Request(std::string fileString, serverBlocks serverList, std::vector <int> resolversList); //param constructor take a string as param and the server instance 
+		// Request(std::string fileString, serverBlocks serverList, std::vector <int> resolversList); //param constructor take a string as param and the server instance 
+		Request(std::string header, serverBlocks serverList, std::vector <int> resolversList, std::vector <char> body); //param constructor take a string as param and the server instance 
 		~Request(); // destructor not used
 		int				parseRequest(serverBlocks serverList, std::vector<int> resolversList);
 		int				checkMethod(void); // check if the method is valid
@@ -72,7 +73,6 @@ class Request
 		int 			parseFirstLine(std::string line); // parse the first line of the request
 		int 			parseHeaderField(headerFieldList &list, std::string line); // parse the header fields and store it in linked list
 		void			parseHostName(std::string &hostNameValue); // parse the host name and store it on the t_start struct (startLine)
-		int				parseBody(std::string line); // parse the body and store it in the body(look at the private attribute)
 		int				getCRLF(std::string &newLine, char *delim); // split the fileString by delim given as argument and store it on the newLine
 		bool			checkLocationPath(); // to check if the request need a cgi handling
 		Location		*matchLocation(); // return the location instance to handle the path specified on the request target
@@ -84,7 +84,7 @@ class Request
 		void			printResult(void); // print the result produced
 		t_start 		&getStartLine(void); // geter of the startLine
 		headerFieldList &getHeaderFieldlist(void); // geter of the headerFields linked list
-		void			setFileString(std::string &file); // seter of the file string
+		void			setFileString(std::string &file, std::vector<char> &newBody); // seter of the file string
 		void			setServerInstance(Server *server);
 		void			setStatusCode(int newStatusCode); // seter of the status code
 		headerField		*getHeaderField(std::string key); // return a pointer on headerField struct specified in the key param return NULL if not found
@@ -94,7 +94,7 @@ class Request
 		std::string		getRequestTarget(void); // geter of the request target
 		int 			getStatusCode(void); // geter of the status code int repre
 		std::string		getBody(void); // return the body within the request 
-		stringContainer	getBodyStringContainer(void); // return the body within the request 
+		std::vector<char>	getBodyVector(void); // return the body within the request 
 		bool			getCGIStatus(void); // return the status of the CGI
 		std::string		getPath(void); // retunr the path
 		bool			getRedirectionStatus(void);

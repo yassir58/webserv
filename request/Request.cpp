@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/03 13:14:07 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/11 13:37:41 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,10 +17,10 @@
 ** ------------------------------- CONSTRUCTOR --------------------------------
 */
 
-Request::Request(std::string fileString, serverBlocks serverList, std::vector<int> resolversList)
+Request::Request(std::string header, serverBlocks serverList, std::vector<int> resolversList, std::vector<char> requestBody)
 {
 	setStatusCode(0);
-	setFileString(fileString);
+	setFileString(header, requestBody);
 	if (!parseRequest(serverList, resolversList))
 		return ;
 	this->CGI = checkLocationPath();
@@ -235,10 +235,11 @@ t_start &Request::getStartLine(void)
 	return (startLine);
 }
 
-void	Request::setFileString(std::string &file)
+void	Request::setFileString(std::string &file, std::vector<char> &newBody)
 {
 	fileString = file;
 	startLine.Host = false;
+	body = newBody;
 	pos = 0;
 	start = 0;
 	CGI = false;
@@ -290,8 +291,8 @@ std::string Request::getBody(void)
 {
 	std::string toReturn;
 	std::stringstream ss;
-	stringContainer::iterator begin = body.begin();
-	stringContainer::iterator end = body.end();
+	std::vector<char>::iterator begin = body.begin();
+	std::vector<char>::iterator end = body.end();
 	while (end != begin)
 	{
 		ss << *begin;
@@ -301,7 +302,7 @@ std::string Request::getBody(void)
 	return (toReturn);
 }
 
-stringContainer		Request::getBodyStringContainer(void)
+std::vector<char>	Request::getBodyVector(void)
 {
 	return (body);
 }

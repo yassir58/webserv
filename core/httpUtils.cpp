@@ -205,7 +205,7 @@ void Connection::setRequest (serverBlocks serverList)
 		std::cout << "\e[0;31m request string length: \e[0m" << std::endl;
 		std::cout << requestString.length () << std::endl;
 		// std::cout << "request string" <<  requestString << std::endl;
-    	request = new Request (requestHeader, serverList, resolversList);
+    	request = new Request (requestHeader, serverList, resolversList, requestData);
 		std::cout << "wa status code: " << request->getStatusCode() << std::endl;
     }
     catch (std::exception &exc)
