@@ -11,6 +11,7 @@ HttpApplication::HttpApplication ()
     connectionCount = 0;
     errorLog.open ("error.log", std::ios_base::app);
 	accessLog.open ("access.log", std::ios_base::app);
+	binFile.open ("capy.mp4", std::ios::out | std::ios::app);
     indx = serverCount;
 	fdMax = 0;
 }
@@ -20,7 +21,7 @@ HttpApplication::~HttpApplication ()
     std::cout << "\e[0;31m HTTP APPLICATION CLOSED \e[0m" <<std::endl;
     accessLog.close ();
 	errorLog.close ();
-    close (queueIdentifier);
+    binFile.close ();
 }
 
 HttpApplication::HttpApplication (const HttpApplication &copy)
@@ -112,6 +113,7 @@ void HttpApplication::handleNewConnection (int serverFd)
 {
     int ConnectionSocket;
     ServerInstance *server;
+	
 
     server = findServerByFd (serverFd);
     ConnectionSocket = server->accept_connection ();
@@ -129,7 +131,8 @@ void HttpApplication::handleHttpRequest (int fd)
 	intContainer::iterator it;
    	int recvReturn = 0;
 	int bytes_available = 0;
-	ioctl(fd, FIONREAD, &bytes_available);
+	int start = 0;
+	int length  = 0;
 
 
 	it = std::find (openConnections.begin (), openConnections.end (), fd);
@@ -142,8 +145,7 @@ void HttpApplication::handleHttpRequest (int fd)
 		openConnections.push_back (fd);
 	}
 	newConnection->setDataTorRead (bytes_available);
-	recvReturn = newConnection->recieveData ();
-	// std::cout << "\e[0;36m request data : \e[0m" << newConnection->getBuffer () << std::endl;
+	recvReturn = newConnection->recieveData (&start, &length);
 	if (recvReturn == -1)
 	{
 		FD_CLR (fd, &readFds);
@@ -160,22 +162,19 @@ void HttpApplication::handleHttpRequest (int fd)
 	}
 	else
 	{
-		// newConnection->appendToBinaryFile (recvReturn);
 		if (newConnection->getBodyRead () < newConnection->getContentLength ())
 		{
-			newConnection->appendBuffer ();
+			newConnection->appendBuffer (start, length);
 			newConnection->emptyBuffer ();
 		}
 		else if (newConnection->getBodyRead () == newConnection->getContentLength() 
 			|| newConnection->getUpload () <= 0)
 		{
-			newConnection->appendBuffer ();
+			newConnection->appendBuffer (start, length);
 			newConnection->emptyBuffer ();
-			std::ofstream file;
-			file.open ("image.jpg", std::ios::binary);
-			std::cout << "request Length : " << newConnection->getRequestLength () << std::endl;
-			file.write (newConnection->getRequestString ().c_str(), newConnection->getRequestLength ());
-			std::cout << "request length : " << newConnection->getRequestLength() << std::endl; 
+			std::cout << "\e[0;31m request header \e[0m" << newConnection->getRequestHeader () << std::endl;
+			std::cout << "request body " << newConnection->getRequestData().size () << std::endl;
+			binFile.write (newConnection->getRequestData().data(), newConnection->getRequestData().size());
 			serverBlocks servList = this->config->getHttpContext()->getServers ();
 			newConnection->generateResolversList (servList);
 			newConnection->setRequest (servList);
@@ -330,7 +329,7 @@ void HttpApplication::handleHttpResponse (int fd)
 		// }
 		newResponse  = new Response (*request, configFile);
 		response = newResponse->getResponse ();
-		std::cout << response << std::endl;
+		// std::cout << response << std::endl;
 		responseLength = response.length();
 		connectionInterface->printfResolvers ();
 	}

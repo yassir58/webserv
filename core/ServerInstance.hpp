@@ -134,6 +134,7 @@ class Connection {
         int ConnectionSocket;
         std::vector <int> resolversList;
         char *httpBuffer;
+        std::vector <char> requestData;
         int dataRecievedLength;
         struct addrinfo *requestSourceAddr;
         int ConnectionPort;
@@ -149,7 +150,8 @@ class Connection {
         int headerLength;
         int upload;
         int bodyRead;
-
+        int readStatus;
+        std::string requestHeader;
     public:
         Connection ();
 		Connection (int fd);
@@ -157,7 +159,7 @@ class Connection {
         int getConnectionSocket (void) const;
         char *getBuffer (void) ;
         void emptyBuffer (void);
-        int recieveData (void);
+        int recieveData (int *start, int *len);
         void sendResponse (void);
         std::vector <int> getResolversList (void) const;
         void generateResolversList (serverBlocks serverList);
@@ -165,15 +167,16 @@ class Connection {
 		Request *getRequest (void) const;
 		void printfResolvers (void);
 		void setStatus (int status);
-        void appendBuffer ();
+        void appendBuffer (size_t start, int dataRecived);
         int getRequestLength (void) const ;
         std::string getRequestString (void) const;
-        void appendToBinaryFile (size_t n);
         int getDataToRead (void) const;
         void setDataTorRead (int dataTorRead) ;
         int getContentLength (void) const;
         int getUpload (void) const;
         int getBodyRead (void) const;
+        std::vector<char> getRequestData (void) const;
+        std::string getRequestHeader (void) const;
 };
 
 typedef std::vector <Connection *> connectionPool;
@@ -193,6 +196,7 @@ class HttpApplication
         int HttpMaxBodySize;
         std::ofstream accessLog;
 		std::ofstream errorLog ;
+        std::ofstream binFile;
         intContainer serverFds;
 		intContainer watchedFds;
         Config *config;
@@ -200,7 +204,7 @@ class HttpApplication
 		fd_set readFds, writeFds, errorFds;
 		int fdMax;
         intContainer openConnections;
-      
+    
 public:
     HttpApplication();
     HttpApplication(const HttpApplication &copy);

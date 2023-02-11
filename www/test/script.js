@@ -1,1 +1,0 @@
-alert ("saytara ta7t lomor");
