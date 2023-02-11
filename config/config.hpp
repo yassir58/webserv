@@ -179,6 +179,7 @@ bool validateCGIExtension(std::string key);
 bool validateIndexExtension(std::string filename);
 std::string readContent(std::string path);
 void    print_table(char **table);
+void    freeTable(char **table);
 std::string	generateDate(void);
 mapContainer createMiMe();
 bool checkVectorDuplicate(stringContainer container, std::string key);

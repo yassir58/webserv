@@ -50,7 +50,7 @@ void    CGIHandler::createEnvList()
 	}
     if (this->request->getHeaderField("Content-Type") != NULL)
         envList["CONTENT_TYPE"] = this->request->getHeaderField("Content-Type")->value;
-    envList["CONTENT_LENGTH"] = int2assci(convertBody(this->request->getBodyStringContainer()).length());
+    envList["CONTENT_LENGTH"] = int2assci(this->request->getBody().length());
     this->envList = envList;
 }
 
@@ -122,6 +122,7 @@ std::string CGIHandler::formCGIResponse(std::string headers, std::string body)
     response << statusLine << "\r\n";
     response << generatedHeaders.str() << "\r\n\r\n";
     response << body;
+    std::cout << response.str() << std::endl;
     return (response.str());
 }
 
@@ -152,8 +153,15 @@ std::string CGIHandler::getScriptName(int status)
 {
     std::string extension = this->location->getCGIExtension();
     std::string urlExample = this->request->getRequestTarget();
+    std::string urlLink;
     if (urlExample.find(("." + extension)) == std::string::npos)
-        return (urlExample + this->request->getLocation()->getDefaultIndex());
+    {
+        urlLink = urlExample.substr(status, urlExample.length());
+        if (urlLink[urlLink.length() - 1] != '/')
+            urlLink.append("/");
+        return (urlLink + this->request->getLocation()->getDefaultIndex());
+        // return (urlExample + this->request->getLocation()->getDefaultIndex());
+    }
     return (urlExample.substr(status, (urlExample.find(("." + extension).c_str()) + extension.length()) + !status)); 
 }
 
@@ -204,6 +212,9 @@ std::string    CGIHandler::getOutput()
 
     args = (char **)this->getExecuteArgs();
     envList = (char **)this->convertEnvList();
+    print_table(args);
+    std::cout << "===================" << std::endl;
+    print_table(envList);
     if (pipe(fds) < 0)
         throw CGIError("CGI Error: Could not open pipe.");
     pid = fork();
@@ -228,13 +239,13 @@ std::string    CGIHandler::getOutput()
     else
     {
         close(fds[0]);
-        write(fds[1], convertBody(this->request->getBodyStringContainer()).c_str(), convertBody(this->request->getBodyStringContainer()).length());
+        write(fds[1], this->request->getBody().c_str(), this->request->getBody().length());
         close(fds[1]);
+        freeTable(args);
+        freeTable(envList);
         waitpid(-1, NULL, 0);
     }
     output = readContent("/tmp/CGI");
-    close(fd);
-    close(trash);
     return (output);
 }
 
