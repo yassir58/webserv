@@ -198,14 +198,15 @@ void Connection::generateResolversList (serverBlocks serverBlockList)
 	}
 }
 
-void Connection::setRequest (serverBlocks serverList)
+void Connection::setRequest (void)
 {
 	try
     {
+		while (1);
 		std::cout << "\e[0;31m request string length: \e[0m" << std::endl;
 		std::cout << requestString.length () << std::endl;
 		// std::cout << "request string" <<  requestString << std::endl;
-    	request = new Request (requestHeader, serverList, resolversList, requestData);
+    	// request = new Request ((*this));
 		std::cout << "wa status code: " << request->getStatusCode() << std::endl;
     }
     catch (std::exception &exc)
@@ -333,7 +334,7 @@ void Connection::appendBuffer (size_t start, int dataRecived)
 	std::cout << "start : " << start << std::endl;
 	while (dataRecived--)
 	{
-		requestData.push_back(httpBuffer[i]);
+		requestBody.push_back(httpBuffer[i]);
 		i++;
 	}
 }
@@ -381,12 +382,23 @@ int Connection::getContentLength (void) const
 	return (ContentLength);
 }
 
-std::vector <char> Connection::getRequestData (void) const
+std::vector <char> Connection::getRequestBody (void) const
 {
-	return (this->requestData);
+	return (this->requestBody);
 }
 
-std::string Connection::getRequestHeader (void) const
+std::string Connection::getRequestHeaders (void) const
 {
 	return (this->requestHeader);
+}
+
+
+void Connection::setServerBlocks (serverBlocks serverList) 
+{
+	this->servList  = serverList;
+}
+
+void Connection::setConfig (Config *conf)
+{
+	this->conf  = conf;
 }

@@ -134,7 +134,7 @@ class Connection {
         int ConnectionSocket;
         std::vector <int> resolversList;
         char *httpBuffer;
-        std::vector <char> requestData;
+        std::vector <char> requestBody;
         int dataRecievedLength;
         struct addrinfo *requestSourceAddr;
         int ConnectionPort;
@@ -152,6 +152,9 @@ class Connection {
         int bodyRead;
         int readStatus;
         std::string requestHeader;
+		Config *conf;
+		serverBlocks servList;
+
     public:
         Connection ();
 		Connection (int fd);
@@ -163,7 +166,7 @@ class Connection {
         void sendResponse (void);
         std::vector <int> getResolversList (void) const;
         void generateResolversList (serverBlocks serverList);
-		void setRequest (serverBlocks serverList);
+		void setRequest (void);
 		Request *getRequest (void) const;
 		void printfResolvers (void);
 		void setStatus (int status);
@@ -175,8 +178,10 @@ class Connection {
         int getContentLength (void) const;
         int getUpload (void) const;
         int getBodyRead (void) const;
-        std::vector<char> getRequestData (void) const;
-        std::string getRequestHeader (void) const;
+        std::vector<char> getRequestBody (void) const;
+        std::string getRequestHeaders (void) const;
+		void setServerBlocks (serverBlocks serverList);
+		void setConfig (Config *conf);
 };
 
 typedef std::vector <Connection *> connectionPool;
