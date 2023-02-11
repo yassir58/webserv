@@ -11,7 +11,7 @@ HttpApplication::HttpApplication ()
     connectionCount = 0;
     // errorLog.open ("error.log", std::ios_base::app);
 	// accessLog.open ("access.log", std::ios_base::app);
-	binFile.open ("capy.png", std::ios::out | std::ios::app);
+	binFile.open ("capy.mp4", std::ios::out | std::ios::app);
 	// file.open ("received_file.png", std::ios::binary);
     indx = serverCount;
 	fdMax = 0;

@@ -402,3 +402,13 @@ void Connection::setConfig (Config *conf)
 {
 	this->conf  = conf;
 }
+
+Config *Connection::getConfig (void) const
+{
+	return (this->conf);	
+}
+
+serverBlocks Connection::getServerBlocks (void) const
+{
+	return (this->servList);
+}

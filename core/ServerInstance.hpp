@@ -182,6 +182,8 @@ class Connection {
         std::string getRequestHeaders (void) const;
 		void setServerBlocks (serverBlocks serverList);
 		void setConfig (Config *conf);
+		serverBlocks getServerBlocks (void) const;
+		Config *getConfig (void) const;
 };
 
 typedef std::vector <Connection *> connectionPool;
