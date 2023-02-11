@@ -6,11 +6,12 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/11 20:39:11 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/11 21:58:58 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Request.hpp"
+
 
 /*
 ** ------------------------------- CONSTRUCTOR --------------------------------
@@ -19,8 +20,9 @@
 Request::Request(Connection *newConnection)
 {
 	setStatusCode(0);
+	configFile = newConnection->getConfig();
 	setFileString(newConnection->getRequestHeaders(), newConnection->getRequestBody());
-	if (!parseRequest(newConnection->get, newConnection->getResolversList()))
+	if (!parseRequest(newConnection->getServerBlocks(), newConnection->getResolversList()))
 		return ;
 	this->CGI = checkLocationPath();
 }
@@ -92,6 +94,13 @@ int	Request::checkDirectory(Location *pathLocation)
 	int dec = isDir(path.c_str());
 	if (dec && startLine.method == "GET")
 	{
+		if (*(path.end() - 1) != '/')
+		{
+			redirectionLink = path + "/";
+			redirectCode = pathLocation->getRedirectCode();
+			redirectionStatus = true;
+			return (0);
+		}
 		std::string indexFile = pathLocation->getDefaultIndex();
 		if (!indexFile.empty())
 		{
@@ -116,8 +125,8 @@ bool	Request::checkUpload(Location *pathLocation)
 		if (!type)
 			return (true);
 		std::string uploadPath = pathLocation->getUploadPath();
-		
-		if (type->value == "multipart/form-data")
+		mapContainer::iterator pos = configFile->getMimeMap().find(type->value);
+		if (type->value == "multipart/form-data" || pos != configFile->getMimeMap().end())
 		{
 			if (!uploadPath.empty())
 			{
@@ -144,7 +153,7 @@ bool	Request::checkUpload(Location *pathLocation)
 				statusCode = FORBIDDEN;
 				return (false);
 			}
-			file << getBody();
+			file.write(body.data(), body.size());
 			file.close();
 			upload = true;
 			statusCode = CREATED;
