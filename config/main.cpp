@@ -36,9 +36,9 @@ int main(void)
     // }
 
 
+    Config *file = new Config("../testing/configs/home.conf");
     try 
     {
-        Config *file = new Config("../testing/configs/default.conf");
         file->parseConfig();
         std::cout << "Server [0] Host: " << file->getHttpContext()->getServers()[0]->getHost() << std::endl;
         std::cout << "Server [0] Port: " << file->getHttpContext()->getServers()[0]->getPort() << std::endl;
@@ -61,6 +61,23 @@ int main(void)
     }   
     catch(std::exception &e)
     {
+        // int i;
+        // int j;
+
+        // j = 0;
+        // i = 0;
+        // while (i < file->getHttpContext()->getServers().size())
+        // {
+        //     while (j < file->getHttpContext()->getServers()[i]->getLocations().size())
+        //     {
+        //         delete file->getHttpContext()->getServers()[i]->getLocations()[j];
+        //         j++;
+        //     }
+        //     delete file->getHttpContext()->getServers()[i];
+        //     i++;
+        //     j = 0;
+        // }
+        delete file;
         std::cout << e.what() << std::endl;
     }
     // return (0);
