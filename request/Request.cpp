@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/12 10:29:02 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/12 15:24:45 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,9 +68,12 @@ bool Request::checkLocationPath(void)
 Location *Request::matchLocation(void)
 {
 	std::vector<Location *> Locations = serverInstance->getLocations();
+	if (!Locations.size())
+		return (NULL);
 	std::vector<Location *>::iterator begin = Locations.begin();
 	std::vector<Location *>::iterator end = Locations.end();
 	size_t	pos;
+	std::cout << "Location: " << Locations.size() << std::endl;
 	while (end != begin)
 	{
 		int dec = path.compare((*begin)->getEndPoint());

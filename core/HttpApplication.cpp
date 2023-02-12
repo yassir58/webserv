@@ -303,7 +303,7 @@ void HttpApplication::handleHttpResponse (int fd)
 	if (connectionInterface != nullptr)
 	{
 		request = connectionInterface->getRequest();
-		if (!request->getLocation()->getEndPoint().empty())
+		if (request->getLocation() && !request->getLocation()->getEndPoint().empty())
 		{
 			if (request->getCGIStatus())
 				std::cout << "CGI status: Enabled" << std::endl;

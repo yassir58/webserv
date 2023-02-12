@@ -227,7 +227,6 @@ Server *Request::matchRequestHandler (serverBlocks serverList, std::vector <int>
 
 	servIndx = resolversList[0];
 	servName = this->getStartLine().hostName ;
-	
 	for (it = resolversList.begin (); it != resolversList.end (); it++)
 	{
 		if (!serverList[(*it)]->getServerName ().compare(servName))
