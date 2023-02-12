@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/12 15:26:07 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/12 16:07:22 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -230,7 +230,9 @@ int	Response::applyMethod(void)
 	else if (method == "DELETE" && statusCode == 0)
 	{
 		if (request->getPath().find("..", 0) != std::string::npos)
-			request->setStatusCode(FORBIDDEN);
+			return (request->setStatusCode(FORBIDDEN), 1);
+		if (request->getRoot().empty() || request->getRoot().find("/www") == std::string::npos)
+			return (request->setStatusCode(FORBIDDEN), 1);
 		if (remove(request->getPath().c_str()))
 			request->setStatusCode(SERVER_ERROR);
 		else
@@ -243,7 +245,7 @@ int	Response::applyMethod(void)
 		else if (request->getStatusCode() == FORBIDDEN)
 			responseBody = request->getServerInstance()->getErrorPages()->path_forbidden;
 		else if (request->getStatusCode() == SERVER_ERROR)
-			responseBody = request->getServerInstance()->getErrorPages()->path_internal_error;	
+			responseBody = request->getServerInstance()->getErrorPages()->path_internal_error;
 	}
 	return (0);
 }
