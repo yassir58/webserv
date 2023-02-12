@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/31 15:58:58 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/12 15:00:14 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/12 15:29:11 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,6 +120,7 @@ int Request::checkRequestTarget(serverBlocks serverList, std::vector <int> resol
 	Location *pathLocation = matchLocation();
 	if (pathLocation == NULL)
 	{
+		this->pathLocation = NULL;
 		statusCode = NOT_FOUND;
 		return (0);
 	}

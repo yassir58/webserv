@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/12 14:57:34 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/12 15:24:45 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,6 @@ Request::Request(Connection *newConnection)
 	if (!parseRequest(newConnection->getServerBlocks(), newConnection->getResolversList()))
 		return ;
 	this->CGI = checkLocationPath();
-	std::cout << "I get here\n";
 }
 
 /*
@@ -69,12 +68,12 @@ bool Request::checkLocationPath(void)
 Location *Request::matchLocation(void)
 {
 	std::vector<Location *> Locations = serverInstance->getLocations();
+	if (!Locations.size())
+		return (NULL);
 	std::vector<Location *>::iterator begin = Locations.begin();
 	std::vector<Location *>::iterator end = Locations.end();
 	size_t	pos;
 	std::cout << "Location: " << Locations.size() << std::endl;
-	if (!Locations.size())
-		return (NULL);
 	while (end != begin)
 	{
 		int dec = path.compare((*begin)->getEndPoint());
