@@ -311,26 +311,26 @@ void HttpApplication::handleHttpResponse (int fd)
 		request = connectionInterface->getRequest();
 		std::cout << "\e[0;36m status code after: \e[0m" << request->getStatusCode () << std::endl;
 		std::cout << "\e[0;31m path : \e[0m"  << request->getPath () << std::endl;
-		// if (!request->getLocation()->getEndPoint().empty())
-		// {
-		// 	std::cout << "Location: " << request->getLocation()->getEndPoint() << std::endl;
-		// 	if (request->getCGIStatus())
-		// 		std::cout << "CGI status: Enabled" << std::endl;
-		// 	else
-		// 		std::cout << "CGI status: Disabled" << std::endl;
-		// }
-		// if (request->getCGIStatus())
-		// {
-		// 	newCgi = new CGIHandler (request);
-		// 	response = newCgi->execute();
-		// }
-		// else 
-		// {
-		// 	newResponse = new Response (*request, configFile);
-		// 	response = newResponse->getResponse ();
-		// }
-		newResponse  = new Response (*request, configFile);
-		response = newResponse->getResponse ();
+		if (!request->getLocation()->getEndPoint().empty())
+		{
+			std::cout << "Location: " << request->getLocation()->getEndPoint() << std::endl;
+			if (request->getCGIStatus())
+				std::cout << "CGI status: Enabled" << std::endl;
+			else
+				std::cout << "CGI status: Disabled" << std::endl;
+		}
+		if (request->getCGIStatus())
+		{
+			newCgi = new CGIHandler (request);
+			response = newCgi->execute();
+		}
+		else 
+		{
+			newResponse = new Response (*request, configFile);
+			response = newResponse->getResponse ();
+		}
+		// newResponse  = new Response (*request, configFile);
+		// response = newResponse->getResponse ();
 		// std::cout << response << std::endl;
 		responseLength = response.length();
 		connectionInterface->printfResolvers ();
