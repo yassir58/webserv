@@ -89,7 +89,6 @@ int Connection::recieveData (int *start, int *len)
 {
 	httpBuffer = (char *) malloc (sizeof (char) * (BUFFER_MAX));
     dataRecievedLength = recv (ConnectionSocket, httpBuffer, BUFFER_MAX - 1, 0);
-	std::cout << "data recieved in bytes \e[0;32m"  << dataRecievedLength << " \e[0m" << std::endl; 
 	if (dataRecievedLength > 0)
 	{
 		requestLength += dataRecievedLength ;
@@ -110,7 +109,6 @@ int Connection::recieveData (int *start, int *len)
 			else if (method == 0)
 				upload = 0;
 
-			std::cout << "upload : " << upload << std::endl;
 			size_t headerLen = tmpBuffer.find (CRLF);
 			if (headerLen != std::string::npos)
 			{
@@ -118,7 +116,6 @@ int Connection::recieveData (int *start, int *len)
 				*start = headerLength;
 				*len  = dataRecievedLength - headerLength;
 				requestHeader = tmpBuffer.substr (0, headerLength);
-				std::cout << "Header Length : " << headerLength << std::endl;
 			}
 			// else
 			// 	upload = -1;
@@ -142,8 +139,8 @@ int Connection::recieveData (int *start, int *len)
 					tmp[j] = 0;
 					ContentLength = atoi (tmp);
 					bodyRead = dataRecievedLength - headerLength;
-					std::cout << "Content Length : " << ContentLength << std::endl;
-					std::cout << "Body read : " << bodyRead << std::endl;
+					// std::cout << "Content Length : " << ContentLength << std::endl;
+					// std::cout << "Body read : " << bodyRead << std::endl;
 				}
 			}
 		}
@@ -152,7 +149,6 @@ int Connection::recieveData (int *start, int *len)
 			bodyRead += dataRecievedLength;
 			*start = 0;
 			*len = dataRecievedLength;
-			std::cout << "Body read : " << bodyRead << std::endl;
 		}				
 	}
 
@@ -202,10 +198,8 @@ void Connection::setRequest (void)
 {
 	try
     {
-		std::cout << "\e[0;31m request string length: \e[0m" << std::endl;
 		std::cout << requestString.length () << std::endl;
     	request = new Request (this);
-		std::cout << "wa status code: " << request->getStatusCode() << std::endl;
     }
     catch (std::exception &exc)
     {
@@ -236,41 +230,11 @@ Server *Request::matchRequestHandler (serverBlocks serverList, std::vector <int>
 	
 	for (it = resolversList.begin (); it != resolversList.end (); it++)
 	{
-		std::cout << "Host : " << servName << std::endl;
-		std::cout << "servName : " << serverList[(*it)]->getServerName () << std::endl;
 		if (!serverList[(*it)]->getServerName ().compare(servName))
 			servIndx = (*it);
 	}
-	std::cout << "\e[0;31m server index \e[0m" << servIndx << std::endl;
 	return (serverList[servIndx]);
 }
-
-
-void Connection::sendResponse (void)
-{
-	// Response newResponse ((*this->request));
-	// stringContainer::iterator it;
-	// stringContainer response;
-	// std::string body;
-	// int sendReturn;
-
-	
-	// response = newResponse.getResponse ();
-	// std::cout << "\e[0;31m response content \e[0m" << std::endl;
-	// for (it = response.begin(); it != response.end (); it++)
-	// {
-	// 	send (ConnectionSocket, (*it).c_str(), (*it).length(), 0);
-	// 	std::cout << (*it) << std::endl;
-	// }
-    // //sendReturn = send (ConnectionSocket, HTTP_RESPONSE_EXAMPLE, strlen (HTTP_RESPONSE_EXAMPLE), 0);
-	// body = getTestBody ("./testing/indx.html");
-	// sendReturn = send (ConnectionSocket, body.c_str (), body.length(), 0);
-	// if (sendReturn == -1)
-	// 	throw Connection_error (strerror (errno), "SEND");
-	// else if (sendReturn == 0)
-	// 	std::cout << "\e[0;31m server closed connection \e[0m" << std::endl;
-}
-
 
 std::string getTestBody (std::string filename)
 {
@@ -329,7 +293,6 @@ void Connection::appendBuffer (size_t start, int dataRecived)
 {
 	int i = start;
 
-	std::cout << "start : " << start << std::endl;
 	while (dataRecived--)
 	{
 		requestBody.push_back(httpBuffer[i]);

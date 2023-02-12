@@ -9,10 +9,6 @@ HttpApplication::HttpApplication ()
 {
     serverCount = 1;
     connectionCount = 0;
-    // errorLog.open ("error.log", std::ios_base::app);
-	// accessLog.open ("access.log", std::ios_base::app);
-	binFile.open ("capy.mp4", std::ios::out | std::ios::app);
-	// file.open ("received_file.png", std::ios::binary);
     indx = serverCount;
 	fdMax = 0;
 }
@@ -20,7 +16,6 @@ HttpApplication::HttpApplication ()
 HttpApplication::~HttpApplication ()
 {
     std::cout << "\e[0;31m HTTP APPLICATION CLOSED \e[0m" <<std::endl;
-	binFile.close ();
 }
 
 HttpApplication::HttpApplication (const HttpApplication &copy)
@@ -169,10 +164,9 @@ void HttpApplication::handleHttpRequest (int fd)
 		else if (newConnection->getBodyRead () == newConnection->getContentLength() 
 			|| newConnection->getUpload () <= 0)
 		{
-			std::cout << "upload state : " << newConnection->getUpload () << " BodyRead : " << newConnection->getBodyRead () << std::endl;
+			
 			newConnection->appendBuffer (start, length);
 			newConnection->emptyBuffer ();
-			std::cout << "\e[0;31m request header \e[0m" << newConnection->getRequestHeaders () << std::endl;
 			binFile.write (newConnection->getRequestBody().data(), newConnection->getRequestBody().size ());
 			serverBlocks servList = this->config->getHttpContext()->getServers ();
 			newConnection->generateResolversList (servList);
@@ -309,11 +303,8 @@ void HttpApplication::handleHttpResponse (int fd)
 	if (connectionInterface != nullptr)
 	{
 		request = connectionInterface->getRequest();
-		std::cout << "\e[0;36m status code after: \e[0m" << request->getStatusCode () << std::endl;
-		std::cout << "\e[0;31m path : \e[0m"  << request->getPath () << std::endl;
 		if (!request->getLocation()->getEndPoint().empty())
 		{
-			std::cout << "Location: " << request->getLocation()->getEndPoint() << std::endl;
 			if (request->getCGIStatus())
 				std::cout << "CGI status: Enabled" << std::endl;
 			else
@@ -329,14 +320,11 @@ void HttpApplication::handleHttpResponse (int fd)
 			newResponse = new Response (*request, configFile);
 			response = newResponse->getResponse ();
 		}
-		// newResponse  = new Response (*request, configFile);
-		// response = newResponse->getResponse ();
-		// std::cout << response << std::endl;
 		responseLength = response.length();
 		connectionInterface->printfResolvers ();
 	}
 	errValue = send (fd, response.c_str (), response.length (), 0);
-	std::cout << "-------- bytes sent " << errValue << " --------" << std::endl;
+	// std::cout << "-------- bytes sent " << errValue << " --------" << std::endl;
 	if (errValue == -1)
 	{
 		FD_CLR (fd, &writeFds);
@@ -347,7 +335,6 @@ void HttpApplication::handleHttpResponse (int fd)
 	}
 	else
 	{
-		std::cout << errValue <<  " Bytes sent" << std::endl;
 		FD_CLR (fd, &writeFds);
 		FD_CLR (fd, &errorFds);
 		close (fd);
