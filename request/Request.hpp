@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:36 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/11 21:47:23 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/12 15:58:34 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,5 +105,6 @@ class Request
 		bool			getUploadStatus(void);
 		Location		*getLocation(void);
 		Server			*getServerInstance(void);
+		std::string		getRoot(void);
 };
 #endif
