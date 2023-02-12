@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/11 21:58:58 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/12 10:29:02 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,8 +96,10 @@ int	Request::checkDirectory(Location *pathLocation)
 	{
 		if (*(path.end() - 1) != '/')
 		{
-			redirectionLink = path + "/";
-			redirectCode = pathLocation->getRedirectCode();
+			std::cout << "hoho///////////////\n";
+			size_t pos = path.find(root);
+			redirectionLink = path.substr(pos + root.length(), std::string::npos) + "/";
+			redirectCode = "301";
 			redirectionStatus = true;
 			return (0);
 		}
