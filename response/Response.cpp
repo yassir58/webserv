@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/13 10:27:53 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/13 19:18:15 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,27 @@ Response::Response(Request &request, Config *config)
 	else if (!this->request->getStatusCode())
 	{
 		applyMethod();
+	}
+	else
+	{
+		if (request->getServerInstance()->getErrorPagesStatus())
+		{
+			std::string errorPage;
+			if (request->getStatusCode() == NOT_FOUND)
+				erroPage = request->getServerInstance()->getErrorPages()->path_not_found;
+			else if (request->getStatusCode() == FORBIDDEN)
+				erroPage = request->getServerInstance()->getErrorPages()->path_forbidden;
+			else if (request->getStatusCode() == SERVER_ERROR)
+				erroPage = request->getServerInstance()->getErrorPages()->path_internal_error;
+			std::ifstream infile(errorPage);
+			if (infile.is_open())
+			{
+				std::ostringstream ss;
+				ss << infile.rdbuf();
+				responseBody = ss.str();
+				infile.close();
+			}
+		}
 	}
 	statusIndex = getStatusCode();
 	responseToSend.push_back(generateStatusLine());
@@ -240,15 +261,6 @@ int	Response::applyMethod(void)
 			request->setStatusCode(SERVER_ERROR);
 		else
 			request->setStatusCode(OK);
-	}
-	if (request->getServerInstance()->getErrorPagesStatus())
-	{
-		if (request->getStatusCode() == NOT_FOUND)
-			responseBody = request->getServerInstance()->getErrorPages()->path_not_found;
-		else if (request->getStatusCode() == FORBIDDEN)
-			responseBody = request->getServerInstance()->getErrorPages()->path_forbidden;
-		else if (request->getStatusCode() == SERVER_ERROR)
-			responseBody = request->getServerInstance()->getErrorPages()->path_internal_error;
 	}
 	return (0);
 }
