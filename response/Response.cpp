@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/13 19:23:29 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/13 19:34:12 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,17 +38,18 @@ Response::Response(Request &request, Config *config)
 		{
 			std::string errorPage;
 			if (this->request->getStatusCode() == NOT_FOUND)
-				erroPage = this->request->getServerInstance()->getErrorPages()->path_not_found;
+				errorPage = this->request->getServerInstance()->getErrorPages()->path_not_found;
 			else if (this->request->getStatusCode() == FORBIDDEN)
-				erroPage = this->request->getServerInstance()->getErrorPages()->path_forbidden;
+				errorPage = this->request->getServerInstance()->getErrorPages()->path_forbidden;
 			else if (this->request->getStatusCode() == SERVER_ERROR)
-				erroPage = this->request->getServerInstance()->getErrorPages()->path_internal_error;
+				errorPage = this->request->getServerInstance()->getErrorPages()->path_internal_error;
 			std::ifstream infile(errorPage);
 			if (infile.is_open())
 			{
 				std::ostringstream ss;
 				ss << infile.rdbuf();
 				responseBody = ss.str();
+				errorPagestatus = true;
 				infile.close();
 			}
 		}
@@ -133,6 +134,8 @@ std::string	Response::generateContentType(void)
 	std::string path = request->getPath();
 	size_t		dot;
 	dot = path.find_last_of('.', std::string::npos);
+	if (errorPagestatus)
+		return ("Content-Type: text/html\r\n");
 	if (dot == std::string::npos)
 		return ("Content-Type: text/plain\r\n");
 	extension = path.substr(dot + 1, std::string::npos);
@@ -287,6 +290,7 @@ std::string Response::getResponse(void)
 void	Response::setRequest(Request *request, Config *config)
 {
 	this->request = request;
+	errorPagestatus = false;
 	std::cout << "code1: " << this->request->getStatusCode() << std::endl;
 	this->configData = config;
 	size_t	index = 0;

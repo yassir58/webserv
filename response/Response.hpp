@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 14:44:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/11 13:45:10 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/13 19:32:50 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,7 @@ class Response
 		std::string		responseBody; // the body of the response 
 		stringContainer	responseToSend; // the all mighty response
 		Config			*configData; // the data from the configuration file
+		bool			errorPagestatus;
 	public:
 		Response(Request &request, Config *configFile); // param constractor first argument is the request and here I apply method
 		~Response(); // desectrator not used
