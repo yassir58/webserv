@@ -29,6 +29,8 @@
 
 #define PORT_MAX 65535
 
+#define SERVER_SOFTWARE_VERSION "Webserv/1.0"
+
 typedef std::vector<std::string> stringContainer;
 typedef std::map<std::string, std::string> mapContainer;
 
@@ -183,5 +185,6 @@ void    freeTable(char **table);
 std::string	generateDate(void);
 mapContainer createMiMe();
 bool checkVectorDuplicate(stringContainer container, std::string key);
+std::string generateErrorPage(unsigned int statusCode);
 
 #endif 
