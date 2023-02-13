@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/13 19:18:15 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/13 19:23:29 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,15 +34,15 @@ Response::Response(Request &request, Config *config)
 	}
 	else
 	{
-		if (request->getServerInstance()->getErrorPagesStatus())
+		if (this->request->getServerInstance()->getErrorPagesStatus())
 		{
 			std::string errorPage;
-			if (request->getStatusCode() == NOT_FOUND)
-				erroPage = request->getServerInstance()->getErrorPages()->path_not_found;
-			else if (request->getStatusCode() == FORBIDDEN)
-				erroPage = request->getServerInstance()->getErrorPages()->path_forbidden;
-			else if (request->getStatusCode() == SERVER_ERROR)
-				erroPage = request->getServerInstance()->getErrorPages()->path_internal_error;
+			if (this->request->getStatusCode() == NOT_FOUND)
+				erroPage = this->request->getServerInstance()->getErrorPages()->path_not_found;
+			else if (this->request->getStatusCode() == FORBIDDEN)
+				erroPage = this->request->getServerInstance()->getErrorPages()->path_forbidden;
+			else if (this->request->getStatusCode() == SERVER_ERROR)
+				erroPage = this->request->getServerInstance()->getErrorPages()->path_internal_error;
 			std::ifstream infile(errorPage);
 			if (infile.is_open())
 			{
