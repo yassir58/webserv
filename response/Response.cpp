@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/12 16:07:22 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/13 10:27:53 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,16 +19,19 @@
 Response::Response(Request &request, Config *config)
 {
 	setRequest(&request, config);
-	std::cout << "in the response: "  << this->request->getStatusCode() << std::endl;
 	if (this->request->getRedirectionStatus())
+	{
 		this->request->setStatusCode(handleRedirection());
+	}
 	else if (this->request->getUploadStatus())
 	{
 		int code = this->request->getStatusCode();
 		this->request->setStatusCode(code);
 	}
-	else
+	else if (!this->request->getStatusCode())
+	{
 		applyMethod();
+	}
 	statusIndex = getStatusCode();
 	responseToSend.push_back(generateStatusLine());
 	stringContainer headerFields = generateHeaderFields(responseBody);
