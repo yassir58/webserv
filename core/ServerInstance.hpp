@@ -29,6 +29,7 @@
 #include <dirent.h>
 #include <sys/ioctl.h>
 
+
 // MACROS
 #define PORT 8080
 #define BUFFER_MAX 65000
@@ -67,6 +68,8 @@ typedef std::vector <std::string> stringContainer;
 #define HTTP_RESPONSE_EXAMPLE "HTTP/1.1 200 OK\r\nServer: WebServer\r\nContent-Type: text/html\r\nContent-Length: 23\r\nConnection: close\r\n\r\n<h1> hello world </h1>"
 #define HTTP_LENGTH 225
 class Request;
+class Response;
+class CGIHandler ;
 class Fatal_error : public std::exception
 {
     const char *err_description ;
@@ -127,10 +130,10 @@ public:
 };
 
 typedef std::vector <ServerInstance*> serverContainer ;
-
 class Connection {
     private:
         Request *request;
+		Response *response;
         int ConnectionSocket;
         std::vector <int> resolversList;
         char *httpBuffer;
@@ -153,7 +156,12 @@ class Connection {
         int readStatus;
         std::string requestHeader;
 		Config *conf;
+		CGIHandler *CGI;
 		serverBlocks servList;
+		bool responseConstructed;
+		size_t bytesSent ;
+		int responseIndex;
+		bool cgi;
 
     public:
         Connection ();
@@ -163,7 +171,6 @@ class Connection {
         char *getBuffer (void) ;
         void emptyBuffer (void);
         int recieveData (int *start, int *len);
-        void sendResponse (void);
         std::vector <int> getResolversList (void) const;
         void generateResolversList (serverBlocks serverList);
 		void setRequest (void);
@@ -184,6 +191,10 @@ class Connection {
 		void setConfig (Config *conf);
 		serverBlocks getServerBlocks (void) const;
 		Config *getConfig (void) const;
+		size_t getBytesSent (void) const ;
+		bool getResponseState (void) const;
+		int sendResponse (int fd);
+		void constructResponse (void);
 };
 
 typedef std::vector <Connection *> connectionPool;
@@ -212,7 +223,6 @@ class HttpApplication
 		 std::ofstream file;
 		int fdMax;
         intContainer openConnections;
-    
 public:
     HttpApplication();
     HttpApplication(const HttpApplication &copy);
@@ -258,7 +268,6 @@ public:
 	}
 	void handleSigPipe ();
 	Config *getConfig (void) const;
-
 };
 
 

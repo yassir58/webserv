@@ -1,0 +1,335 @@
+@import url("https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300&family=Montserrat:wght@300&display=swap");
+.fill:hover,
+.fill:focus {
+  box-shadow: inset 0 0 0 2em var(--hover);
+}
+
+.pulse:hover,
+.pulse:focus {
+  -webkit-animation: pulse 1s;
+          animation: pulse 1s;
+  box-shadow: 0 0 0 2em rgba(255, 255, 255, 0);
+}
+
+@-webkit-keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 var(--hover);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 var(--hover);
+  }
+}
+.close:hover,
+.close:focus {
+  box-shadow: inset -3.5em 0 0 0 var(--hover), inset 3.5em 0 0 0 var(--hover);
+}
+
+.raise:hover,
+.raise:focus {
+  box-shadow: 0 0.5em 0.5em -0.4em var(--hover);
+  transform: translateY(-0.25em);
+}
+
+.up:hover,
+.up:focus {
+  box-shadow: inset 0 -3.25em 0 0 var(--hover);
+}
+
+.slide:hover,
+.slide:focus {
+  box-shadow: inset 6.5em 0 0 0 var(--hover);
+}
+
+.offset {
+  box-shadow: 0.3em 0.3em 0 0 var(--color), inset 0.3em 0.3em 0 0 var(--color);
+}
+.offset:hover, .offset:focus {
+  box-shadow: 0 0 0 0 var(--hover), inset 6em 3.5em 0 0 var(--hover);
+}
+
+.fill {
+  --color: #a972cb;
+  --hover: #cb72aa;
+}
+
+.pulse {
+  --color: #ef6eae;
+  --hover: #ef8f6e;
+}
+
+.close {
+  --color: #ff7f82;
+  --hover: #ffdc7f;
+}
+
+.raise {
+  --color: #ffa260;
+  --hover: #e5ff60;
+}
+
+.up {
+  --color: #e4cb58;
+  --hover: #94e458;
+}
+
+.slide {
+  --color: #8fc866;
+  --hover: #66c887;
+}
+
+.offset {
+  --color: #19bc8b;
+  --hover: #1973bc;
+}
+
+button {
+  color: var(--color);
+  transition: 0.25s;
+}
+button:hover, button:focus {
+  border-color: var(--hover);
+  color: #fff;
+}
+
+body {
+  color: #fff;
+  background: #17181c;
+}
+
+button {
+  background: none;
+  border: 2px solid;
+  font: inherit;
+  line-height: 1;
+  margin: 0.5em;
+  padding: 1em 2em;
+}
+
+h1 {
+  font-weight: 400;
+}
+
+code {
+  color: #e4cb58;
+  font: inherit;
+}
+
+header h1 {
+  color: #ff7f82;
+  font-size: 1.6rem;
+  font-family: "Chakra Petch", sans-serif;
+  width: 90%;
+  margin: 0 auto;
+}
+
+main {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  height: 100vh;
+  align-content: space-between;
+}
+
+.container {
+  display: flex;
+  justify-content: space-between;
+  width: 80%;
+  margin: 0 auto;
+}
+.container .item {
+  width: 30%;
+  padding-top: 10%;
+}
+.container .item img {
+  width: 400px;
+}
+.container .content-item {
+  width: 50%;
+  padding-top: 10%;
+}
+.container .content-item h1 {
+  font-size: 3.6rem;
+  font-family: "Chakra Petch", sans-serif;
+  color: #e4cb58;
+  padding-right: 10%;
+}
+.container .content-item p {
+  font-size: 1.5rem;
+  padding-right: 10%;
+  font-family: "Montserrat", sans-serif;
+}
+
+footer {
+  text-align: center;
+  color: #fff;
+}
+
+@media screen and (max-width: 760px) {
+  .container {
+    flex-direction: column;
+  }
+  .container .item {
+    width: 100%;
+  }
+  .container .content-item {
+    width: 100%;
+  }
+  .container h1 {
+    padding: 10px 0;
+  }
+  .container p {
+    padding: 10px 0;
+  }
+}/*# sourceMappingURL=styles.css.map */
+
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300&family=Montserrat:wght@300&display=swap');
+ .fill:hover, .fill:focus {
+         box-shadow: inset 0 0 0 2em var(--hover);
+}
+ .pulse:hover, .pulse:focus {
+         animation: pulse 1s;
+         box-shadow: 0 0 0 2em rgba(255, 255, 255, 0);
+}
+ @keyframes pulse {
+         0% {
+                 box-shadow: 0 0 0 0 var(--hover);
+        }
+}
+ .close:hover, .close:focus {
+         box-shadow: inset -3.5em 0 0 0 var(--hover), inset 3.5em 0 0 0 var(--hover);
+}
+ .raise:hover, .raise:focus {
+         box-shadow: 0 0.5em 0.5em -0.4em var(--hover);
+         transform: translateY(-0.25em);
+}
+ .up:hover, .up:focus {
+         box-shadow: inset 0 -3.25em 0 0 var(--hover);
+}
+ .slide:hover, .slide:focus {
+         box-shadow: inset 6.5em 0 0 0 var(--hover);
+}
+ .offset {
+         box-shadow: 0.3em 0.3em 0 0 var(--color), inset 0.3em 0.3em 0 0 var(--color);
+}
+ .offset:hover, .offset:focus {
+         box-shadow: 0 0 0 0 var(--hover), inset 6em 3.5em 0 0 var(--hover);
+}
+ .fill {
+         --color: #a972cb;
+         --hover: #cb72aa;
+}
+ .pulse {
+         --color: #ef6eae;
+         --hover: #ef8f6e;
+}
+ .close {
+         --color: #ff7f82;
+         --hover: #ffdc7f;
+}
+ .raise {
+         --color: #ffa260;
+         --hover: #e5ff60;
+}
+ .up {
+         --color: #e4cb58;
+         --hover: #94e458;
+}
+ .slide {
+         --color: #8fc866;
+         --hover: #66c887;
+}
+ .offset {
+         --color: #19bc8b;
+         --hover: #1973bc;
+}
+ button {
+         color: var(--color);
+         transition: 0.25s;
+}
+ button:hover, button:focus {
+         border-color: var(--hover);
+         color: #fff;
+}
+ body {
+         color: #fff;
+         background: #17181c;
+}
+ button {
+         background: none;
+         border: 2px solid;
+         font: inherit;
+         line-height: 1;
+         margin: 0.5em;
+         padding: 1em 2em;
+}
+ h1 {
+         font-weight: 400;
+}
+ code {
+         color: #e4cb58;
+         font: inherit;
+}
+ header h1 {
+         color: #ff7f82;
+         font-size: 1.6rem;
+         font-family: 'Chakra Petch', sans-serif;
+         width: 90%;
+         margin: 0 auto;
+}
+ main {
+         display: grid;
+         grid-template-rows: auto 1fr auto;
+         height: 100vh;
+         align-content: space-between;
+}
+ .container {
+         display: flex;
+         justify-content: space-between;
+         width: 80%;
+         margin: 0 auto;
+}
+ .container .item {
+         width: 30%;
+         padding-top: 10%;
+}
+ .container .item img {
+         width: 400px;
+}
+ .container .content-item {
+         width: 50%;
+         padding-top: 10%;
+}
+ .container .content-item h1 {
+         font-size: 3.6rem;
+         font-family: 'Chakra Petch', sans-serif;
+         color: #e4cb58;
+         padding-right: 10%;
+}
+ .container .content-item p {
+         font-size: 1.5rem;
+         padding-right: 10%;
+         font-family: 'Montserrat', sans-serif;
+}
+ footer {
+         text-align: center;
+         color: #fff;
+}
+ @media screen and (max-width: 760px) {
+         .container {
+                 flex-direction: column;
+        }
+         .container .item {
+                 width: 100%;
+        }
+         .container .content-item {
+                 width: 100%;
+        }
+         .container h1 {
+                 padding: 10px 0;
+        }
+         .container p {
+                 padding: 10px 0;
+        }
+}

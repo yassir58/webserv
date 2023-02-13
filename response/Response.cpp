@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
+/*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/11 22:12:29 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/12 20:57:37 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,21 +18,28 @@
 
 Response::Response(Request &request, Config *config)
 {
+	std::cout << "hoho1" << std::endl;
 	setRequest(&request, config);
-	std::cout << "in the response: "  << this->request->getStatusCode() << std::endl;
+	// std::cout << "in the response: "  << this->request->getStatusCode() << std::endl;
 	if (this->request->getRedirectionStatus())
 		this->request->setStatusCode(handleRedirection());
 	else if (this->request->getUploadStatus())
 	{
+		std::cout << "hoho2" << std::endl;
 		int code = this->request->getStatusCode();
 		this->request->setStatusCode(code);
 	}
 	else
 		applyMethod();
+	std::cout << "hoho3" << std::endl;
 	statusIndex = getStatusCode();
+	std::cout << "hoho4" << std::endl;
 	responseToSend.push_back(generateStatusLine());
+	std::cout << "hoho5" << std::endl;
 	stringContainer headerFields = generateHeaderFields(responseBody);
+	std::cout << "hoho6" << std::endl;
 	responseToSend.insert(responseToSend.begin() + 1, headerFields.begin(), headerFields.end());
+	std::cout << "hoho7" << std::endl;
 	responseToSend.push_back(responseBody);
 }
 

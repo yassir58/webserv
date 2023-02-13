@@ -3,7 +3,6 @@
 #include "../request/request.h"
 #include "../request/Request.hpp"
 #include "../response/Response.hpp"
-#include "../CGI/CGI.hpp"
 
 HttpApplication::HttpApplication ()
 {
@@ -164,7 +163,7 @@ void HttpApplication::handleHttpRequest (int fd)
 		else if (newConnection->getBodyRead () == newConnection->getContentLength() 
 			|| newConnection->getUpload () <= 0)
 		{
-			
+			std::cout << "Request Headers : " << newConnection->getRequestHeaders () << std::endl;
 			newConnection->appendBuffer (start, length);
 			newConnection->emptyBuffer ();
 			binFile.write (newConnection->getRequestBody().data(), newConnection->getRequestBody().size ());
@@ -281,7 +280,10 @@ connectionPool::iterator HttpApplication::getConnection (int fd)
 	for (it  = connections.begin (); it != connections.end (); it++)
 	{
 		if ((*it)->getConnectionSocket () == fd)
+		{
+			std::cout << "\e[0;33mconnection found\e[0m" << std::endl;
 			return it;
+		}
 	}
 	return (it);
 }
@@ -289,55 +291,38 @@ connectionPool::iterator HttpApplication::getConnection (int fd)
 
 void HttpApplication::handleHttpResponse (int fd)
 {
-	connectionPool::iterator it = getConnection (fd);
-	Connection *connectionInterface = (*it);
+	connectionPool::iterator it;
 	Server *server;
 	Request *request;
 	Response *newResponse ;
-	Config *configFile = this->getConfig ();
-	CGIHandler *newCgi ;
 
-	std::string response;
-	int responseLength = 0;
+	Connection *connectionInterface = nullptr;
 
-	if (connectionInterface != nullptr)
-	{
-		request = connectionInterface->getRequest();
-		if (!request->getLocation()->getEndPoint().empty())
-		{
-			if (request->getCGIStatus())
-				std::cout << "CGI status: Enabled" << std::endl;
-			else
-				std::cout << "CGI status: Disabled" << std::endl;
-		}
-		if (request->getCGIStatus())
-		{
-			newCgi = new CGIHandler (request);
-			response = newCgi->execute();
-		}
-		else 
-		{
-			newResponse = new Response (*request, configFile);
-			response = newResponse->getResponse ();
-		}
-		responseLength = response.length();
-		connectionInterface->printfResolvers ();
-	}
-	errValue = send (fd, response.c_str (), response.length (), 0);
-	// std::cout << "-------- bytes sent " << errValue << " --------" << std::endl;
+	
+	std::cout << "before response" << std::endl;
+	it = getConnection (fd);
+	if (it == connections.end ())
+		throw Connection_error ("connection not found", "fin jat sara9osta");
+	connectionInterface = (*it);
+	connectionInterface->constructResponse ();
+	errValue = connectionInterface->sendResponse (fd);
 	if (errValue == -1)
 	{
 		FD_CLR (fd, &writeFds);
 		FD_CLR (fd, &errorFds);
 		close (fd);
-		connections.pop_back ();
+		connections.erase (it);
 		throw Connection_error (strerror (errno), "SEND");
 	}
 	else
-	{
-		FD_CLR (fd, &writeFds);
-		FD_CLR (fd, &errorFds);
-		close (fd);
-		connections.pop_back ();
+	{	
+		if (errValue)
+		{
+			std::cout << "\e[0;31m --------------------------> Bytes sent " << connectionInterface->getBytesSent () << "\e[0m" << std::endl;
+			FD_CLR (fd, &writeFds);
+			FD_CLR (fd, &errorFds);
+			close (fd);
+			connections.erase (it);
+		}
 	}
 }

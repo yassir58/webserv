@@ -1,7 +1,0 @@
-HTTP/1.1 200 OK
-Date: Sun, 12 Feb 2023 14:59:35 GMT
-Content-Lenght: 26
-Content-Type: text/html
-Server: websrv
-
-<h1>server name test</h1>
