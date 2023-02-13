@@ -475,14 +475,30 @@ mapContainer createMiMe()
     return MiMeList;
 }
 
+mapContainer createResponseMap()
+{
+    mapContainer responseMap;
+
+    responseMap["404"] = "Not found";
+    responseMap["400"] = "Bad request";
+    responseMap["403"] = "Forbidden";
+    responseMap["405"] = "Not allowed";
+    responseMap["414"] = "Too long";
+    responseMap["413"] = "Too large";
+    responseMap["500"] = "Internal server error";
+    responseMap["501"] = "Not implemented";
+    
+    return responseMap;
+}
+
 std::string generateErrorPage(unsigned int statusCode)
 {
     std::string output;
     std::string title;
     std::string message;
 
-    title = int2assci(statusCode) + " Not found";
-    message = int2assci(statusCode) + " Not found";
+    title = "Error Page - " + int2assci(statusCode) + " " + createResponseMap()[int2assci(statusCode)];
+    message = int2assci(statusCode) + " " + createResponseMap()[int2assci(statusCode)];
     output = readContent("../assets/template.html");
     if (output.length() > 0)
     {
@@ -490,7 +506,6 @@ std::string generateErrorPage(unsigned int statusCode)
         output.replace(output.find("%MESSAGE"), 8, message);
         output.replace(output.find("%VERSION"), 8, SERVER_SOFTWARE_VERSION);
     }
-    std::cout << output << std::endl;
     return (output);
 }
 
