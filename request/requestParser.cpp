@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/31 15:58:58 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/12 20:21:57 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/13 10:18:45 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,11 +23,11 @@ int	Request::parseRequest(serverBlocks serverList, std::vector<int> resolversLis
 	if (!parseFirstLine(line))
 	{
 		statusCode = BAD_REQUEST;
-		std::cout << "hoho\n";
 		return (0);
 	}
 	while (!getCRLF(line, (char *)"\r\n"))
 	{
+		std::cout << "hoho\n";
 		if (!parseHeaderField(headerFields, line))
 		{
 			statusCode = BAD_REQUEST;
