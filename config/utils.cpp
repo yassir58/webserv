@@ -307,11 +307,9 @@ bool checkSpaces(std::string string)
 
 std::string int2assci(int nb)
 {
-	std::stringstream res;
-	std::string str;
-	res << nb;
-	str = res.str();
-	return (str);
+    std::stringstream number;
+    number << nb;
+    return (number.str());
 }
 
 std::string toUpperCase(std::string str)
@@ -475,6 +473,40 @@ mapContainer createMiMe()
     MiMeList["avi"] = "video/x-msvideo";
 
     return MiMeList;
+}
+
+mapContainer createResponseMap()
+{
+    mapContainer responseMap;
+
+    responseMap["404"] = "Not found";
+    responseMap["400"] = "Bad request";
+    responseMap["403"] = "Forbidden";
+    responseMap["405"] = "Not allowed";
+    responseMap["414"] = "Too long";
+    responseMap["413"] = "Too large";
+    responseMap["500"] = "Internal server error";
+    responseMap["501"] = "Not implemented";
+    
+    return responseMap;
+}
+
+std::string generateErrorPage(unsigned int statusCode)
+{
+    std::string output;
+    std::string title;
+    std::string message;
+
+    title = "Error Page - " + int2assci(statusCode) + " " + createResponseMap()[int2assci(statusCode)];
+    message = int2assci(statusCode) + " " + createResponseMap()[int2assci(statusCode)];
+    output = readContent("../assets/template.html");
+    if (output.length() > 0)
+    {
+        output.replace(output.find("%TITLE"), 6, title);
+        output.replace(output.find("%MESSAGE"), 8, message);
+        output.replace(output.find("%VERSION"), 8, SERVER_SOFTWARE_VERSION);
+    }
+    return (output);
 }
 
 bool checkVectorDuplicate(stringContainer container, std::string key)

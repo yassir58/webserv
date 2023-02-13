@@ -6,7 +6,7 @@
 /*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/12 21:05:00 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/13 18:06:54 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,9 +70,12 @@ bool Request::checkLocationPath(void)
 Location *Request::matchLocation(void)
 {
 	std::vector<Location *> Locations = serverInstance->getLocations();
+	if (!Locations.size())
+		return (NULL);
 	std::vector<Location *>::iterator begin = Locations.begin();
 	std::vector<Location *>::iterator end = Locations.end();
 	size_t	pos;
+	std::cout << "Location: " << Locations.size() << std::endl;
 	while (end != begin)
 	{
 		int dec = path.compare((*begin)->getEndPoint());
@@ -94,11 +97,15 @@ Location *Request::matchLocation(void)
 int	Request::checkDirectory(Location *pathLocation)
 {
 	int dec = isDir(path.c_str());
+	if (dec && startLine.method == "POST")
+	{
+		statusCode = FORBIDDEN;
+		return (0);
+	}
 	if (dec && startLine.method == "GET")
 	{
 		if (*(path.end() - 1) != '/')
 		{
-			std::cout << "hoho///////////////\n";
 			size_t pos = path.find(root);
 			redirectionLink = path.substr(pos + root.length(), std::string::npos) + "/";
 			redirectCode = "301";
@@ -118,6 +125,15 @@ int	Request::checkDirectory(Location *pathLocation)
 		}
 		statusCode = FORBIDDEN;
 	}
+	size_t pos = path.find_last_of('/', std::string::npos);
+	std::string fileName = path.substr(pos, std::string::npos);
+	path = path.substr(0, pos);
+	if (access(path.c_str(), R_OK) == -1)
+	{
+		statusCode = FORBIDDEN;
+		return (0);
+	}
+	path = adjustPath(path, fileName);
 	return (1);
 }
 
@@ -132,19 +148,21 @@ bool	Request::checkUpload(Location *pathLocation)
 		mapContainer::iterator pos = configFile->getMimeMap().find(type->value);
 		if (type->value == "multipart/form-data" || pos != configFile->getMimeMap().end())
 		{
+			size_t pos = path.find_last_of('/', std::string::npos);
+			std::string fileName = path.substr(pos, std::string::npos);
+			path = path.substr(0, pos);
 			if (!uploadPath.empty())
 			{
-				size_t pos = path.find_last_of('/', std::string::npos);
-				std::string fileName = path.substr(pos, std::string::npos);
-				path = path.substr(0, pos);
 				path = adjustPath(path, uploadPath);
 				if (access(path.c_str(), F_OK) == -1)
 				{
 					statusCode = NOT_FOUND;
 					return (false);
 				}
-				path = adjustPath(path, fileName);
 			}
+			if (access(path.c_str(), W_OK) == -1)
+				return (statusCode = FORBIDDEN, false);
+			path = adjustPath(path, fileName);
 			std::ofstream file;
 			file.open(path, std::ofstream::out | std::ofstream::trunc);
 			if (!file.is_open())
@@ -152,11 +170,8 @@ bool	Request::checkUpload(Location *pathLocation)
 				statusCode = NOT_FOUND;
 				return (false);
 			}
-			if (access(path.c_str(), W_OK) == -1)
-			{
-				statusCode = FORBIDDEN;
+			if (!treatAbsolutePath(pathLocation))
 				return (false);
-			}
 			file.write(body.data(), body.size());
 			file.close();
 			upload = true;
@@ -376,6 +391,11 @@ Location *Request::getLocation(void)
 Server			*Request::getServerInstance(void)
 {
 	return (serverInstance);
+}
+
+std::string Request::getRoot(void)
+{
+	return (root);
 }
 
 /* ************************************************************************** */

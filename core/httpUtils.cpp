@@ -234,7 +234,6 @@ Server *Request::matchRequestHandler (serverBlocks serverList, std::vector <int>
 
 	servIndx = resolversList[0];
 	servName = this->getStartLine().hostName ;
-	
 	for (it = resolversList.begin (); it != resolversList.end (); it++)
 	{
 		if (!serverList[(*it)]->getServerName ().compare(servName))
@@ -420,7 +419,7 @@ void Connection::constructResponse (void)
 {
 	if (responseConstructed == false)
 	{
-		if (!request->getLocation()->getEndPoint().empty())
+		if (request->getLocation () && !request->getLocation()->getEndPoint().empty())
 		{
 			std::cout << "\e[0;31m PATH : \e[0m" << request->getPath () << std::endl;
 			if (request->getCGIStatus())

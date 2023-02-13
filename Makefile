@@ -31,7 +31,7 @@ $(EXEC):$(OBJS)
 # 	$(CC) $(CFLAGS) $< -o Connection
 
 hoho: all clean
-	clear && ./$(EXEC) ./testing/configs/test.conf
+	clear && ./$(EXEC) ./testing/configs/test2.conf
 
 clean:
 	rm -rf $(OBJS)

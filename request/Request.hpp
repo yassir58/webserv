@@ -6,7 +6,7 @@
 /*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:36 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/13 14:38:39 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/13 18:07:12 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,5 +105,6 @@ class Request
 		bool			getUploadStatus(void);
 		Location		*getLocation(void);
 		Server			*getServerInstance(void);
+		std::string		getRoot(void);
 };
 #endif

@@ -6,7 +6,7 @@
 /*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/12 20:57:37 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/13 19:11:59 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,18 +20,20 @@ Response::Response(Request &request, Config *config)
 {
 	std::cout << "hoho1" << std::endl;
 	setRequest(&request, config);
-	// std::cout << "in the response: "  << this->request->getStatusCode() << std::endl;
 	if (this->request->getRedirectionStatus())
+	{
 		this->request->setStatusCode(handleRedirection());
+	}
 	else if (this->request->getUploadStatus())
 	{
 		std::cout << "hoho2" << std::endl;
 		int code = this->request->getStatusCode();
 		this->request->setStatusCode(code);
 	}
-	else
+	else if (!this->request->getStatusCode())
+	{
 		applyMethod();
-	std::cout << "hoho3" << std::endl;
+	}
 	statusIndex = getStatusCode();
 	std::cout << "hoho4" << std::endl;
 	responseToSend.push_back(generateStatusLine());
@@ -237,20 +239,13 @@ int	Response::applyMethod(void)
 	else if (method == "DELETE" && statusCode == 0)
 	{
 		if (request->getPath().find("..", 0) != std::string::npos)
-			request->setStatusCode(FORBIDDEN);
+			return (request->setStatusCode(FORBIDDEN), 1);
+		if (request->getRoot().empty() || request->getRoot().find("/www") == std::string::npos)
+			return (request->setStatusCode(FORBIDDEN), 1);
 		if (remove(request->getPath().c_str()))
 			request->setStatusCode(SERVER_ERROR);
 		else
 			request->setStatusCode(OK);
-	}
-	if (request->getServerInstance()->getErrorPagesStatus())
-	{
-		if (request->getStatusCode() == NOT_FOUND)
-			responseBody = request->getServerInstance()->getErrorPages()->path_not_found;
-		else if (request->getStatusCode() == FORBIDDEN)
-			responseBody = request->getServerInstance()->getErrorPages()->path_forbidden;
-		else if (request->getStatusCode() == SERVER_ERROR)
-			responseBody = request->getServerInstance()->getErrorPages()->path_internal_error;	
 	}
 	return (0);
 }
