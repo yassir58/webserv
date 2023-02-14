@@ -31,7 +31,7 @@ EXEC_PATH="/Users/yelatman/Documents/webserv/webserv"
 CONF_PATH="/Users/yelatman/Documents/webserv/testing/configs/test.conf"
 ERROR_LOG="/Users/yelatman/Documents/webserv/error.log"
 SERVNAME_REQ="GET / HTTP/1.1\r\nHost: servName\r\nUser-Agent: MyHTTPClient/1.0\r\nAccept: text/html\r\nConnection: keep-alive\r\n\r\n"
-POST_REQ="HTTP/1.1\r\nHost: localhost:8080\r\nUser-Agent: MyHTTPClient/1.0\r\nContent-Type: multipart/form-data\r\nConnection: keep-alive\r\n\r\n"
+POST_REQ="HTTP/1.1\r\nHost: localhost:8080\r\nUser-Agent: MyHTTPClient/1.0\r\nContent-Type: text/plain\r\nConnection: keep-alive\r\n\r\n"
 
 if [ -z "$EXEC_PATH" ] ; then
 	echo "please provide a path for webserv executable : " && read EXEC_PATH
@@ -79,29 +79,27 @@ testGET ()
 		echo -e "$Green body diff test succeded ✓ $White"
 	fi
 	
-	# rm -rf HEADERS test nohup.out reponse.diff
+	rm -rf HEADERS test nohup.out reponse.diff
 }
 
 
 testPOST ()
 {
-	POST_BODY=$2
-	POST_PATH=$1
-	if [ "$1" == "/toLarge" ]; then
-		POST_BODY=$(for i in {1.1000000./})
-	fi
-	echo -e "POST $1 $POST_REQ$2" | nc localhost 8080 > HEADERS;
-	status_code=$(cat HEADERS | grep HTTP | cut -d' ' -f2)
-	echo -e " testing $4 on $Yellow $ENDPOINT$1 $White"
+	POST_BODY=$(for i in {1..1024}; do echo -n "test" >> testFile; done)
+	curl -v -d @testFile http://localhost:8080/upload/$5 &> HEADERS
+	status_message=$(cat HEADERS | grep "<" | grep "HTTP" | cut -d' ' -f4)
+	status_code=$(cat HEADERS | grep "<" | grep "HTTP" | cut -d' ' -f3)
+
+	
+	echo -e " testing $3 on $Yellow $ENDPOINT$1 $White"
 	echo -n " matching status codes  : "
 	
-	if [ "$status_code" = "$3" ]; then
+	if [ "$status_code" = "$2" ]; then
 		echo -e "$Green status code test succeded ✓ $White"
 	else
 		echo -e "$Red status code test failed X $White"
 	fi
-	if [ -f "$5" ]; then
-		echo $2 > testFile
+	if [ -f "$4" ]; then
 		diff $5 testFile 2>/dev/null > response.diff
 		echo -n " matching response body : "
 		if [ -s response.diff ]; then 
@@ -111,7 +109,7 @@ testPOST ()
 		fi
 		rm -rf testFile $5 response.diff
 	fi
-	# rm -rf HEADERS 
+	rm -rf HEADERS testFile
 }
 
 exec $EXEC_PATH $CONF_PATH 1>/dev/null 2>$ERROR_LOG  &
@@ -126,8 +124,8 @@ testGET $NOT_FOUND_PATH "" "404" "resource not FOUND"
 testGET $FORBIDDEN_PATH "" "403" "forbidden operation"
 testGET $NOT_ALLOWED_PATH "" "405" "not allowed GET method"
 testGET $SERVNAME_TEST $SERVNAME_PATH "200" "server name"
-# testPOST $NORMAL_POST_PATH "hello world" "201" "upload" "/Users/yelatman/Documents/webserv/www/upload/testUpload/test.txt"
-# testPOST $NOT_ALLOWED_POST "" "405" "not allowed post method" ""
-# testPOST $FORBIDDEN_POST "" "403" "forbidden post method" ""
+testPOST $NORMAL_POST_PATH "201" "simple upload" "/Users/yelatman/Documents/webserv/www/test/upload/test.txt" "test.txt"
+testPOST $NOT_ALLOWED_POST  "405" "not allowed post method" "" "/notAllowed"
+testPOST $FORBIDDEN_POST "" "403" "forbidden post method" ""
 # testPOST "toLarge"  "413" "l"
 trap terminateServer EXIT

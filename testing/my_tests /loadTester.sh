@@ -13,7 +13,7 @@ White='\033[0;37m'        # White
 
 TEST_NUMBER=5
 NET_INTERFACE=$(ifconfig | grep -w inet | awk 'NR == 2 {print $0}' | cut -d' ' -f2)
-ENDPOINTS=("localhost:8080" "10.11.8.2:1337"  "10.11.8.2:4512")
+ENDPOINTS=("localhost:8080" "10.11.8.4:1337")
 EXEC_PATH="/Users/yelatman/Documents/webserv/webserv"
 CONF_PATH="/Users/yelatman/Documents/webserv/testing/configs/test.conf"
 
@@ -26,7 +26,7 @@ testLoad ()
 
 	AVL=$(siege -b -t10s -c$2  http://$3 > siege.out 2>&1 ; cat siege.out | grep  Availability: | sed 's/[^0-9.]*//g') 
 	RS=$(cat siege.out | grep "Response time");
-	echo -e "server availability under $Cyan $2 $White conccurnet users  in test$Yellow $1 $Green [ Availabilty = $AVL ] $White"
+	echo -e "server availability under $Cyan $2 $White concurrent users  in test$Yellow $1 $Green [ Availabilty = $AVL ] $White"
 	echo -e "$Yellow $RS"
 	if [ $AVL == '100.00' ] 
 		then 
@@ -39,7 +39,7 @@ testLoad ()
 
 testInterface ()
 {
-	echo -e "testing load $Cyan $1 $White"
+	echo -e "testing load on $Cyan $1 $White"
 	for i in {1..5}
 		do
 			testLoad $i $(($i * 10)) $1

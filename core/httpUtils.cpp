@@ -1,6 +1,7 @@
 #include "ServerInstance.hpp"
 #include "../request/Request.hpp"
 #include "../response/Response.hpp"
+#include "../CGI/CGI.hpp"
 
 const std::string currentDateTime() {
     time_t     now = time(0);
@@ -64,6 +65,9 @@ Connection::Connection ()
 	headerLength = -1;
 	upload = -1;
 	bodyRead = 0;
+	bytesSent = 0;
+	responseConstructed = false ;
+	responseIndex = 0;
 }
 
 Connection::Connection (int fd)
@@ -77,6 +81,9 @@ Connection::Connection (int fd)
 	headerLength = -1;
 	upload = -1;
 	bodyRead = 0;
+	bytesSent = 0;
+	responseConstructed = false ;
+	responseIndex = 0;
 }
 
 
@@ -371,4 +378,66 @@ Config *Connection::getConfig (void) const
 serverBlocks Connection::getServerBlocks (void) const
 {
 	return (this->servList);
+}
+
+size_t Connection::getBytesSent (void) const 
+{
+	return (this->bytesSent);
+}
+bool Connection::getResponseState (void) const
+{
+	return (this->responseConstructed);
+}
+int Connection::sendResponse (int fd)
+{
+	std::string responseData;
+	int responseLength = 0;
+	int dataSent = 0;
+
+	if (cgi == true)
+		responseData = CGI->execute ();
+	else
+		responseData = response->getResponse ();
+	responseLength = responseData.length();
+	// std::cout << "-----------------------------------------------------------\n";
+	// std::cout << "\e[0;33m" << responseIndex << "\e[0m]" <<std::endl;
+	dataSent = send (fd, responseData.c_str () + responseIndex, responseLength - bytesSent, 0);
+	// std::cout << "\e[0;31m Bytes sent " << dataSent << "\e[0m" << std::endl;
+	// std::cout << "\e[0;31m fd " << fd << "\e[0m" << std::endl;
+	// std::cout << "\e[0;31m connectionFd " << ConnectionSocket << "\e[0m" << std::endl;
+	if (dataSent < 0)
+		return (-1);
+	bytesSent += dataSent;
+	// std::cout << "\e[0;33m-------- bytes sent " << bytesSent << "\e[0;36m Excpected " << responseData.length ()   << "-------- \e[0m" << std::endl;
+	if (bytesSent == responseLength)
+		return (1);
+	responseIndex = bytesSent ;
+	return (0);
+}
+
+void Connection::constructResponse (void)
+{
+	if (responseConstructed == false)
+	{
+		// if (request->getLocation () && !request->getLocation()->getEndPoint().empty())
+		// {
+		// 	// std::cout << "\e[0;31m PATH : \e[0m" << request->getPath () << std::endl;
+		// 	if (request->getCGIStatus())
+		// 		std::cout << "CGI status: Enabled" << std::endl;
+		// 	else
+		// 		std::cout << "CGI status: Disabled" << std::endl;
+		// }
+		if (request->getCGIStatus())
+		{
+			cgi = true ;
+			CGI = new CGIHandler (request);
+			responseConstructed = true ;
+		}
+		else 
+		{
+			cgi = false;
+			response = new Response (*request, conf);
+			responseConstructed = true ;
+		}
+	}
 }

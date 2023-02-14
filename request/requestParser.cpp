@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/31 15:58:58 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/12 20:21:57 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/14 13:27:14 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,6 @@ int	Request::parseRequest(serverBlocks serverList, std::vector<int> resolversLis
 	if (!parseFirstLine(line))
 	{
 		statusCode = BAD_REQUEST;
-		std::cout << "hoho\n";
 		return (0);
 	}
 	while (!getCRLF(line, (char *)"\r\n"))
@@ -117,10 +116,9 @@ int Request::checkRequestTarget(serverBlocks serverList, std::vector <int> resol
 	path = startLine.requestTarget;
 	Server *serverInst = matchRequestHandler (serverList, resolversList);
 	setServerInstance(serverInst);
-	Location *pathLocation = matchLocation();
+	pathLocation = matchLocation();
 	if (pathLocation == NULL)
 	{
-		this->pathLocation = NULL;
 		statusCode = NOT_FOUND;
 		return (0);
 	}

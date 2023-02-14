@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/12 16:07:22 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/14 12:57:04 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,9 +19,10 @@
 Response::Response(Request &request, Config *config)
 {
 	setRequest(&request, config);
-	std::cout << "in the response: "  << this->request->getStatusCode() << std::endl;
 	if (this->request->getRedirectionStatus())
+	{
 		this->request->setStatusCode(handleRedirection());
+	}
 	else if (this->request->getUploadStatus())
 	{
 		int code = this->request->getStatusCode();
@@ -29,6 +30,25 @@ Response::Response(Request &request, Config *config)
 	}
 	else
 		applyMethod();
+	// if (this->request->getServerInstance()->getErrorPagesStatus())
+	// {
+	// 	std::string errorPage;
+	// 	if (this->request->getStatusCode() == NOT_FOUND)
+	// 		errorPage = this->request->getServerInstance()->getErrorPages()->path_not_found;
+	// 	else if (this->request->getStatusCode() == FORBIDDEN)
+	// 		errorPage = this->request->getServerInstance()->getErrorPages()->path_forbidden;
+	// 	else if (this->request->getStatusCode() == SERVER_ERROR)
+	// 		errorPage = this->request->getServerInstance()->getErrorPages()->path_internal_error;
+	// 	std::ifstream infile(errorPage);
+	// 	if (infile.is_open())
+	// 	{
+	// 		std::ostringstream ss;
+	// 		ss << infile.rdbuf();
+	// 		responseBody = ss.str();
+	// 		errorPagestatus = true;
+	// 		infile.close();
+	// 	}
+	// }
 	statusIndex = getStatusCode();
 	responseToSend.push_back(generateStatusLine());
 	stringContainer headerFields = generateHeaderFields(responseBody);
@@ -63,7 +83,6 @@ int	Response::getStatusCode(void)
 {
 	size_t index = 0;
 	int		code = request->getStatusCode();
-	std::cout << "this is inside the gsc: "  << code << std::endl;
 	while (code != status[index].code)
 		++index;
 	return (index);
@@ -109,6 +128,8 @@ std::string	Response::generateContentType(void)
 	std::string path = request->getPath();
 	size_t		dot;
 	dot = path.find_last_of('.', std::string::npos);
+	if (errorPagestatus)
+		return ("Content-Type: text/html\r\n");
 	if (dot == std::string::npos)
 		return ("Content-Type: text/plain\r\n");
 	extension = path.substr(dot + 1, std::string::npos);
@@ -185,15 +206,16 @@ std::string listDirectory (std::string dirPath)
 		href = "./";
 	}
 	responseBody.append (lsClose);
-	std::cout << "response length" << responseBody.length () << std::endl;
 	closedir (dir);
 	return (responseBody);
 }
 
 int	Response::applyMethod(void)
 {
-	std::string method = request->getMethod();
 	int			statusCode = request->getStatusCode();
+	if (statusCode)
+		return (0);
+	std::string method = request->getMethod();
 	if (request->getListingStatus() && statusCode == 0)
 	{
 		responseBody = listDirectory(request->getPath());
@@ -238,15 +260,6 @@ int	Response::applyMethod(void)
 		else
 			request->setStatusCode(OK);
 	}
-	if (request->getServerInstance()->getErrorPagesStatus())
-	{
-		if (request->getStatusCode() == NOT_FOUND)
-			responseBody = request->getServerInstance()->getErrorPages()->path_not_found;
-		else if (request->getStatusCode() == FORBIDDEN)
-			responseBody = request->getServerInstance()->getErrorPages()->path_forbidden;
-		else if (request->getStatusCode() == SERVER_ERROR)
-			responseBody = request->getServerInstance()->getErrorPages()->path_internal_error;
-	}
 	return (0);
 }
 
@@ -272,7 +285,7 @@ std::string Response::getResponse(void)
 void	Response::setRequest(Request *request, Config *config)
 {
 	this->request = request;
-	std::cout << "code1: " << this->request->getStatusCode() << std::endl;
+	errorPagestatus = false;
 	this->configData = config;
 	size_t	index = 0;
 	status[index].code = OK; status[index++].status = "OK";
