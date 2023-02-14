@@ -136,6 +136,7 @@ class Config {
         Config(std::string path);
         ~Config();
         void    parseConfig();
+        void    validateConfig();
         void    printConfig();
         void    parseDirective(stringContainer config, int line);
         Http    *getHttpContext();
