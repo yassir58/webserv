@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
+/*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/13 22:47:19 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/14 12:12:56 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,6 @@
 
 Response::Response(Request &request, Config *config)
 {
-	std::cout << "hoho1" << std::endl;
 	setRequest(&request, config);
 	if (this->request->getRedirectionStatus())
 	{
@@ -26,7 +25,6 @@ Response::Response(Request &request, Config *config)
 	}
 	else if (this->request->getUploadStatus())
 	{
-		std::cout << "hoho2" << std::endl;
 		int code = this->request->getStatusCode();
 		this->request->setStatusCode(code);
 	}
@@ -57,13 +55,9 @@ Response::Response(Request &request, Config *config)
 		}
 	}
 	statusIndex = getStatusCode();
-	std::cout << "hoho4" << std::endl;
 	responseToSend.push_back(generateStatusLine());
-	std::cout << "hoho5" << std::endl;
 	stringContainer headerFields = generateHeaderFields(responseBody);
-	std::cout << "hoho6" << std::endl;
 	responseToSend.insert(responseToSend.begin() + 1, headerFields.begin(), headerFields.end());
-	std::cout << "hoho7" << std::endl;
 	responseToSend.push_back(responseBody);
 }
 
@@ -94,7 +88,6 @@ int	Response::getStatusCode(void)
 {
 	size_t index = 0;
 	int		code = request->getStatusCode();
-	std::cout << "this is inside the gsc: "  << code << std::endl;
 	while (code != status[index].code)
 		++index;
 	return (index);
@@ -218,7 +211,6 @@ std::string listDirectory (std::string dirPath)
 		href = "./";
 	}
 	responseBody.append (lsClose);
-	std::cout << "response length" << responseBody.length () << std::endl;
 	closedir (dir);
 	return (responseBody);
 }
@@ -297,7 +289,6 @@ void	Response::setRequest(Request *request, Config *config)
 {
 	this->request = request;
 	errorPagestatus = false;
-	std::cout << "code1: " << this->request->getStatusCode() << std::endl;
 	this->configData = config;
 	size_t	index = 0;
 	status[index].code = OK; status[index++].status = "OK";
