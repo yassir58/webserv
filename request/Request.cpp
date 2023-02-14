@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
+/*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/13 19:22:02 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/14 13:34:31 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,14 +19,12 @@
 
 Request::Request(Connection *newConnection)
 {
-	std::cout << "request start\n";
 	setStatusCode(0);
 	configFile = newConnection->getConfig();
 	setFileString(newConnection->getRequestHeaders(), newConnection->getRequestBody());
 	if (!parseRequest(newConnection->getServerBlocks(), newConnection->getResolversList()))
 		return ;
 	this->CGI = checkLocationPath();
-	std::cout << "request end\n";
 }
 
 /*
@@ -43,12 +41,6 @@ Request::~Request()
 
 bool Request::checkLocationPath(void)
 {
-	this->pathLocation = matchLocation();
-	if (!this->pathLocation)
-	{
-		statusCode = NOT_FOUND;
-		return (false);
-	}
 	if (serverInstance->getMaxBodySize() > 0 && getBody().length() > serverInstance->getMaxBodySize())
 	{
 		statusCode = TOO_LARGE;
@@ -70,12 +62,12 @@ bool Request::checkLocationPath(void)
 Location *Request::matchLocation(void)
 {
 	std::vector<Location *> Locations = serverInstance->getLocations();
+	std::cout << "Location Size: " << Locations.size() << std::endl;
 	if (!Locations.size())
 		return (NULL);
 	std::vector<Location *>::iterator begin = Locations.begin();
 	std::vector<Location *>::iterator end = Locations.end();
 	size_t	pos;
-	std::cout << "Location: " << Locations.size() << std::endl;
 	while (end != begin)
 	{
 		int dec = path.compare((*begin)->getEndPoint());
@@ -83,6 +75,7 @@ Location *Request::matchLocation(void)
 			return (*begin);
 		++begin;
 	}
+	std::cout << "exact match not found\n";
 	begin = Locations.begin();
 	while (end != begin)
 	{
@@ -91,6 +84,7 @@ Location *Request::matchLocation(void)
 			return (*begin);
 		++begin;
 	}
+	std::cout << "nothing is there\n";
 	return (NULL);
 }
 
@@ -124,6 +118,11 @@ int	Request::checkDirectory(Location *pathLocation)
 			return (0);
 		}
 		statusCode = FORBIDDEN;
+	}
+	if (access(path.c_str(), F_OK) == -1)
+	{
+		statusCode = NOT_FOUND;
+		return (0);
 	}
 	size_t pos = path.find_last_of('/', std::string::npos);
 	std::string fileName = path.substr(pos, std::string::npos);
@@ -266,10 +265,10 @@ t_start &Request::getStartLine(void)
 void	Request::setFileString(std::string const &file, std::vector<char> const &newBody)
 {
 	fileString = file;
-	startLine.Host = false;
 	body = newBody;
 	pos = 0;
 	start = 0;
+	startLine.Host = false;
 	CGI = false;
 	redirectionStatus = false;
 	listingStatus = false;
