@@ -36,15 +36,15 @@ int main(void)
     // }
 
 
-    // Config *file = new Config("../testing/configs/home.conf");
-    // try 
-    // {
-    //     file->parseConfig();
+    Config *file = new Config("../testing/configs/default.conf");
+    try 
+    {
+        file->parseConfig();
     //     std::cout << "Server [0] Host: " << file->getHttpContext()->getServers()[0]->getHost() << std::endl;
     //     std::cout << "Server [0] Port: " << file->getHttpContext()->getServers()[0]->getPort() << std::endl;
     //     std::cout << "Server [0] Server name: " << file->getHttpContext()->getServers()[0]->getServerName() << std::endl;
     //     std::cout << "Server [0] Root: " << file->getHttpContext()->getServers()[0]->getRoot() << std::endl;
-    //     delete file;
+        delete file;
         // std::cout << "Server [1] Host: " << file->getHttpContext()->getServers()[1]->getHost() << std::endl;
         // std::cout << "Server [1] Port: " << file->getHttpContext()->getServers()[1]->getPort() << std::endl;
         // std::cout << "Global access log: " << file->getHttpContext()->getAccessLog() << std::endl;
@@ -58,28 +58,11 @@ int main(void)
         // std::cout << "Directory listing: server[0] location[0]: " << file->getHttpContext()->getServers()[0]->getLocations()[0]->getListingStatus() << std::endl;
         // std::cout << "Redirect link: " << file->getHttpContext()->getServers()[0]->getLocations()[0]->getRedirectLink() << std::endl;
         // std::cout << "Redirect link: " << file->getHttpContext()->getServers()[0]->getLocations()[1]->getRedirectLink() << std::endl;
-    // }   
-    // catch(std::exception &e)
-    // {
-        // int i;
-        // int j;
-
-        // j = 0;
-        // i = 0;
-        // while (i < file->getHttpContext()->getServers().size())
-        // {
-        //     while (j < file->getHttpContext()->getServers()[i]->getLocations().size())
-        //     {
-        //         delete file->getHttpContext()->getServers()[i]->getLocations()[j];
-        //         j++;
-        //     }
-        //     delete file->getHttpContext()->getServers()[i];
-        //     i++;
-        //     j = 0;
-        // }
-    //     delete file;
-    //     std::cout << e.what() << std::endl;
-    // }
-    generateErrorPage(500);
+    }   
+    catch(std::exception &e)
+    {
+        delete file;
+        std::cout << e.what() << std::endl;
+    }
     return (0);
 }

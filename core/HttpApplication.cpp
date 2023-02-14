@@ -294,7 +294,7 @@ void HttpApplication::handleHttpResponse (int fd)
 	Server *server;
 	Request *request;
 	Response *newResponse ;
-	Config *configFile = this->getConfig ();
+	Config *configFile = this->getConfig();
 	CGIHandler *newCgi ;
 
 	std::string response;
@@ -303,13 +303,6 @@ void HttpApplication::handleHttpResponse (int fd)
 	if (connectionInterface != nullptr)
 	{
 		request = connectionInterface->getRequest();
-		if (request->getLocation() && !request->getLocation()->getEndPoint().empty())
-		{
-			if (request->getCGIStatus())
-				std::cout << "CGI status: Enabled" << std::endl;
-			else
-				std::cout << "CGI status: Disabled" << std::endl;
-		}
 		if (request->getCGIStatus())
 		{
 			newCgi = new CGIHandler (request);
