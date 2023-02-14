@@ -400,15 +400,15 @@ int Connection::sendResponse (int fd)
 		responseData = response->getResponse ();
 	responseLength = responseData.length();
 	// std::cout << "-----------------------------------------------------------\n";
-	std::cout << "\e[0;33m" << responseIndex << "\e[0m]" <<std::endl;
+	// std::cout << "\e[0;33m" << responseIndex << "\e[0m]" <<std::endl;
 	dataSent = send (fd, responseData.c_str () + responseIndex, responseLength - bytesSent, 0);
-	std::cout << "\e[0;31m Bytes sent " << dataSent << "\e[0m" << std::endl;
-	std::cout << "\e[0;31m fd " << fd << "\e[0m" << std::endl;
-	std::cout << "\e[0;31m connectionFd " << ConnectionSocket << "\e[0m" << std::endl;
+	// std::cout << "\e[0;31m Bytes sent " << dataSent << "\e[0m" << std::endl;
+	// std::cout << "\e[0;31m fd " << fd << "\e[0m" << std::endl;
+	// std::cout << "\e[0;31m connectionFd " << ConnectionSocket << "\e[0m" << std::endl;
 	if (dataSent < 0)
 		return (-1);
 	bytesSent += dataSent;
-	std::cout << "\e[0;33m-------- bytes sent " << bytesSent << "\e[0;36m Excpected " << responseData.length ()   << "-------- \e[0m" << std::endl;
+	// std::cout << "\e[0;33m-------- bytes sent " << bytesSent << "\e[0;36m Excpected " << responseData.length ()   << "-------- \e[0m" << std::endl;
 	if (bytesSent == responseLength)
 		return (1);
 	responseIndex = bytesSent ;
@@ -419,14 +419,14 @@ void Connection::constructResponse (void)
 {
 	if (responseConstructed == false)
 	{
-		if (request->getLocation () && !request->getLocation()->getEndPoint().empty())
-		{
-			std::cout << "\e[0;31m PATH : \e[0m" << request->getPath () << std::endl;
-			if (request->getCGIStatus())
-				std::cout << "CGI status: Enabled" << std::endl;
-			else
-				std::cout << "CGI status: Disabled" << std::endl;
-		}
+		// if (request->getLocation () && !request->getLocation()->getEndPoint().empty())
+		// {
+		// 	// std::cout << "\e[0;31m PATH : \e[0m" << request->getPath () << std::endl;
+		// 	if (request->getCGIStatus())
+		// 		std::cout << "CGI status: Enabled" << std::endl;
+		// 	else
+		// 		std::cout << "CGI status: Disabled" << std::endl;
+		// }
 		if (request->getCGIStatus())
 		{
 			cgi = true ;

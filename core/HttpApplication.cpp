@@ -163,7 +163,7 @@ void HttpApplication::handleHttpRequest (int fd)
 		else if (newConnection->getBodyRead () == newConnection->getContentLength() 
 			|| newConnection->getUpload () <= 0)
 		{
-			std::cout << "Request Headers : " << newConnection->getRequestHeaders () << std::endl;
+			// std::cout << "Request Headers : " << newConnection->getRequestHeaders () << std::endl;
 			newConnection->appendBuffer (start, length);
 			newConnection->emptyBuffer ();
 			binFile.write (newConnection->getRequestBody().data(), newConnection->getRequestBody().size ());
@@ -281,7 +281,7 @@ connectionPool::iterator HttpApplication::getConnection (int fd)
 	{
 		if ((*it)->getConnectionSocket () == fd)
 		{
-			std::cout << "\e[0;33mconnection found\e[0m" << std::endl;
+			// std::cout << "\e[0;33mconnection found\e[0m" << std::endl;
 			return it;
 		}
 	}
@@ -299,7 +299,6 @@ void HttpApplication::handleHttpResponse (int fd)
 	Connection *connectionInterface = nullptr;
 
 	
-	std::cout << "before response" << std::endl;
 	it = getConnection (fd);
 	if (it == connections.end ())
 		throw Connection_error ("connection not found", "fin jat sara9osta");
