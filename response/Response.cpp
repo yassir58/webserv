@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/14 12:12:56 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/14 12:57:04 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,32 +28,27 @@ Response::Response(Request &request, Config *config)
 		int code = this->request->getStatusCode();
 		this->request->setStatusCode(code);
 	}
-	else if (!this->request->getStatusCode())
-	{
-		applyMethod();
-	}
 	else
-	{
-		if (this->request->getServerInstance()->getErrorPagesStatus())
-		{
-			std::string errorPage;
-			if (this->request->getStatusCode() == NOT_FOUND)
-				errorPage = this->request->getServerInstance()->getErrorPages()->path_not_found;
-			else if (this->request->getStatusCode() == FORBIDDEN)
-				errorPage = this->request->getServerInstance()->getErrorPages()->path_forbidden;
-			else if (this->request->getStatusCode() == SERVER_ERROR)
-				errorPage = this->request->getServerInstance()->getErrorPages()->path_internal_error;
-			std::ifstream infile(errorPage);
-			if (infile.is_open())
-			{
-				std::ostringstream ss;
-				ss << infile.rdbuf();
-				responseBody = ss.str();
-				errorPagestatus = true;
-				infile.close();
-			}
-		}
-	}
+		applyMethod();
+	// if (this->request->getServerInstance()->getErrorPagesStatus())
+	// {
+	// 	std::string errorPage;
+	// 	if (this->request->getStatusCode() == NOT_FOUND)
+	// 		errorPage = this->request->getServerInstance()->getErrorPages()->path_not_found;
+	// 	else if (this->request->getStatusCode() == FORBIDDEN)
+	// 		errorPage = this->request->getServerInstance()->getErrorPages()->path_forbidden;
+	// 	else if (this->request->getStatusCode() == SERVER_ERROR)
+	// 		errorPage = this->request->getServerInstance()->getErrorPages()->path_internal_error;
+	// 	std::ifstream infile(errorPage);
+	// 	if (infile.is_open())
+	// 	{
+	// 		std::ostringstream ss;
+	// 		ss << infile.rdbuf();
+	// 		responseBody = ss.str();
+	// 		errorPagestatus = true;
+	// 		infile.close();
+	// 	}
+	// }
 	statusIndex = getStatusCode();
 	responseToSend.push_back(generateStatusLine());
 	stringContainer headerFields = generateHeaderFields(responseBody);
@@ -217,8 +212,10 @@ std::string listDirectory (std::string dirPath)
 
 int	Response::applyMethod(void)
 {
-	std::string method = request->getMethod();
 	int			statusCode = request->getStatusCode();
+	if (statusCode)
+		return (0);
+	std::string method = request->getMethod();
 	if (request->getListingStatus() && statusCode == 0)
 	{
 		responseBody = listDirectory(request->getPath());

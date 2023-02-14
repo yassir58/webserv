@@ -188,7 +188,7 @@ bool Http::getSendFilestatus()
 Server::Server()
 {
     this->pages = NULL;
-    this->errorPages = NULL;
+    this->errorPages = false;
     this->maxBodySize = -1;
     this->port = 8080;
     this->host = "127.0.0.1";
