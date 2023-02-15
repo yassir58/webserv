@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/15 11:47:12 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/15 11:55:00 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,7 +119,7 @@ int	Request::checkDirectory(Location *pathLocation)
 		{
 			listingStatus = true;
 			if (path.find("..", 0) != std::string::npos)
-				return (statusCode = FORBIDDEN, false);	
+				statusCode = FORBIDDEN;	
 			return (0);
 		}
 		statusCode = FORBIDDEN;
@@ -179,6 +179,12 @@ int Request::treatAbsolutePath(Location *pathLocation)
 	if (access(path.c_str(), F_OK) == -1)
 	{
 		statusCode = NOT_FOUND;
+		size_t pos = path.find_last_of('/', std::string::npos);
+		std::string fileName = path.substr(pos, std::string::npos);
+		path = path.substr(0, pos);
+		if (access(path.c_str(), W_OK) == -1)
+			statusCode = FORBIDDEN;
+		path = adjustPath(path, fileName);
 		return (0);
 	}
 	if (methods.size() != 0)
