@@ -40,6 +40,7 @@ int main(void)
     try 
     {
         file->parseConfig();
+        file->getHttpContext()->getServers()[0]->printLocations();
     //     std::cout << "Server [0] Host: " << file->getHttpContext()->getServers()[0]->getHost() << std::endl;
     //     std::cout << "Server [0] Port: " << file->getHttpContext()->getServers()[0]->getPort() << std::endl;
     //     std::cout << "Server [0] Server name: " << file->getHttpContext()->getServers()[0]->getServerName() << std::endl;
