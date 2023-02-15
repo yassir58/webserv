@@ -27,8 +27,6 @@ all:$(EXEC)
 $(EXEC):$(OBJS) 
 	$(CCP) $(CFLAGS) $(OBJS) -o $(EXEC) 
 
-# Connection:	basic_cn_Connection.o
-# 	$(CC) $(CFLAGS) $< -o Connection
 
 hoho: all clean
 	clear && ./$(EXEC) ./testing/configs/test2.conf

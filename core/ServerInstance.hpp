@@ -30,12 +30,12 @@
 #include <sys/ioctl.h>
 
 
-// MACROS
+// * - * --------------------- MACROS --------------------- * - * //
+
 #define PORT 8080
 #define BUFFER_MAX 65000
 #define MAX_CONNECT 1024
 #define POLL_TIMEOUT 5000
-#define BUFFER_SIZE 10
 #define POST_LIMIT 100000
 #define GET8LIMIT 100000
 #define READERR 1
@@ -56,6 +56,10 @@
 #define OPEN 1
 #define CLOSE 0
 #define CRLF "\r\n\r\n"
+#define HTTP_RESPONSE_EXAMPLE "HTTP/1.1 200 OK\r\nServer: WebServer\r\nContent-Type: text/html\r\nContent-Length: 23\r\nConnection: close\r\n\r\n<h1> hello world </h1>"
+#define HTTP_LENGTH 225
+
+// * - * --------------------- TYPE DEFINITIONS --------------------- * - * //
 
 
 typedef std::vector <Server*> serverBlocks;
@@ -63,13 +67,12 @@ typedef int SOCKET ;
 typedef std::vector <int> intContainer;
 typedef std::vector <std::string> stringContainer;
 
+// * - * --------------------- FORWARD DECLARATIONS --------------------- * - * //
 
-// for testing purpos
-#define HTTP_RESPONSE_EXAMPLE "HTTP/1.1 200 OK\r\nServer: WebServer\r\nContent-Type: text/html\r\nContent-Length: 23\r\nConnection: close\r\n\r\n<h1> hello world </h1>"
-#define HTTP_LENGTH 225
 class Request;
 class Response;
 class CGIHandler ;
+
 class Fatal_error : public std::exception
 {
     const char *err_description ;
@@ -88,113 +91,140 @@ class Parse_error : public std::exception
 
 class Connection_error : public std::exception
 {
-        const char *err_description;
-        const char *context;
+    const char *err_description;
+    const char *context;
     public:
         virtual const char *what() const throw();
         Connection_error(const char *desc, const char *context);
 };
 
+
+
+
 class ServerInstance
 {
     private:
-        std::string hostName;
-        int requestCount;
-        SOCKET serverSocket;
-        unsigned int connectionPort;
-        std::string service;
+
         int enable;
         int errCheck;
-        struct addrinfo addr;
         int status;
+        int requestCount;
+        unsigned int connectionPort;
+        std::string hostName;
+        std::string service;
+        SOCKET serverSocket;
+        struct addrinfo addr;
 
-public:
-    ServerInstance(void);                       // init server with random port number
-    ServerInstance(std::string host, int port); // init server with the given port
-    ~ServerInstance();
-    ServerInstance(const ServerInstance &copy);
-    ServerInstance &operator=(const ServerInstance &assign);
-    void bind_socket(void);
-    int establish_connection(void);
-    int accept_connection(void);
-    int getSocketFd(void) const;
-    int getRequestCount(void) const;
-    void setServerPort(unsigned int port);
-    unsigned int getServerPort (void);
-    std::string getHostName (void);
-    void setService (int port);
-    void setService (std::string service);
-    std::string getService (void) const;
-    void setStatus (int status);
-    int getStatus (void) const;
+	public:
+
+		// * - * --------------------- CONSTRUCTORS --------------------- * - * //
+
+    	ServerInstance(void);                       
+    	ServerInstance(std::string host, int port);
+    	~ServerInstance();
+    	ServerInstance(const ServerInstance &copy);
+    	ServerInstance &operator=(const ServerInstance &assign);
+
+		// * - * --------------------- GETTER FUNCTIONS --------------------- * - * //
+
+    	int				getSocketFd(void) const;
+    	int				getStatus (void) const;
+    	int				getRequestCount(void) const;
+    	unsigned int	getServerPort (void);
+    	std::string		getHostName (void);
+    	std::string		getService (void) const;
+
+		// * - * --------------------- SETTER FUNCTIONS --------------------- * - * //
+
+    	void			setService (int port);
+    	void			setService (std::string service);
+    	void			setStatus (int status);
+    	void			setServerPort(unsigned int port);
+    	void			bind_socket(void);
+    	int				establish_connection(void);
+    	int				accept_connection(void);
 };
 
 typedef std::vector <ServerInstance*> serverContainer ;
+
 class Connection {
-    private:
-        Request *request;
-		Response *response;
-        int ConnectionSocket;
-        std::vector <int> resolversList;
-        char *httpBuffer;
-        std::vector <char> requestBody;
-        int dataRecievedLength;
-        struct addrinfo *requestSourceAddr;
-        int ConnectionPort;
-        std::string hostName;
-		std::string serviceName;
-		std::string ipAddress;
-		size_t requestLength;
-		int status;
-        std::string requestString;
-        int dataReminder;
-        int dataToRead ;
-        int ContentLength;
-        int headerLength;
-        int upload;
-        int bodyRead;
-        int readStatus;
-        std::string requestHeader;
-		Config *conf;
-		CGIHandler *CGI;
-		serverBlocks servList;
-		bool responseConstructed;
-		size_t bytesSent ;
-		int responseIndex;
-		bool cgi;
+    
+	private:
+        int				ConnectionSocket;
+		int 			status;
+        int 			dataReminder;
+        int 			dataToRead ;
+        int 			ContentLength;
+        int 			headerLength;
+        int 			upload;
+        int 			bodyRead;
+        int 			readStatus;
+        int 			dataRecievedLength;
+        int 			ConnectionPort;
+		int 			responseIndex;
+		size_t 			bytesSent ;
+		size_t 			requestLength;
+        std::vector 	<int>resolversList;
+        std::vector 	<char>requestBody;
+		CGIHandler 		*CGI;
+		serverBlocks 	servList;
+        Request 		*request;
+		Response 		*response;
+        std::string 	requestHeader;
+		std::string 	serviceName;
+        std::string 	hostName;
+		std::string		ipAddress;
+        struct addrinfo	*requestSourceAddr;
+        char 			httpBuffer[BUFFER_MAX + 1];
+		Config 			*conf;
+		bool 			responseConstructed;
+		bool 			cgi;
 
     public:
+
+		// * - * --------------------- CONSTRUCTORS --------------------- * - * //
+
         Connection ();
 		Connection (int fd);
 		~Connection ();
-        int getConnectionSocket (void) const;
-        char *getBuffer (void) ;
-        void emptyBuffer (void);
-        int recieveData (int *start, int *len);
-        std::vector <int> getResolversList (void) const;
-        void generateResolversList (serverBlocks serverList);
-		void setRequest (void);
-		Request *getRequest (void) const;
-		void printfResolvers (void);
-		void setStatus (int status);
-        void appendBuffer (size_t start, int dataRecived);
-        int getRequestLength (void) const ;
-        std::string getRequestString (void) const;
-        int getDataToRead (void) const;
-        void setDataTorRead (int dataTorRead) ;
-        int getContentLength (void) const;
-        int getUpload (void) const;
-        int getBodyRead (void) const;
-        std::vector<char> getRequestBody (void) const;
-        std::string getRequestHeaders (void) const;
-		void setServerBlocks (serverBlocks serverList);
-		void setConfig (Config *conf);
-		serverBlocks getServerBlocks (void) const;
-		Config *getConfig (void) const;
-		size_t getBytesSent (void) const ;
-		bool getResponseState (void) const;
-		int sendResponse (int fd);
-		void constructResponse (void);
+
+		// * - * --------------------- GETTER FUNCTIONS --------------------- * - * //
+
+        int					getConnectionSocket (void) const;
+        char 				*getBuffer (void) ;
+		size_t 				getBytesSent (void) const ;
+		bool 				getResponseState (void) const;
+        int					getRequestLength (void) const ;
+        int					getContentLength (void) const;
+        int					getUpload (void) const;
+        int					getDataToRead (void) const;
+        int					getBodyRead (void) const;
+		Request				*getRequest (void) const;
+        std::vector<char> 	getRequestBody (void) const;
+        std::string 		getRequestHeaders (void) const;
+		serverBlocks 		getServerBlocks (void) const;
+		Config 				*getConfig (void) const;
+        std::vector <int> 	getResolversList (void) const;
+
+		// * - * --------------------- SETTER FUNCTIONS --------------------- * - * //
+
+		void 				setRequest (void);
+		void 				setStatus (int status);
+		void 				setServerBlocks (serverBlocks serverList);
+		void 				setConfig (Config *conf);
+
+		// * - * --------------------- HELPER FUNCTIONS --------------------- * - * //
+
+        void				emptyBuffer (void);
+        int 				recieveData (int *start, int *len);
+        void 				generateResolversList (serverBlocks serverList);
+		void 				printfResolvers (void);
+        void 				appendBuffer (size_t start, int dataRecived);
+		int 				sendResponse (int fd);
+		void	 			constructResponse (void);
+		void				extractHeaderLength (std::string tmpBuffer, int *start, int *len);
+		void				extractContentLength (std::string tmpBuffer);
+		void				extractMethod (std::string tmpBuffer);
 };
 
 typedef std::vector <Connection *> connectionPool;
@@ -202,74 +232,77 @@ typedef std::vector <Connection *> connectionPool;
 class HttpApplication
 {
     private:
-		int queueIdentifier;
+
+		// * - * --------------------- HELPERS --------------------- * - * //
+
         int nfds;
         int errValue;
         int serverCount;
         int connectionCount;
         int returnValue;
         int indx;
-        serverContainer serverList;
-        std::string httpDefaultErrorPage;
-        int HttpMaxBodySize;
+		int fdMax;
+
+		// * - * --------------------- SERVER LOG FILES --------------------- * - * //
+
         std::ofstream accessLog;
 		std::ofstream errorLog ;
         std::ofstream binFile;
+		std::ofstream file;
+        Config *config;
+        serverContainer serverList;
+		connectionPool connections;
+		// * - * --------------------- SELECT VARIABLES --------------------- * - * //
+		fd_set readFds, writeFds, errorFds;
         intContainer serverFds;
 		intContainer watchedFds;
-        Config *config;
-		connectionPool connections;
-		fd_set readFds, writeFds, errorFds;
-		 std::ofstream file;
-		int fdMax;
         intContainer openConnections;
-public:
-    HttpApplication();
-    HttpApplication(const HttpApplication &copy);
-    ~HttpApplication();
-    int getServerCount(void) const;
-    int getConnectionCount(void) const;
-    void connectServers(void);
-    void handleNewConnection(int serverFd);
-    void handleConfig (int argc, char *argv[]);
-    pollfd *getConnectionPool(void) const;
-    serverContainer getServerList(void) const;
-	serverBlocks getServerBlockList (void) const;
-    // void setConnectionPool(pollfd *fd_pool);
-    void allocateServers (void);
-    void checkForConnection (void);
-    void handleHttpRequest (int fd);
-	void handleHttpResponse (int fd);
-    int getConnectionIndx (void);
-    int getConnectionCount (void);
-    // void setConnectionFd (int fd, int type);
-    // void unsetConnectionFd (int fd);
-    // int chechTimeOut (int fd);
-    // int getFdType (int fd);
-    void serverLog (int serverIndx);
-    void printServerInfo (void);
-    void filterServerBlocks (void);
-    int checkServerExistance (Server *block);
-    ServerInstance *findServerByFd (int serverFd);
-	int isServer (int fd);
-	void initServerSet (void);
-	connectionPool::iterator getConnection (int fd);
-	/// testing log
-	void connectionAccessLog (std::string msg, int requestLength, std::string addr, std::string port);
-	void connectionErrorLog (std::string errorContext, std::string errorMessage, std::string addr, std::string port);
-	// testing 
-	void printServerFds (void)
-	{
-		std::vector <int>::iterator it;
 
-		for (it = serverFds.begin () ; it != serverFds.end (); it++)
-			std ::cout << "\e[0;36m " << (*it) << " \e[0m";
-		std::cout << std::endl;
-	}
-	void handleSigPipe ();
-	Config *getConfig (void) const;
+	public:
+
+		// * - * --------------------- CONSTRUCTORS --------------------- * - * //
+
+    	HttpApplication();
+    	HttpApplication(const HttpApplication &copy);
+    	~HttpApplication();
+
+		// * - * --------------------- GETTER FUNCTIONS --------------------- * - * //
+
+    	int							getServerCount(void) const;
+    	int							getConnectionCount(void) const;
+    	int							getConnectionIndx (void);
+    	int							getConnectionCount (void);
+    	pollfd						*getConnectionPool(void) const;
+    	serverContainer				getServerList(void) const;
+		serverBlocks				getServerBlockList (void) const;
+		Config 						*getConfig (void) const;
+
+		// * - * -------			-------------- SERVER FUNCTIONS --------------------- * - * //
+
+    	void 						connectServers(void);
+    	void 						handleNewConnection(int serverFd);
+    	void 						handleConfig (int argc, char *argv[]);
+    	void 						allocateServers (void);
+    	void 						checkForConnection (void);
+    	void 						handleHttpRequest (int fd);
+		void 						handleHttpResponse (int fd);
+    	void 						serverLog (int serverIndx);
+    	void 						printServerInfo (void);
+    	void 						filterServerBlocks (void);
+    	int							checkServerExistance (Server *block);
+    	ServerInstance				*findServerByFd (int serverFd);
+		int 						isServer (int fd);
+		void 						initServerSet (void);
+		connectionPool::iterator	getConnection (int fd);
+		void						connectionAccessLog (std::string msg, int requestLength, std::string addr, std::string port);
+		void						connectionErrorLog (std::string errorContext, std::string errorMessage, std::string addr, std::string port);
+		void						handleSigPipe ();
+		void						closeConnection (SOCKET fd, std::string error);
+		void						removeConnection (SOCKET fd);
+		void						closeConnection (SOCKET fd);
 };
 
+// * - * --------------------- HELPER FUNCTIONS --------------------- * - * //
 
 void handleError(int err);
 void initServers(ServerInstance *serv_list);

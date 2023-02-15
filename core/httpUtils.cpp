@@ -3,6 +3,122 @@
 #include "../response/Response.hpp"
 #include "../CGI/CGI.hpp"
 
+
+// * *  ------------------------------------------- CONSTRUCTORS -------------------------------------------  ** //
+
+Connection::Connection ()
+{
+    ConnectionSocket = 0;
+	ConnectionPort = 0;
+	requestLength = 0;
+	ContentLength = -1;
+	headerLength = -1;
+	upload = -1;
+	bodyRead = 0;
+	bytesSent = 0;
+	responseConstructed = false ;
+	responseIndex = 0;
+	request = NULL;
+	response = NULL;
+}
+
+Connection::Connection (int fd)
+{
+	
+    ConnectionSocket = fd;
+	ConnectionPort = 0;
+	requestLength = 0;
+	ContentLength = -1;
+	headerLength = -1;
+	upload = -1;
+	bodyRead = 0;
+	bytesSent = 0;
+	responseConstructed = false ;
+	responseIndex = 0;
+	request = NULL;
+	response = NULL;
+}
+
+Connection::~Connection()
+{
+	//delete this->request;
+}
+
+// * *  ------------------------------------------- GETTERS -------------------------------------------  ** //
+
+Config *Connection::getConfig (void) const
+{
+	return (this->conf);	
+}
+
+Request *Connection::getRequest (void) const
+{
+	return (this->request);
+}
+
+serverBlocks Connection::getServerBlocks (void) const
+{
+	return (this->servList);
+}
+
+size_t Connection::getBytesSent (void) const 
+{
+	return (this->bytesSent);
+}
+bool Connection::getResponseState (void) const
+{
+	return (this->responseConstructed);
+}
+
+int Connection::getRequestLength (void) const
+{
+	return (this->requestLength);
+}
+
+int Connection::getBodyRead (void) const
+{
+	return (bodyRead);	
+}
+
+int Connection::getUpload (void) const
+{
+	return (upload);
+}
+
+int Connection::getContentLength (void) const
+{
+	return (ContentLength);
+}
+
+std::vector <char> Connection::getRequestBody (void) const
+{
+	return (this->requestBody);
+}
+
+std::string Connection::getRequestHeaders (void) const
+{
+	return (this->requestHeader);
+}
+
+// * *  ------------------------------------------- SETTERS -------------------------------------------  ** //
+
+void Connection::setRequest (void)
+{
+    request = new Request (this);
+}
+
+void Connection::setServerBlocks (serverBlocks serverList) 
+{
+	this->servList  = serverList;
+}
+
+void Connection::setConfig (Config *conf)
+{
+	this->conf  = conf;
+}
+
+// * *  ------------------------------------------- HELPERS -------------------------------------------  ** //
+
 const std::string currentDateTime() {
     time_t     now = time(0);
     struct tm  tstruct;
@@ -54,102 +170,22 @@ void handleError (int err)
     throw Connection_error (strerror (errno), "uknown error");
 }
 
-
-Connection::Connection ()
-{
-    ConnectionSocket = 0;
-	ConnectionPort = 0;
-	requestLength = 0;
-	requestString = "";
-	ContentLength = -1;
-	headerLength = -1;
-	upload = -1;
-	bodyRead = 0;
-	bytesSent = 0;
-	responseConstructed = false ;
-	responseIndex = 0;
-}
-
-Connection::Connection (int fd)
-{
-	
-    ConnectionSocket = fd;
-	ConnectionPort = 0;
-	requestLength = 0;
-	requestString = "";
-	ContentLength = -1;
-	headerLength = -1;
-	upload = -1;
-	bodyRead = 0;
-	bytesSent = 0;
-	responseConstructed = false ;
-	responseIndex = 0;
-}
-
-
-Connection::~Connection()
-{
-	//delete this->request;
-}
-
 int Connection::recieveData (int *start, int *len)
 {
-	httpBuffer = (char *) malloc (sizeof (char) * (BUFFER_MAX));
-    dataRecievedLength = recv (ConnectionSocket, httpBuffer, BUFFER_MAX - 1, 0);
+    dataRecievedLength = recv (ConnectionSocket, httpBuffer, BUFFER_MAX, 0);
+
+	memset (httpBuffer, 0, BUFFER_MAX);
 	if (dataRecievedLength > 0)
 	{
 		requestLength += dataRecievedLength ;
-		httpBuffer[dataRecievedLength] = 0;
-
 		if (ContentLength == -1 && headerLength == -1)
 		{
 			std::string tmpBuffer (httpBuffer);
-			std::string pattern ("Content-Length");
-			size_t method = tmpBuffer.find ("GET");
 			
-			if (method == std::string::npos)
-			{
-				method = tmpBuffer.find ("POST");
-				if (method == 0)
-					upload = 1;
-			}
-			else if (method == 0)
-				upload = 0;
-
-			size_t headerLen = tmpBuffer.find (CRLF);
-			if (headerLen != std::string::npos)
-			{
-				headerLength = headerLen  + strlen (CRLF);
-				*start = headerLength;
-				*len  = dataRecievedLength - headerLength;
-				requestHeader = tmpBuffer.substr (0, headerLength);
-			}
-			// else
-			// 	upload = -1;
-
+			extractMethod (tmpBuffer);
+			extractHeaderLength (tmpBuffer, start, len);
 			if (upload == 1)
-			{
-				size_t cn = tmpBuffer.find (pattern);
-
-				if (cn != std::string::npos)
-				{
-					char tmp[1000];
-					int i = cn + pattern.length () + 1;
-					int j = 0;
-
-					while (tmpBuffer[i] && tmpBuffer[i] != '\n')
-					{
-						tmp[j] =tmpBuffer[i];
-						i++;
-						j++;
-					}
-					tmp[j] = 0;
-					ContentLength = atoi (tmp);
-					bodyRead = dataRecievedLength - headerLength;
-					// std::cout << "Content Length : " << ContentLength << std::endl;
-					// std::cout << "Body read : " << bodyRead << std::endl;
-				}
-			}
+				extractContentLength (tmpBuffer);
 		}
 		else
 		{
@@ -158,7 +194,6 @@ int Connection::recieveData (int *start, int *len)
 			*len = dataRecievedLength;
 		}				
 	}
-
 	return (dataRecievedLength);
 }
 
@@ -199,19 +234,6 @@ void Connection::generateResolversList (serverBlocks serverBlockList)
 			this->resolversList.push_back (serverIndx);
 		serverIndx++;
 	}
-}
-
-void Connection::setRequest (void)
-{
-	try
-    {
-		std::cout << "connection Socket " << this->ConnectionSocket << std::endl;
-    	request = new Request (this);
-    }
-    catch (std::exception &exc)
-    {
-        std::cout << "\e[0;31m" << exc.what () << "\e[0m" << std::endl;
-    }
 }
 
 void Connection::printfResolvers (void)
@@ -280,12 +302,6 @@ void HttpApplication::connectionErrorLog (std::string errorContext, std::string 
 	errorLog << std::endl;
 }
 
-Request *Connection::getRequest (void) const
-{
-	return (this->request);
-}
-
-
 void HttpApplication::handleSigPipe (void) 
 {
 	struct sigaction sa;
@@ -306,88 +322,7 @@ void Connection::appendBuffer (size_t start, int dataRecived)
 	}
 }
 
-std::string Connection::getRequestString (void) const
-{
-	return (this->requestString);
-}
 
-
-// void Connection::appendToBinaryFile (size_t n)
-// {
-// 	file.write (requestString.c_str (), n);
-// }
-
-int Connection::getDataToRead(void) const
-{
-	return (this->dataReminder);
-}
-
-
-void Connection::setDataTorRead (int dataLength)
-{
-	this->dataToRead = dataLength;
-}
-
-
-int Connection::getRequestLength (void) const
-{
-	return (this->requestLength);
-}
-
-int Connection::getBodyRead (void) const
-{
-	return (bodyRead);	
-}
-
-int Connection::getUpload (void) const
-{
-	return (upload);
-}
-
-int Connection::getContentLength (void) const
-{
-	return (ContentLength);
-}
-
-std::vector <char> Connection::getRequestBody (void) const
-{
-	return (this->requestBody);
-}
-
-std::string Connection::getRequestHeaders (void) const
-{
-	return (this->requestHeader);
-}
-
-
-void Connection::setServerBlocks (serverBlocks serverList) 
-{
-	this->servList  = serverList;
-}
-
-void Connection::setConfig (Config *conf)
-{
-	this->conf  = conf;
-}
-
-Config *Connection::getConfig (void) const
-{
-	return (this->conf);	
-}
-
-serverBlocks Connection::getServerBlocks (void) const
-{
-	return (this->servList);
-}
-
-size_t Connection::getBytesSent (void) const 
-{
-	return (this->bytesSent);
-}
-bool Connection::getResponseState (void) const
-{
-	return (this->responseConstructed);
-}
 int Connection::sendResponse (int fd)
 {
 	std::string responseData;
@@ -399,16 +334,10 @@ int Connection::sendResponse (int fd)
 	else
 		responseData = response->getResponse ();
 	responseLength = responseData.length();
-	// std::cout << "-----------------------------------------------------------\n";
-	// std::cout << "\e[0;33m" << responseIndex << "\e[0m]" <<std::endl;
 	dataSent = send (fd, responseData.c_str () + responseIndex, responseLength - bytesSent, 0);
-	// std::cout << "\e[0;31m Bytes sent " << dataSent << "\e[0m" << std::endl;
-	// std::cout << "\e[0;31m fd " << fd << "\e[0m" << std::endl;
-	// std::cout << "\e[0;31m connectionFd " << ConnectionSocket << "\e[0m" << std::endl;
 	if (dataSent < 0)
 		return (-1);
 	bytesSent += dataSent;
-	// std::cout << "\e[0;33m-------- bytes sent " << bytesSent << "\e[0;36m Excpected " << responseData.length ()   << "-------- \e[0m" << std::endl;
 	if (bytesSent == responseLength)
 		return (1);
 	responseIndex = bytesSent ;
@@ -419,14 +348,6 @@ void Connection::constructResponse (void)
 {
 	if (responseConstructed == false)
 	{
-		// if (request->getLocation () && !request->getLocation()->getEndPoint().empty())
-		// {
-		// 	// std::cout << "\e[0;31m PATH : \e[0m" << request->getPath () << std::endl;
-		// 	if (request->getCGIStatus())
-		// 		std::cout << "CGI status: Enabled" << std::endl;
-		// 	else
-		// 		std::cout << "CGI status: Disabled" << std::endl;
-		// }
 		if (request->getCGIStatus())
 		{
 			cgi = true ;
@@ -441,3 +362,6 @@ void Connection::constructResponse (void)
 		}
 	}
 }
+
+
+

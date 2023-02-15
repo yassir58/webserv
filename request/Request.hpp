@@ -6,7 +6,7 @@
 /*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:36 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/13 18:07:12 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/15 18:09:58 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,8 @@
 typedef std::vector<std::string> stringContainer;
 typedef std::list<headerField>	headerFieldList;
 typedef std::vector <Server*> serverBlocks;
+
+class Connection ;
 
 class Request
 {
