@@ -68,33 +68,12 @@ void    Config::validateConfig()
     i = 0;
     while (i < this->mainHttpContext->getServers().size())
     {
-        j = 0;
         if (this->mainHttpContext->getServers()[i]->getRoot().empty())
             throw parseError("Config Error: Server root directive must be provided");
-        while (j < this->mainHttpContext->getServers()[i]->getLocations().size())
-        {
-            if (this->mainHttpContext->getServers()[i]->getLocations()[j]->getUploadStatus())
-            {
-                if (this->mainHttpContext->getServers()[i]->getLocations()[j]->getUploadPath().empty())
-                    throw parseError("Config Error: Upload path must be provided");
-            }
-            if (this->mainHttpContext->getServers()[i]->getLocations()[j]->getCGIStatus())
-            {
-                if (this->mainHttpContext->getServers()[i]->getLocations()[j]->getCGIExtension().empty())
-                    throw parseError("Config Error: CGI extension must be provided");
-                else if (this->mainHttpContext->getServers()[i]->getLocations()[j]->getCGIDefault().empty())
-                    throw parseError("Config Error: CGI script path must be provided");
-            }
-            if (!this->mainHttpContext->getServers()[i]->getLocations()[j]->getListingStatus())
-            {
-                if (this->mainHttpContext->getServers()[i]->getLocations()[j]->getDefaultIndex().empty())
-                    throw parseError("Config Error: Default index file must be provided | you can enable directory listing");
-            }
-            j++;
-        }
+        if (this->mainHttpContext->getServers()[i]->getLocations().size() == 0) 
+            throw parseError("Config Error: Location must be provided inside the server context");
         i++;
     }
-
 }
 
 void    Config::parseDirective(stringContainer config, int line)
@@ -437,6 +416,7 @@ Location::Location()
     this->cgiEnable = false;
     this->listDirectory = true;
     this->defaultIndex = "";
+    this->redirectLink = "";
 }
 
 Location::~Location()
@@ -449,6 +429,14 @@ Location::Location(std::string path)
 {
     //std::cout << "Setting the location path" << std::endl;
     this->endPoint = path;
+    this->root = "";
+    this->uploadPath = "";
+    this->cgiExtension = "";
+    this->cgiDefault = "";
+    this->sendFile = false;
+    this->cgiEnable = false;
+    this->listDirectory = false;
+    this->defaultIndex = "";
     this->redirectLink = "";
 }
 
@@ -501,6 +489,7 @@ void    Location::parseDirective(stringContainer line, Location *instance)
 {
     validateDirective(line, LOCATION);
     line = stripSemiColon(line);
+    instance->cgiEnable = false;
     if (line[0] == "send_file" && line.size() == 2)
     {
         if (strcmp(line[1].c_str(), "on") == 0)

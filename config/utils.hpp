@@ -44,8 +44,7 @@ const char * cgiExtensions[] = {
 
 const char * indexExtensions[] = {
         "html",
-        "rb",
-        "py",
+        "htm",
         "php",
         NULL
 };
