@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
+/*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/15 12:14:09 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/15 19:13:24 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,7 +101,7 @@ int	Response::getStatusCode(void)
 {
 	size_t index = 0;
 	int		code = request->getStatusCode();
-	while (code != status[index].code)
+	while (status[index] && code != status[index].code)
 		++index;
 	return (index);
 }
@@ -319,6 +319,7 @@ void	Response::setRequest(Request *request, Config *config)
 	status[index].code = NOT_IMPLENTED; status[index++].status = "Not Implemented";
 	status[index].code = SERVER_ERROR; status[index++].status = "Internal Server Error";
 	status[index].code = HTTP_VERSION; status[index++].status = "HTTP Version Not Supported";
+	status[index] = NULL;
 }
 
 void	Response::setResponseBody(std::string responseBody)

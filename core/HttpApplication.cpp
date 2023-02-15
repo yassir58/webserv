@@ -4,6 +4,9 @@
 #include "../request/Request.hpp"
 #include "../response/Response.hpp"
 
+
+// * *  ------------------------------------------- CONSTRUCTORS -------------------------------------------  ** //
+
 HttpApplication::HttpApplication ()
 {
     serverCount = 1;
@@ -21,8 +24,48 @@ HttpApplication::HttpApplication (const HttpApplication &copy)
 {
     serverCount = copy.serverCount;
     connectionCount= copy.connectionCount;
-    HttpMaxBodySize = copy.HttpMaxBodySize;
     indx = serverCount;
+}
+
+
+// * *  ------------------------------------------- GETTERS -------------------------------------------  ** //
+
+
+int HttpApplication::getConnectionIndx (void)
+{
+    return (indx);
+}
+
+int HttpApplication::getServerCount (void) const
+{
+    return (this->serverCount);
+}
+
+int HttpApplication::getConnectionCount (void) const
+{
+    return (this->connectionCount);
+}
+
+serverBlocks HttpApplication::getServerBlockList (void) const
+{
+	return (this->config->getHttpContext()->getServers());
+}
+
+serverContainer HttpApplication::getServerList(void) const
+{
+    return (this->serverList);
+}
+
+connectionPool::iterator HttpApplication::getConnection (int fd)
+{
+	connectionPool::iterator it ;
+
+	for (it  = connections.begin (); it != connections.end (); it++)
+	{
+		if ((*it)->getConnectionSocket () == fd)
+			return it;
+	}
+	return (it);
 }
 
 void HttpApplication::connectServers (void)
@@ -44,12 +87,8 @@ void HttpApplication::connectServers (void)
         }
         catch(const std::exception& e)
         {
-            // remove server from list
             std::cout << "Invalid " << (*bg)->getHostName () << std::endl;
             (*bg)->setStatus (0);
-            //serverList.erase (bg);
-			// bg--;
-            // std::cerr << e.what() << '\n';
         }
 		indx++;
     }
@@ -87,7 +126,7 @@ void HttpApplication::checkForConnection (void)
 		for (int i = 0; i < (fdMax + 1); i++)
 		{
 			if (FD_ISSET (i , &error))
-				std::cout <<  "\e[0;31m SOCKET ERROR \e[0m";
+				throw Connection_error(strerror(errno), "SELECT");
 			if (FD_ISSET (i, &read))
 			{
 				if (isServer (i))
@@ -122,36 +161,37 @@ void HttpApplication::handleHttpRequest (int fd)
 {
    	Connection *newConnection ;
 	intContainer::iterator it;
+	connectionPool::iterator cnIt ;
    	int recvReturn = 0;
-	int bytes_available = 0;
 	int start = 0;
 	int length  = 0;
 
 
 	it = std::find (openConnections.begin (), openConnections.end (), fd);
 	if (it != openConnections.end ())
-		newConnection = (*getConnection (fd));
+	{
+		cnIt = getConnection (fd) ;
+		if (cnIt == connections.end ())
+			throw Connection_error ("CONNECTION", "CONNECTION NOT FOUND");
+		newConnection = (*cnIt);
+	}
 	else
 	{
 		newConnection = new Connection (fd);
 		connections.push_back (newConnection);
 		openConnections.push_back (fd);
 	}
-	newConnection->setDataTorRead (bytes_available);
 	recvReturn = newConnection->recieveData (&start, &length);
 	if (recvReturn == -1)
 	{
-		FD_CLR (fd, &readFds);
-		FD_CLR (fd, &errorFds);
-		openConnections.pop_back ();
-		throw Connection_error (strerror (errno), "RECV");
+		closeConnection (fd, "RECV ERROR");
+		removeConnection (fd);
 	}
 	else if (recvReturn == 0)
 	{
 		FD_CLR (fd, &readFds);
 		FD_CLR (fd , &errorFds);
-		close (fd);
-		openConnections.pop_back ();
+		removeConnection (fd);
 	}
 	else
 	{
@@ -163,10 +203,8 @@ void HttpApplication::handleHttpRequest (int fd)
 		else if (newConnection->getBodyRead () == newConnection->getContentLength() 
 			|| newConnection->getUpload () <= 0)
 		{
-			// std::cout << "Request Headers : " << newConnection->getRequestHeaders () << std::endl;
 			newConnection->appendBuffer (start, length);
 			newConnection->emptyBuffer ();
-			binFile.write (newConnection->getRequestBody().data(), newConnection->getRequestBody().size ());
 			serverBlocks servList = this->config->getHttpContext()->getServers ();
 			newConnection->generateResolversList (servList);
 			newConnection->setServerBlocks (servList);
@@ -174,27 +212,10 @@ void HttpApplication::handleHttpRequest (int fd)
 			newConnection->setRequest ();
 			FD_CLR (fd, &readFds);
 			FD_SET (fd, &writeFds);
-			openConnections.pop_back ();
+			removeConnection (fd);
 		}
-	}
-	
+	}	
 }
-
-int HttpApplication::getConnectionIndx (void)
-{
-    return (indx);
-}
-
-int HttpApplication::getServerCount (void) const
-{
-    return (this->serverCount);
-}
-
-int HttpApplication::getConnectionCount (void) const
-{
-    return (this->connectionCount);
-}
-
 
 void HttpApplication::handleConfig (int argc , char *argv[])
 {
@@ -207,9 +228,6 @@ void HttpApplication::handleConfig (int argc , char *argv[])
     config->parseConfig();
 }
 
-
-// test
-
 void HttpApplication::printServerInfo (void)
 {
     serverContainer::iterator bg;
@@ -220,7 +238,6 @@ void HttpApplication::printServerInfo (void)
         std::cout << (*(*bg)).getHostName() << std::endl;
     }
 }
-
 
 void HttpApplication::filterServerBlocks (void)
 {
@@ -251,11 +268,6 @@ int HttpApplication::checkServerExistance (Server *block)
     return (FALSE);
 }
 
-serverContainer HttpApplication::getServerList(void) const
-{
-    return (this->serverList);
-}
-
 ServerInstance *HttpApplication::findServerByFd (int serverFd)
 {
     serverContainer::iterator it;
@@ -266,26 +278,6 @@ ServerInstance *HttpApplication::findServerByFd (int serverFd)
             return ((*it));
     }
     return (serverList[0]);
-}
-
-serverBlocks HttpApplication::getServerBlockList (void) const
-{
-	return (this->config->getHttpContext()->getServers());
-}
-
-connectionPool::iterator HttpApplication::getConnection (int fd)
-{
-	connectionPool::iterator it ;
-
-	for (it  = connections.begin (); it != connections.end (); it++)
-	{
-		if ((*it)->getConnectionSocket () == fd)
-		{
-			// std::cout << "\e[0;33mconnection found\e[0m" << std::endl;
-			return it;
-		}
-	}
-	return (it);
 }
 
 
@@ -301,7 +293,7 @@ void HttpApplication::handleHttpResponse (int fd)
 	
 	it = getConnection (fd);
 	if (it == connections.end ())
-		throw Connection_error ("connection not found", "fin jat sara9osta");
+		closeConnection (fd, "COULD NOT FIND CONNECTION");
 	connectionInterface = (*it);
 	connectionInterface->constructResponse ();
 	errValue = connectionInterface->sendResponse (fd);
@@ -314,14 +306,5 @@ void HttpApplication::handleHttpResponse (int fd)
 		throw Connection_error (strerror (errno), "SEND");
 	}
 	else
-	{	
-		if (errValue)
-		{
-			std::cout << "\e[0;31m --------------------------> Bytes sent " << connectionInterface->getBytesSent () << "\e[0m" << std::endl;
-			FD_CLR (fd, &writeFds);
-			FD_CLR (fd, &errorFds);
-			close (fd);
-			connections.erase (it);
-		}
-	}
+		closeConnection (fd);	
 }
