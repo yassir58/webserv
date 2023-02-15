@@ -205,7 +205,7 @@ void Connection::setRequest (void)
 {
 	try
     {
-		std::cout << requestString.length () << std::endl;
+		std::cout << "connection Socket " << this->ConnectionSocket << std::endl;
     	request = new Request (this);
     }
     catch (std::exception &exc)
