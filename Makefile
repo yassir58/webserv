@@ -1,8 +1,9 @@
-CFLAGS = -fsanitize=address #-Wall -Wextra -Werror  -g  #-std=c++98 
-CCP = c++
-CC = gcc
-EXEC = webserv
-CORE_SRCS = main.cpp serverUtils.cpp ServerInstance.cpp  HttpApplication.cpp httpUtils.cpp 
+SDIR =tcp
+CFLAGS = -fsanitize=address #-Wall -Wextra -Werror  -g #-std=c++98 
+CCP =c++
+CC =gcc
+EXEC=webserv
+CORE_SRCS =main.cpp serverUtils.cpp ServerInstance.cpp  HttpApplication.cpp httpUtils.cpp 
 CONF_SRCS = config.cpp utils.cpp
 REQUEST_SRCS = Request.cpp requestTools.cpp requestParser.cpp
 RESPONSE_SRCS = Response.cpp

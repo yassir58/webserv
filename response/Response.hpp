@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
+/*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 14:44:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/15 19:04:50 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/15 23:20:39 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 # include <fcntl.h>
 # include <string>
 # include <sstream>
+# include <map>
 # include "../request/Request.hpp"
 # include "../config/config.hpp"
 # include "../core/ServerInstance.hpp"
@@ -36,12 +37,13 @@ class Response
 {
 	private:
 		Request			*request; // a pointer on the request that have been parsed by the all mighty ma3ert
-		t_status		status[14]; // table of the available status
 		int				statusIndex; // the index of the appropriate code response in the table
 		std::string		responseBody; // the body of the response 
 		stringContainer	responseToSend; // the all mighty response
 		Config			*configData; // the data from the configuration file
 		bool			errorPagestatus;
+		std::map<int, std::string> statusCodeMap;
+		t_status		status;
 	public:
 		Response(Request &request, Config *configFile); // param constractor first argument is the request and here I apply method
 		~Response(); // desectrator not used
@@ -51,7 +53,7 @@ class Response
 		std::string		generateContentType(void); // generate the Content-Type header field
 		int				handleRedirection(void); // method use when there's a redirection
 		void			setRequest(Request *request, Config *configData); // seter of the request(look at the private attribute)
-		int				getStatusCode(void); // return the index of the status code
+		void			getStatusCode(void); // return the index of the status code
 		void			setResponseBody(std::string responseBody); // setter for the response body
 		std::string		getResponse(void); // the getter for the response and it convert the stringContainer to a string
 };
