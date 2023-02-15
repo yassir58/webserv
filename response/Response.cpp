@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/15 12:14:09 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/15 23:10:16 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 
 Response::Response(Request &request, Config *config)
 {
+	printf("response addres: %p\n", this);
 	setRequest(&request, config);
 	if (this->request->getRedirectionStatus())
 	{
@@ -49,7 +50,7 @@ Response::Response(Request &request, Config *config)
 	// 		infile.close();
 	// 	}
 	// }
-	statusIndex = getStatusCode();
+	getStatusCode();
 	responseToSend.push_back(generateStatusLine());
 	stringContainer headerFields = generateHeaderFields(responseBody);
 	responseToSend.insert(responseToSend.begin() + 1, headerFields.begin(), headerFields.end());
@@ -97,18 +98,28 @@ int	Response::handleRedirection(void)
 	return (statusCode);
 }
 
-int	Response::getStatusCode(void)
+void	Response::getStatusCode(void)
 {
-	size_t index = 0;
-	int		code = request->getStatusCode();
-	while (code != status[index].code)
-		++index;
-	return (index);
+	std::map<int, std::string>::iterator end;
+	std::map<int, std::string>::iterator begin;
+	end = statusCodeMap.end();
+	begin = statusCodeMap.find(request->getStatusCode());
+	if (begin == end)
+	{
+		status.code = SERVER_ERROR;
+		status.status = statusCodeMap[SERVER_ERROR];
+	}
+	else
+	{
+		status.code = begin->first;
+		status.status = begin->second;
+	}
+	
 }
 
 std::string Response::generateStatusLine(void)
 {
-	std::string	toReturn = "HTTP/1.1 " + request->getErrorCode() + " " + status[statusIndex].status + "\r\n";
+	std::string	toReturn = "HTTP/1.1 " + request->getErrorCode() + " " + status.status + "\r\n";
 	return (toReturn);
 }
 
@@ -164,14 +175,14 @@ stringContainer Response::generateHeaderFields(std::string &responseBody)
 	toReturn.push_back(Date);
 	if (!responseBody.empty())
 	{
-		std::string Lenght = generateLenghtContent(responseBody);;
+		std::string Lenght = generateLenghtContent(responseBody);
 		toReturn.push_back(Lenght);
 		std::string type = generateContentType();
 		if (request->getListingStatus())
 			type = "Content-Type: text/html\r\n";
 		toReturn.push_back(type);
 	}
-	if (this->getStatusCode() == NOT_ALLOWED)
+	if (status.code == NOT_ALLOWED)
 	{
 		std::string allow = "Allow: GET, HEAD, DELETE\r\n";
 		toReturn.push_back(allow);
@@ -306,19 +317,19 @@ void	Response::setRequest(Request *request, Config *config)
 	errorPagestatus = false;
 	this->configData = config;
 	size_t	index = 0;
-	status[index].code = OK; status[index++].status = "OK";
-	status[index].code = CREATED; status[index++].status = "CREATED";
-	status[index].code = FOUND; status[index++].status = "FOUND";
-	status[index].code = NO_CONTENT; status[index++].status = "NO_CONTENT";
-	status[index].code = BAD_REQUEST; status[index++].status = "Bad Request";
-	status[index].code = FORBIDDEN; status[index++].status = "Forbidden";
-	status[index].code = NOT_FOUND; status[index++].status = "Not Found";
-	status[index].code = NOT_ALLOWED; status[index++].status = "Method Not Allowed";
-	status[index].code = TOO_LONG; status[index++].status = "Request-URI Too Long";
-	status[index].code = TOO_LARGE; status[index++].status = "Request Entity Too Large";
-	status[index].code = NOT_IMPLENTED; status[index++].status = "Not Implemented";
-	status[index].code = SERVER_ERROR; status[index++].status = "Internal Server Error";
-	status[index].code = HTTP_VERSION; status[index++].status = "HTTP Version Not Supported";
+	statusCodeMap[OK] = "OK";
+	statusCodeMap[CREATED] = "CREATED";
+	statusCodeMap[FOUND] = "FOUND";
+	statusCodeMap[NO_CONTENT] = "NO_CONTENT";
+	statusCodeMap[BAD_REQUEST] = "Bad Request";
+	statusCodeMap[FORBIDDEN] = "Forbidden";
+	statusCodeMap[NOT_FOUND] = "Not Found";
+	statusCodeMap[NOT_ALLOWED] = "Method Not Allowed";
+	statusCodeMap[TOO_LONG] = "Request-URI Too Long";
+	statusCodeMap[TOO_LARGE] = "Request Entity Too Large";
+	statusCodeMap[NOT_IMPLENTED] = "Not Implemented";
+	statusCodeMap[SERVER_ERROR] = "Internal Server Error";
+	statusCodeMap[HTTP_VERSION] = "HTTP Version Not Supported";
 }
 
 void	Response::setResponseBody(std::string responseBody)

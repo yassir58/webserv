@@ -1,5 +1,5 @@
 SDIR =tcp
-CFLAGS = -Wall -Wextra -Werror  -g -fsanitize=address #-std=c++98 
+CFLAGS = -fsanitize=address #-Wall -Wextra -Werror  -g #-std=c++98 
 CCP =c++
 CC =gcc
 EXEC=webserv
@@ -15,7 +15,7 @@ RESPONSE_HEADERS = Response.hpp
 SRCS =  $(addprefix ./config/, $(CONF_SRCS)) $(addprefix ./core/, $(CORE_SRCS)) $(addprefix ./request/, $(REQUEST_SRCS)) $(addprefix ./response/, $(RESPONSE_SRCS)) $(addprefix ./CGI/, $(CGI_SRCS))
 OBJS = $(SRCS:.cpp=.o)
 CONF_HEADERS = config.hpp utils.hpp
-HEADERS = $(addprefix ./core/, $(CORE_HEADERS)) $(addprefix ./config/, $(CONF_HEADERS))  $(addprefix ./request/, $(REQUEST_HEADERS)) $(addprefix ./responsee/, $(RESPONSE_HEADERS)) $(addprefix ./CGI/, $(CGI_HEADERS)) 
+HEADERS = $(addprefix ./core/, $(CORE_HEADERS)) $(addprefix ./config/, $(CONF_HEADERS))  $(addprefix ./request/, $(REQUEST_HEADERS)) $(addprefix ./response/, $(RESPONSE_HEADERS)) $(addprefix ./CGI/, $(CGI_HEADERS)) 
 
 all:$(EXEC)
 
