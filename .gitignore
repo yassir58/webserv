@@ -13,6 +13,7 @@
 
 # Executables
 *.out
+webserv
 
 .vscode/*
 .vscode/settings.json

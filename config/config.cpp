@@ -455,6 +455,8 @@ void    Location::printLocation()
         std::cout << "CGI EXTENSION: " << this->cgiExtension << std::endl;
     if (this->cgiEnable)
         std::cout << "CGI ENABLED" << std::endl;
+    else
+        std::cout << "CGI DISABLED" << std::endl;
     std::cout << "ALLOWED METHODS" << std::endl;
     printContainer(this->methods);
     if (!this->defaultIndex.empty())
@@ -489,7 +491,6 @@ void    Location::parseDirective(stringContainer line, Location *instance)
 {
     validateDirective(line, LOCATION);
     line = stripSemiColon(line);
-    instance->cgiEnable = false;
     if (line[0] == "send_file" && line.size() == 2)
     {
         if (strcmp(line[1].c_str(), "on") == 0)
