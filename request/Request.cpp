@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/14 13:34:31 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/15 11:47:12 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,8 @@ Request::Request(Connection *newConnection)
 	if (!parseRequest(newConnection->getServerBlocks(), newConnection->getResolversList()))
 		return ;
 	this->CGI = checkLocationPath();
-}
+	std::cout << "path: " << path << std::endl;
+} 
 
 /*
 ** -------------------------------- DESTRUCTOR --------------------------------
@@ -52,6 +53,8 @@ bool Request::checkLocationPath(void)
 	path = adjustPath(root, path);
 	if (!checkDirectory(pathLocation))
 		return (false);
+	if (path.find("..", 0) != std::string::npos)
+		return (statusCode = FORBIDDEN, false);
 	if(!checkUpload(pathLocation))
 		return (false);
 	if (!treatAbsolutePath(pathLocation))
@@ -115,24 +118,13 @@ int	Request::checkDirectory(Location *pathLocation)
 		if (pathLocation->getListingStatus())
 		{
 			listingStatus = true;
+			if (path.find("..", 0) != std::string::npos)
+				return (statusCode = FORBIDDEN, false);	
 			return (0);
 		}
 		statusCode = FORBIDDEN;
-	}
-	if (access(path.c_str(), F_OK) == -1)
-	{
-		statusCode = NOT_FOUND;
 		return (0);
 	}
-	size_t pos = path.find_last_of('/', std::string::npos);
-	std::string fileName = path.substr(pos, std::string::npos);
-	path = path.substr(0, pos);
-	if (access(path.c_str(), R_OK) == -1)
-	{
-		statusCode = FORBIDDEN;
-		return (0);
-	}
-	path = adjustPath(path, fileName);
 	return (1);
 }
 
