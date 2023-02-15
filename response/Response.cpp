@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/15 11:23:21 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/15 12:14:09 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,24 @@ Response::~Response() {}
 /*
 ** --------------------------------- METHODS ----------------------------------
 */
+
+// std::string generateErrorPage(unsigned int statusCode)
+// {
+//     std::string output;
+//     std::string title;
+//     std::string message;
+
+//     title = "Error Page - " + int2assci(statusCode) + " " + createResponseMap()[int2assci(statusCode)];
+//     message = int2assci(statusCode) + " " + createResponseMap()[int2assci(statusCode)];
+//     output = readContent("../assets/template.html");
+//     if (output.length() > 0)
+//     {
+//         output.replace(output.find("%TITLE"), 6, title);
+//         output.replace(output.find("%MESSAGE"), 8, message);
+//         output.replace(output.find("%VERSION"), 8, SERVER_SOFTWARE_VERSION);
+//     }
+//     return (output);
+// }
 
 int	Response::handleRedirection(void)
 {

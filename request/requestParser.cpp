@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/31 15:58:58 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/15 11:07:24 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/15 12:32:27 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 int	Request::parseRequest(serverBlocks serverList, std::vector<int> resolversList)
 {
 	std::string line;
+	// serverInstance = NULL;
 	if (getCRLF(line, (char *)"\r\n"))
 	{
 		statusCode = BAD_REQUEST;
@@ -75,15 +76,15 @@ int	Request::checkContentParsed(serverBlocks serverList, std::vector <int> resol
 		statusCode = NOT_IMPLENTED;
 		return (0);
 	}
+	if (!checkVersion())
+	{
+		statusCode = HTTP_VERSION;
+		return (0);
+	}
 	if (!checkRequestTarget(serverList, resolversList))
 	{
 		if (statusCode == 0)
 			statusCode = BAD_REQUEST;
-		return (0);
-	}
-	if (!checkVersion())
-	{
-		statusCode = HTTP_VERSION;
 		return (0);
 	}
 	return (1);

@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/15 11:55:00 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/15 15:39:31 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,6 @@ Request::Request(Connection *newConnection)
 	if (!parseRequest(newConnection->getServerBlocks(), newConnection->getResolversList()))
 		return ;
 	this->CGI = checkLocationPath();
-	std::cout << "path: " << path << std::endl;
 } 
 
 /*
@@ -64,12 +63,12 @@ bool Request::checkLocationPath(void)
 
 Location *Request::matchLocation(void)
 {
-	std::vector<Location *> Locations = serverInstance->getLocations();
-	std::cout << "Location Size: " << Locations.size() << std::endl;
-	if (!Locations.size())
+	std::vector<Location *> *Locations = &(serverInstance->getLocations());
+	std::cout << "Location Size: " << Locations->size() << std::endl;
+	if (!Locations->size())
 		return (NULL);
-	std::vector<Location *>::iterator begin = Locations.begin();
-	std::vector<Location *>::iterator end = Locations.end();
+	std::vector<Location *>::iterator begin = Locations->begin();
+	std::vector<Location *>::iterator end = Locations->end();
 	size_t	pos;
 	while (end != begin)
 	{
@@ -79,7 +78,7 @@ Location *Request::matchLocation(void)
 		++begin;
 	}
 	std::cout << "exact match not found\n";
-	begin = Locations.begin();
+	begin = Locations->begin();
 	while (end != begin)
 	{
 		pos = path.find((*begin)->getEndPoint(), 0);
