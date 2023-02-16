@@ -122,7 +122,6 @@ std::string CGIHandler::formCGIResponse(std::string headers, std::string body)
     response << statusLine << "\r\n";
     response << generatedHeaders.str() << "\r\n\r\n";
     response << body;
-    std::cout << response.str() << std::endl;
     return (response.str());
 }
 
@@ -212,9 +211,8 @@ std::string    CGIHandler::getOutput()
 
     args = (char **)this->getExecuteArgs();
     envList = (char **)this->convertEnvList();
-    print_table(args);
-    std::cout << "===================" << std::endl;
-    print_table(envList);
+    if (!args || !envList)
+        return (std::string());
     if (pipe(fds) < 0)
         throw CGIError("CGI Error: Could not open pipe.");
     pid = fork();
