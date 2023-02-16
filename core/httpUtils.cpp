@@ -20,6 +20,7 @@ Connection::Connection ()
 	responseIndex = 0;
 	request = NULL;
 	response = NULL;
+	CGI = NULL ;
 }
 
 Connection::Connection (int fd)
@@ -37,11 +38,17 @@ Connection::Connection (int fd)
 	responseIndex = 0;
 	request = NULL;
 	response = NULL;
+	CGI = NULL ;
 }
 
 Connection::~Connection()
 {
-	//delete this->request;
+	if (this->request)
+		delete this->request;
+	if (this->response)
+		delete this->response ;
+	if (this->CGI)
+		delete this->CGI;
 }
 
 // * *  ------------------------------------------- GETTERS -------------------------------------------  ** //
@@ -124,8 +131,6 @@ const std::string currentDateTime() {
     struct tm  tstruct;
     char       buf[80];
     tstruct = *localtime(&now);
-    // Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
-    // for more information about date/time format
     strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
 
     return buf;

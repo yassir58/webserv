@@ -13,11 +13,14 @@ HttpApplication::HttpApplication ()
     connectionCount = 0;
     indx = serverCount;
 	fdMax = 0;
+	config = NULL ;
 }
 
 HttpApplication::~HttpApplication ()
 {
     std::cout << "\e[0;31m HTTP APPLICATION CLOSED \e[0m" <<std::endl;
+	if (config)
+		delete config;
 }
 
 HttpApplication::HttpApplication (const HttpApplication &copy)

@@ -1,6 +1,10 @@
 #include "ServerInstance.hpp"
 #include "../response/Response.hpp"
 
+
+
+// * *  ------------------------------------------- CONSTRUCTORS -------------------------------------------  ** //
+
 ServerInstance::ServerInstance (void)
 {
     this->enable = 1;
@@ -44,9 +48,23 @@ ServerInstance::ServerInstance (std::string host, int port)
     this->enable = 1;
 }
 
+
+// * *  ------------------------------------------- GETTERS -------------------------------------------  ** //
+
+
 std::string ServerInstance::getService (void) const
 {
     return (this->service);
+}
+
+int ServerInstance::getStatus (void) const
+{
+    return (this->status);
+}
+
+Config *HttpApplication::getConfig (void) const
+{
+	return (this->config);
 }
 
 int ServerInstance::establish_connection (void)
@@ -59,6 +77,24 @@ int ServerInstance::establish_connection (void)
         std::cout << "\e[0;33m listening on port \e[0;32m" << this->connectionPort << "\e[0;36m [ " << this->hostName  << " ]\e[0m" <<   std::endl;
     return (0); 
 }
+
+int ServerInstance::getSocketFd (void) const
+{
+    return (this->serverSocket);
+}
+
+std::string ServerInstance::getHostName (void)
+{
+    return (this->hostName);
+}
+
+int ServerInstance::getRequestCount (void) const
+{
+    return (this->requestCount);    
+}
+
+
+// * *  ------------------------------------------- HELPERS -------------------------------------------  ** //
 
 void ServerInstance::bind_socket (void)
 {
@@ -97,22 +133,6 @@ void ServerInstance::bind_socket (void)
         throw  Connection_error (strerror (errno), "bind");
     freeaddrinfo(servAddr);
 } 
-
-
-int ServerInstance::getSocketFd (void) const
-{
-    return (this->serverSocket);
-}
-
-std::string ServerInstance::getHostName (void)
-{
-    return (this->hostName);
-}
-
-int ServerInstance::getRequestCount (void) const
-{
-    return (this->requestCount);    
-}
 
 
 Fatal_error::Fatal_error (const char *desc):err_description (desc)
@@ -161,12 +181,3 @@ void ServerInstance::setStatus (int status)
     this->status = status;    
 }
 
-int ServerInstance::getStatus (void) const
-{
-    return (this->status);
-}
-
-Config *HttpApplication::getConfig (void) const
-{
-	return (this->config);
-}
