@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/17 12:17:50 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/17 22:58:29 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -152,8 +152,10 @@ bool	Request::checkUpload(Location *pathLocation)
 		if (!type)
 			return (true);
 		std::string uploadPath = pathLocation->getUploadPath();
-		mapContainer::iterator pos = configFile->getMimeMap().find(type->value);
-		if (type->value == "multipart/form-data" || pos != configFile->getMimeMap().end())
+		std::cout << type->value << std::endl;
+		mapContainer map = configFile->getMimeMap();
+		mapContainer::iterator position = map.find(type->value);
+		if (position != map.end())
 		{
 			size_t pos = path.find_last_of('/', std::string::npos);
 			std::string fileName = path.substr(pos, std::string::npos);
