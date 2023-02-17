@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
+/*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:36 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/15 18:09:58 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/17 12:04:32 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,6 +65,7 @@ class Request
 		// Request(std::string fileString, serverBlocks serverList, std::vector <int> resolversList); //param constructor take a string as param and the server instance 
 		// Request(std::string header, serverBlocks serverList, std::vector <int> resolversList, std::vector <char> body); //param constructor take a string as param and the server instance 
 		Request(Connection *newConnection); //param constructor take a string as param and the server instance 
+		Request(); //param constructor take a string as param and the server instance 
 		~Request(); // destructor not used
 		int				parseRequest(serverBlocks serverList, std::vector<int> resolversList);
 		int				checkMethod(void); // check if the method is valid

@@ -201,13 +201,13 @@ void HttpApplication::handleHttpRequest (int fd)
 		if (newConnection->getBodyRead () < newConnection->getContentLength ())
 		{
 			newConnection->appendBuffer (start, length);
-			newConnection->emptyBuffer ();
+			// newConnection->emptyBuffer ();
 		}
 		else if (newConnection->getBodyRead () == newConnection->getContentLength() 
 			|| newConnection->getUpload () <= 0)
 		{
 			newConnection->appendBuffer (start, length);
-			newConnection->emptyBuffer ();
+			// newConnection->emptyBuffer ();
 			serverBlocks servList = this->config->getHttpContext()->getServers ();
 			newConnection->generateResolversList (servList);
 			newConnection->setServerBlocks (servList);
