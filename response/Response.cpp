@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/15 23:20:04 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/17 12:49:58 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,26 +31,9 @@ Response::Response(Request &request, Config *config)
 	}
 	else
 		applyMethod();
-	// if (this->request->getServerInstance()->getErrorPagesStatus())
-	// {
-	// 	std::string errorPage;
-	// 	if (this->request->getStatusCode() == NOT_FOUND)
-	// 		errorPage = this->request->getServerInstance()->getErrorPages()->path_not_found;
-	// 	else if (this->request->getStatusCode() == FORBIDDEN)
-	// 		errorPage = this->request->getServerInstance()->getErrorPages()->path_forbidden;
-	// 	else if (this->request->getStatusCode() == SERVER_ERROR)
-	// 		errorPage = this->request->getServerInstance()->getErrorPages()->path_internal_error;
-	// 	std::ifstream infile(errorPage);
-	// 	if (infile.is_open())
-	// 	{
-	// 		std::ostringstream ss;
-	// 		ss << infile.rdbuf();
-	// 		responseBody = ss.str();
-	// 		errorPagestatus = true;
-	// 		infile.close();
-	// 	}
-	// }
 	getStatusCode();
+	if (this->request->getStatusCode() >= BAD_REQUEST)
+		handleErrorPages();
 	responseToSend.push_back(generateStatusLine());
 	stringContainer headerFields = generateHeaderFields(responseBody);
 	responseToSend.insert(responseToSend.begin() + 1, headerFields.begin(), headerFields.end());
@@ -71,23 +54,50 @@ Response::~Response() {}
 ** --------------------------------- METHODS ----------------------------------
 */
 
-// std::string generateErrorPage(unsigned int statusCode)
-// {
-//     std::string output;
-//     std::string title;
-//     std::string message;
+std::string Response::generateErrorPage()
+{
+	std::string output;
+	std::string title;
+	std::string message;
 
-//     title = "Error Page - " + int2assci(statusCode) + " " + createResponseMap()[int2assci(statusCode)];
-//     message = int2assci(statusCode) + " " + createResponseMap()[int2assci(statusCode)];
-//     output = readContent("../assets/template.html");
-//     if (output.length() > 0)
-//     {
-//         output.replace(output.find("%TITLE"), 6, title);
-//         output.replace(output.find("%MESSAGE"), 8, message);
-//         output.replace(output.find("%VERSION"), 8, SERVER_SOFTWARE_VERSION);
-//     }
-//     return (output);
-// }
+	title = "Error Page - " + int2assci(status.code) + " " + statusCodeMap[status.code];
+	message = int2assci(status.code) + " " + statusCodeMap[status.code];
+	output = readContent("./assets/template.html");
+	if (output.length() > 0)
+	{
+		output.replace(output.find("%TITLE"), 6, title);
+		output.replace(output.find("%MESSAGE"), 8, message);
+		output.replace(output.find("%VERSION"), 8, SERVER_SOFTWARE_VERSION);
+	}
+	return (output);
+}
+
+void	Response::handleErrorPages(void)
+{
+	if (this->request->getServerInstance() && this->request->getServerInstance()->getErrorPagesStatus())
+	{
+		std::string errorPage;
+		if (this->request->getStatusCode() == NOT_FOUND)
+		{
+			errorPage = this->request->getServerInstance()->getErrorPages()->path_not_found;
+			responseBody = readContent(errorPage);
+		}
+		else if (this->request->getStatusCode() == FORBIDDEN)
+		{
+			errorPage = this->request->getServerInstance()->getErrorPages()->path_forbidden;
+			responseBody = readContent(errorPage);
+		}
+		else if (this->request->getStatusCode() == SERVER_ERROR)
+		{
+			errorPage = this->request->getServerInstance()->getErrorPages()->path_internal_error;
+			responseBody = readContent(errorPage);
+		}
+	}
+	else
+	{
+		responseBody = generateErrorPage();
+	}
+}
 
 int	Response::handleRedirection(void)
 {
@@ -178,7 +188,7 @@ stringContainer Response::generateHeaderFields(std::string &responseBody)
 		std::string Lenght = generateLenghtContent(responseBody);
 		toReturn.push_back(Lenght);
 		std::string type = generateContentType();
-		if (request->getListingStatus())
+		if (request->getListingStatus() || request->getStatusCode() >= BAD_REQUEST)
 			type = "Content-Type: text/html\r\n";
 		toReturn.push_back(type);
 	}

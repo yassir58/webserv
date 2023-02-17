@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/15 23:20:10 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/17 12:17:50 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,18 @@
 ** ------------------------------- CONSTRUCTOR --------------------------------
 */
 
+Request::Request(void)
+{
+	statusCode = BAD_REQUEST;
+	pos = 0;
+	start = 0;
+	startLine.Host = false;
+	CGI = false;
+	redirectionStatus = false;
+	listingStatus = false;
+	upload = false;
+}
+
 Request::Request(Connection *newConnection)
 {
 	printf("request addres: %p\n", this);
@@ -24,8 +36,12 @@ Request::Request(Connection *newConnection)
 	configFile = newConnection->getConfig();
 	setFileString(newConnection->getRequestHeaders(), newConnection->getRequestBody());
 	if (!parseRequest(newConnection->getServerBlocks(), newConnection->getResolversList()))
+	{
+		std::cout << "done1\n";
 		return ;
+	}
 	this->CGI = checkLocationPath();
+	std::cout << "done2\n";
 } 
 
 /*
@@ -119,7 +135,7 @@ int	Request::checkDirectory(Location *pathLocation)
 		{
 			listingStatus = true;
 			if (path.find("..", 0) != std::string::npos)
-				statusCode = FORBIDDEN;	
+				statusCode = FORBIDDEN;
 			return (0);
 		}
 		statusCode = FORBIDDEN;
@@ -263,6 +279,7 @@ t_start &Request::getStartLine(void)
 void	Request::setFileString(std::string const &file, std::vector<char> const &newBody)
 {
 	fileString = file;
+	serverInstance = NULL;
 	body = newBody;
 	pos = 0;
 	start = 0;

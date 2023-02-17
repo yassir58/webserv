@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 14:44:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/15 23:20:39 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/17 12:25:43 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,8 @@ class Response
 		Response(Request &request, Config *configFile); // param constractor first argument is the request and here I apply method
 		~Response(); // desectrator not used
 		int				applyMethod(); // apply the method if it's required
+		void			handleErrorPages();
+		std::string 	generateErrorPage();
 		stringContainer generateHeaderFields(std::string &responseBody); // generate the necessary header fields
 		std::string 	generateStatusLine(); // generate the status line
 		std::string		generateContentType(void); // generate the Content-Type header field

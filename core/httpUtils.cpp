@@ -177,9 +177,8 @@ void handleError (int err)
 
 int Connection::recieveData (int *start, int *len)
 {
+	memset (httpBuffer, 0, BUFFER_MAX + 1);
     dataRecievedLength = recv (ConnectionSocket, httpBuffer, BUFFER_MAX, 0);
-
-	memset (httpBuffer, 0, BUFFER_MAX);
 	if (dataRecievedLength > 0)
 	{
 		requestLength += dataRecievedLength ;
