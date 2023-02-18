@@ -40,3 +40,15 @@ body {
     transform: translateY(1px);
     cursor: pointer;
 }
+
+.error {
+    color: red;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.success {
+    color: #28a745;
+    font-size: 14px;
+    font-weight: 700;
+}
