@@ -6,7 +6,7 @@
 /*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/16 13:38:33 by yelatman          #+#    #+#             */
-/*   Updated: 2023/02/18 15:27:12 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/18 22:16:26 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -249,6 +249,6 @@ void HttpApplication::terminateConnection  (SOCKET fd, std::string addr, int por
 	std::cout << std::left << std::setw (18) << "\e[0;36m Peer Address : \e[0m";
 	std::cout << std::setw(15) << addr << " ";
 	std::cout << std::left << std::setw (20) << "\e[0;32m Connection Port : \e[0m";
-	std::cout <<  std::setw (10) << port << " ";
-	throw Connection_error ("CONNECTION TIMEOUT", "REQUEST READ TIMEOUT");
+	std::cout <<  std::setw (10) << port << "\e[0;31m Connection timeout \e[0m" << std::endl;
+	while (1);
 }

@@ -6,7 +6,7 @@
 /*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/16 13:37:46 by yelatman          #+#    #+#             */
-/*   Updated: 2023/02/18 16:05:44 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/18 21:36:23 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,8 +28,6 @@ HttpApplication::HttpApplication ()
 	config = NULL ;
 	accessLog.open ("access.log", std::ios::app);
 	errorLog.open ("error.log", std::ios::app);
-	timeout.tv_sec = 10;
-	timeout.tv_sec = 1000;
 }
 
 HttpApplication::~HttpApplication ()
@@ -133,17 +131,25 @@ void HttpApplication::checkForConnection (void)
 {
 	fd_set read, write, error;
 	int err;
-	char buffer[BUFFER_MAX];
-
-	memset (buffer, 0, BUFFER_MAX);
+	struct timeval			timeout;
+	intContainer::iterator it;
+	
+	
+	timeout.tv_sec = 10;
+	timeout.tv_usec = 0;
 	read = readFds;
 	write = writeFds;
 	error = errorFds;
-	checkConnectionTimeOut ();
 	errValue = select (FD_SETSIZE, &read, &write, &error, &timeout);
+	for (it = openConnections.begin (); it != openConnections.end (); ++it)
+	{
+		checkConnectionTimeOut ((*it));
+	}
 	std::cout << "block in select" << std::endl ;
 	if (errValue < 0)
 		throw Connection_error(strerror(errno), "SELECT");
+	else if (!errValue)
+		std::cout << "\e[0;31m connection timeout \e[0m" << std::endl;
 	else
 	{
 		for (int i = 0; i < (fdMax + 1); i++)

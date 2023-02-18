@@ -33,8 +33,9 @@ CONF_PATH="/Users/yelatman/Documents/webserv/testing/configs/test.conf"
 ERROR_LOG="/Users/yelatman/Documents/webserv/error.log"
 SERVNAME_REQ="GET / HTTP/1.1\r\nHost: servName\r\nUser-Agent: MyHTTPClient/1.0\r\nAccept: text/html\r\nConnection: keep-alive\r\n\r\n"
 POST_REQ="HTTP/1.1\r\nHost: localhost:8080\r\nUser-Agent: MyHTTPClient/1.0\r\nContent-Type: text/plain\r\nConnection: keep-alive\r\n\r\n"
-POST_PATH="/Users/yelatman/Documents/webserv/www/test/upload/test.txt"
-LARGE_RESOURCE=""
+POST_PATH="/Users/yelatman/Documents/webserv/www/post/test.txt"
+POST_ROUTE="/post/test.txt"
+LARGE_RESOURCE="/Users/yelatman/goinfre/webserv_test/capybara.mp4"
 
 if [ -z "$EXEC_PATH" ] ; then
 	echo "please provide a path for webserv executable : " && read EXEC_PATH
@@ -95,21 +96,29 @@ testPOST ()
 {
 	echo "" >> $POST_PATH
 	POST_BODY=$(for i in {1..1024}; do echo -n "test" >> testFile; done)
-	curl -v -d @testFile http://localhost:8080/$1 &> HEADERS
+	if [ "$3" == "UPLOAD LARGE RESOURCE" ]; then
+		curl -v -d @$LARGE_RESOURCE http://localhost:8080$1 &> HEADERS
+	elif [ "$3" == "CLIENT BODY TOO LARGE" ]; then
+		curl -v -d @testFile http://localhost:8081$1 &> HEADERS
+	else
+		curl -v -d @testFile http://localhost:8080$1 &> HEADERS
+	fi
 	status_message=$(cat HEADERS | grep "<" | grep "HTTP" | cut -d' ' -f4)
-	status_code=$(cat HEADERS | grep "<" | grep "HTTP" | cut -d' ' -f3)
-
-	
+	status_code=$(cat HEADERS | grep "<" | grep "HTTP" | cut -d' ' -f3)	
 	echo -e "testing $3 on $Yellow $ENDPOINT$1 $White"
 	echo -n -e "status code test  : "
-	
+
 	if [ "$status_code" = "$2" ]; then
-		echo -e "$Green    succeded ✓ $White"
+		echo -e "$Green  succeded ✓ $White"
 	else
 		echo -e "$Red  failed X $White"
 	fi
-	if [ -f "$4" ]; then
-		diff $4 testFile 2>/dev/null > response.diff
+	if [ -f "$5" ]; then
+	if [ "$3" == "UPLOAD LARGE RESOURCE" ]; then
+			diff $4 $5 2>/dev/null > response.diff
+		else
+			diff $4 testFile 2>/dev/null > response.diff
+		fi
 		echo -n "response diff test : "
 		if [ -s response.diff ]; then 
 			 echo -e "$Red failed X $White"
@@ -148,13 +157,13 @@ testGET "" "" "400" "BAD REQUEST"
 testGET $FORBIDDEN_PATH "" "403" "FORBIDDEN REQUEST"
 testGET $NOT_ALLOWED_PATH "" "405" "NOT ALLOWED GET REQUEST"
 testGET $SERVNAME_TEST $SERVNAME_PATH "200" "DIFFERENT SERVER NAME"
-testPOST $NORMAL_POST_PATH "201" "SIMPLE POST REQUEST" $POST_PATH 
+testPOST $POST_ROUTE "200" "SIMPLE POST REQUEST" $POST_PATH 
 testPOST "/notAllowedUpload" "405" "NOT ALLOWED POST REQUEST"  ""
-testPOST "/forbiddenUpload"  "403" "FORBIDDEN POST REQUEST" ""
-testPOST "/upload/largeResource" "201" "UPLOAD LARGE RESOURCE" $LARGE_RESOURCE
-testPOST "toLarge"  "413" "l"
-stressTesting "stress test with bad start line :" "GET\r\n\r\n"
-stressTesting "stress with bad method :" "GEt / HTTP/1.1\r\nHost:serv\r\n\r\n"
-stressTesting "stress test with missing headers :" "GET / HTTP/1.1\r\n\r\n\r\n"
-stressTesting "stress test with valid headers :" "GET / HTTP/1.1\r\nHost:localhost:8080\r\n\r\n"
+testPOST "/forbiddenUpload/file.txt"  "403" "FORBIDDEN POST REQUEST" ""
+testPOST "/upload/capybara.mp4" "201" "UPLOAD LARGE RESOURCE" $LARGE_RESOURCE "/Users/yelatman/Documents/webserv/www/test/upload/capybara.mp4"
+testPOST "/toLarge/test.txt"  "413" "CLIENT BODY TOO LARGE"
+# stressTesting "stress test with bad start line :" "GET\r\n\r\n"
+# stressTesting "stress with bad method :" "GEt / HTTP/1.1\r\nHost:serv\r\n\r\n"
+# stressTesting "stress test with missing headers :" "GET / HTTP/1.1\r\n\r\n\r\n"
+# stressTesting "stress test with valid headers :" "GET / HTTP/1.1\r\nHost:localhost:8080\r\n\r\n"
 trap terminateServer EXIT

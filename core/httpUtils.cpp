@@ -6,7 +6,7 @@
 /*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/16 13:38:00 by yelatman          #+#    #+#             */
-/*   Updated: 2023/02/18 15:49:26 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/18 22:22:04 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -359,7 +359,7 @@ void Connection::constructResponse (void)
 }
 
 
-void HttpApplication::checkConnectionTimeOut (void)
+void HttpApplication::checkConnectionTimeOut (SOCKET fd)
 {
 	connectionPool::iterator it;
 	Connection *connection;
@@ -367,16 +367,18 @@ void HttpApplication::checkConnectionTimeOut (void)
 	size_t timePased;
 	SOCKET connSocket;
 	
-	t = timeInMilliseconds ();
 
-	for (it = connections.begin (); it != connections.end (); ++it)
+	t = timeInMilliseconds ();
+	it = getConnection (fd);
+	if (it == connections.end ())
 	{
-		
-		connection = (*it);
-		timePased  = t - connection->getLastRead ();
-		connSocket =  connection->getConnectionSocket ();
-		std::cout << "connection " << connSocket <<" last read in ms : " << timePased << std::endl;
-		if (timePased >= REQUEST_TIMEOUT)
-			terminateConnection (connSocket, connection->getPeerAddr(), connection->getPeerPort ());
+		throw Connection_error ("CONNECTION", "CONNECTION NOT FOUND");
+		return ;
 	}
+	connection = (*it);
+	timePased  = t - connection->getLastRead ();
+	connSocket =  connection->getConnectionSocket ();
+	std::cout << "connection " << connSocket <<" last read in ms : " << timePased << std::endl;
+	if (timePased >= REQUEST_TIMEOUT)
+			terminateConnection (connSocket, connection->getPeerAddr(), connection->getPeerPort ());
 }

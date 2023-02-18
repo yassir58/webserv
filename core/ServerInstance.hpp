@@ -6,7 +6,7 @@
 /*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/16 13:38:20 by yelatman          #+#    #+#             */
-/*   Updated: 2023/02/18 16:05:04 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/18 21:24:45 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,7 +72,7 @@
 #define HTTP_LENGTH 225
 #define REQUEST 0
 #define RESPONSE 1
-#define REQUEST_TIMEOUT 100000
+#define REQUEST_TIMEOUT 50000
 #define SELECT_TIMEOUT 10
 
 // * - * --------------------- TYPE DEFINITIONS --------------------- * - * //
@@ -287,7 +287,6 @@ class HttpApplication
         intContainer	serverFds;
 		intContainer	watchedFds;
         intContainer	openConnections;
-		timeval			timeout;
 
 	public:
 
@@ -329,7 +328,7 @@ class HttpApplication
 		void						closeConnection (SOCKET fd, std::string error);
 		void						removeConnection (SOCKET fd);
 		void						closeConnection (SOCKET fd);
-		void						checkConnectionTimeOut (void);
+		void						checkConnectionTimeOut (SOCKET fd);
 		void						terminateConnection (SOCKET fd, std::string addr, int port);
 };
 
