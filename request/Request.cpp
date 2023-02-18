@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
+/*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/17 22:58:29 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/18 10:44:11 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ Request::Request(void)
 
 Request::Request(Connection *newConnection)
 {
-	printf("request addres: %p\n", this);
+	// printf("request addres: %p\n", this);
 	setStatusCode(0);
 	configFile = newConnection->getConfig();
 	setFileString(newConnection->getRequestHeaders(), newConnection->getRequestBody());

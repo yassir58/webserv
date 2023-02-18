@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ServerInstance.cpp                                 :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/02/16 13:38:10 by yelatman          #+#    #+#             */
+/*   Updated: 2023/02/16 19:50:08 by yelatman         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "ServerInstance.hpp"
 #include "../response/Response.hpp"
 
@@ -93,6 +105,27 @@ int ServerInstance::getRequestCount (void) const
     return (this->requestCount);    
 }
 
+// * *  ------------------------------------------- SETTERS -------------------------------------------  ** //
+
+
+void ServerInstance::setService (int port)
+{
+    std::stringstream strs;
+
+    strs << port ;
+    strs >> service;
+}
+
+void ServerInstance::setService (std::string service)
+{
+    this->service = service;
+}
+
+
+void ServerInstance::setStatus (int status)
+{
+    this->status = status;    
+}
 
 // * *  ------------------------------------------- HELPERS -------------------------------------------  ** //
 
@@ -105,13 +138,13 @@ void ServerInstance::bind_socket (void)
 	sl.l_linger = 1;
 	sl.l_onoff = 5;
     memset (&initAddr, 0 , sizeof (initAddr));
-    initAddr.ai_family = AF_INET; // this need to be modified
+    initAddr.ai_family = AF_INET;
     initAddr.ai_socktype = SOCK_STREAM;
-    initAddr.ai_flags = AI_PASSIVE; // this flag make the getaddreinfo info return wildcard address
+    initAddr.ai_flags = AI_PASSIVE;
     errCheck = getaddrinfo (hostName.c_str (), service.c_str (), &initAddr, &servAddr);
     if (errCheck == -1)
         throw Connection_error (gai_strerror (errno), "getaddrinfo");
-    this->serverSocket = socket (servAddr->ai_family, servAddr->ai_socktype, servAddr->ai_protocol);
+    this->serverSocket = socket(servAddr->ai_family, servAddr->ai_socktype, servAddr->ai_protocol);
     if (this->serverSocket < 0)
     {
         freeaddrinfo(servAddr);
@@ -124,10 +157,6 @@ void ServerInstance::bind_socket (void)
 	if (this->errCheck == -1)
         throw  Connection_error (strerror (errno), "setsocketopt");
     fcntl (this->serverSocket, F_SETFL, O_NONBLOCK);
-    // int option = 0;
-    // errCheck = setsockopt (this->serverSocket, IPPROTO_IPV6, IPV6_V6ONLY, (void *)&option, sizeof (option));
-    // if (errCheck == -1)
-    //     throw  Connection_error (strerror (errno), "setsocketopt");
     this->errCheck = bind (this->serverSocket, servAddr->ai_addr, servAddr->ai_addrlen) ;
     if (this->errCheck == -1)
         throw  Connection_error (strerror (errno), "bind");
@@ -159,25 +188,5 @@ const char * Connection_error::what () const throw (){
 const char *Parse_error::what () const throw()
 {
     return (this->err_description);
-}
-
-
-void ServerInstance::setService (int port)
-{
-    std::stringstream strs;
-
-    strs << port ;
-    strs >> service;
-}
-
-void ServerInstance::setService (std::string service)
-{
-    this->service = service;
-}
-
-
-void ServerInstance::setStatus (int status)
-{
-    this->status = status;    
 }
 

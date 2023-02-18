@@ -1,5 +1,0 @@
-Applications     Downloads        Pictures         goinfre
-Cleaner_42.sh    Library          Postman          venv
-Desktop          Movies           file1
-Documents        Music            git_access_token
-➜  ~ ./Cleaner_42.sh o jjojo sbrdilat
