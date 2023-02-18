@@ -6,7 +6,7 @@
 /*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/18 10:44:11 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/18 16:09:13 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,7 @@ Request::Request(Connection *newConnection)
 		return ;
 	}
 	this->CGI = checkLocationPath();
+	std::cout << "path: " << path << std::endl;
 	std::cout << "done2\n";
 } 
 
@@ -148,13 +149,15 @@ bool	Request::checkUpload(Location *pathLocation)
 {
 	if (pathLocation->getUploadStatus() && startLine.method == "POST")
 	{
-		headerField *type = getHeaderField("Content-Type");
-		if (!type)
+		if (!getHeaderField("Content-Type") || access(path.c_str(), F_OK) != -1)
 			return (true);
 		std::string uploadPath = pathLocation->getUploadPath();
-		std::cout << type->value << std::endl;
+		size_t dot = path.find_last_of('.', std::string::npos);
+		if (dot == std::string::npos)
+			return (true);
+		std::string fileExtension = path.substr(dot + 1, std::string::npos);
 		mapContainer map = configFile->getMimeMap();
-		mapContainer::iterator position = map.find(type->value);
+		mapContainer::iterator position = map.find(fileExtension);
 		if (position != map.end())
 		{
 			size_t pos = path.find_last_of('/', std::string::npos);
