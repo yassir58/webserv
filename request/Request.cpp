@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/19 13:47:02 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/19 15:00:26 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,9 @@ Request::Request(void)
 	redirectionStatus = false;
 	listingStatus = false;
 	upload = false;
+	serverInstance = NULL;
+	pathLocation = NULL;
+	configFile = NULL;
 }
 
 Request::Request(Connection *newConnection)
