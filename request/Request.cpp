@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/19 15:00:26 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/19 15:20:58 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,9 +17,9 @@
 ** ------------------------------- CONSTRUCTOR --------------------------------
 */
 
-Request::Request(void)
+Request::Request(int status)
 {
-	statusCode = BAD_REQUEST;
+	statusCode = status;
 	pos = 0;
 	start = 0;
 	startLine.Host = false;
