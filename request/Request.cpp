@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
+/*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/18 16:09:13 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/19 13:47:02 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,9 +134,9 @@ int	Request::checkDirectory(Location *pathLocation)
 		}
 		if (pathLocation->getListingStatus())
 		{
+			if (path.find("..", 0) != std::string::npos || access(path.c_str(), R_OK) == -1)
+				return (statusCode = FORBIDDEN, 0);
 			listingStatus = true;
-			if (path.find("..", 0) != std::string::npos)
-				statusCode = FORBIDDEN;
 			return (0);
 		}
 		statusCode = FORBIDDEN;
