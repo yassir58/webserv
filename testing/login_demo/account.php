@@ -1,12 +1,12 @@
 <?php
-    session_start();
-?>
-<?php
     function redirectTo($location)
     {
         header("Location:". $location);
         exit;
     }
+    session_start();
+?>
+<?php
     if (!isset($_SESSION["user"]))
         redirectTo("index.php");
 ?>
