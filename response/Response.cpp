@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
+/*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/19 15:26:54 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/19 20:59:19 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,9 +38,8 @@ Response::Response(Request &request, Config *config)
 		handleErrorPages();
 	}
 	responseToSend.push_back(generateStatusLine());
-	stringContainer headerFields = generateHeaderFields(responseBody);
+	stringContainer headerFields = generateHeaderFields();
 	responseToSend.insert(responseToSend.begin() + 1, headerFields.begin(), headerFields.end());
-	responseToSend.push_back(responseBody);
 }
 
 /*
@@ -85,7 +84,7 @@ void	Response::handleErrorPages(void)
 			errorPage = this->request->getServerInstance()->getErrorPages()->path_not_found;
 			if (!errorPage.empty())
 			{
-				responseBody = readContent(errorPage);
+				setResponseBody(readContent(errorPage));
 				return ;
 			}
 		}
@@ -94,7 +93,7 @@ void	Response::handleErrorPages(void)
 			errorPage = this->request->getServerInstance()->getErrorPages()->path_forbidden;
 			if (!errorPage.empty())
 			{
-				responseBody = readContent(errorPage);
+				setResponseBody(readContent(errorPage));
 				return ;
 			}
 		}
@@ -103,12 +102,12 @@ void	Response::handleErrorPages(void)
 			errorPage = this->request->getServerInstance()->getErrorPages()->path_internal_error;
 			if (!errorPage.empty())
 			{
-				responseBody = readContent(errorPage);
+				setResponseBody(readContent(errorPage));
 				return ;
 			}
 		}
 	}
-	responseBody = generateErrorPage();
+	setResponseBody(generateErrorPage());
 }
 
 int	Response::handleRedirection(void)
@@ -161,12 +160,12 @@ std::string	generateDate(void)
 	return (toReturn);
 }
 
-std::string generateLenghtContent(std::string &responseBody)
+std::string generateLenghtContent(std::vector<char> &responseBody)
 {
 	std::stringstream	ss;
 	std::string			lenght;
 	std::string			toReturn;
-	ss << responseBody.length();
+	ss << responseBody.size();
 	ss >> lenght;
 	toReturn = "Content-Lenght: " + lenght + "\r\n";
 	return (toReturn);
@@ -190,7 +189,7 @@ std::string	Response::generateContentType(void)
 	return ("Content-Type: " + pos->second + "\r\n");
 }
 
-stringContainer Response::generateHeaderFields(std::string &responseBody)
+stringContainer Response::generateHeaderFields()
 {
 	stringContainer	toReturn;
 	std::string Date = generateDate();
@@ -270,7 +269,7 @@ int	Response::applyMethod(void)
 	if (request->getListingStatus() && statusCode == 0)
 	{
 		try {
-			responseBody = listDirectory(request->getPath());
+			setResponseBody(listDirectory(request->getPath()));
 		}
 		catch (std::exception &e)
 		{
@@ -283,9 +282,12 @@ int	Response::applyMethod(void)
 		std::ifstream resource(request->getPath());
 		if (resource.is_open())
 		{
-			std::ostringstream ss;
-			ss << resource.rdbuf();
-			responseBody = ss.str();
+			char c;
+			while (!resource.eof())
+			{
+				resource.get(c);
+				responseBody.push_back(c);
+			}
 			request->setStatusCode(OK);
 			resource.close();
 		}
@@ -361,9 +363,14 @@ void	Response::setRequest(Request *request, Config *config)
 	statusCodeMap[TIME_OUT] = "Request Timeout";
 }
 
-void	Response::setResponseBody(std::string responseBody)
+void	Response::setResponseBody(std::string response)
 {
-	this->responseBody = responseBody;
+	responseBody = std::vector<char>(response.begin(), response.end());
+}
+
+std::vector<char> Response::getResponseBody(void)
+{
+	return (responseBody);
 }
 
 /* ************************************************************************** */
