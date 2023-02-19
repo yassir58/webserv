@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 14:44:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/19 20:58:44 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/19 22:00:21 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,8 +57,7 @@ class Response
 		void			setRequest(Request *request, Config *configData); // seter of the request(look at the private attribute)
 		void			getStatusCode(void); // return the index of the status code
 		void			setResponseBody(std::string responseBody); // setter for the response body
-		std::vector<char> getResponseBody(void);
-		std::string		getResponse(void); // the getter for the response and it convert the stringContainer to a string
+		std::vector<char> getResponse(void); // the getter for the response and it convert the stringContainer to a string
 };
 
 #endif /* ******************************************************** RESPONSE_H */
