@@ -6,7 +6,7 @@
 /*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/16 13:37:46 by yelatman          #+#    #+#             */
-/*   Updated: 2023/02/19 15:15:11 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/19 15:34:36 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -319,6 +319,7 @@ void HttpApplication::handleHttpResponse (int fd)
 	Server *server;
 	Request *request;
 	Response *newResponse ;
+	
 
 	Connection *connectionInterface = nullptr;
 

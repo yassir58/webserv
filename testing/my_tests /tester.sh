@@ -107,7 +107,6 @@ testPOST ()
 	status_code=$(cat HEADERS | grep "<" | grep "HTTP" | cut -d' ' -f3)	
 	echo -e "testing $3 on $Yellow $ENDPOINT$1 $White"
 	echo -n -e "status code test  : "
-
 	if [ "$status_code" = "$2" ]; then
 		echo -e "$Green  succeded ✓ $White"
 	else
@@ -119,6 +118,7 @@ testPOST ()
 		else
 			diff $4 testFile 2>/dev/null > response.diff
 		fi
+		rm $5
 		echo -n "response diff test : "
 		if [ -s response.diff ]; then 
 			 echo -e "$Red failed X $White"

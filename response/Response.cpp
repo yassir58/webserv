@@ -6,7 +6,7 @@
 /*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/19 12:53:16 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/19 15:26:54 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 
 Response::Response(Request &request, Config *config)
 {
-	printf("response addres: %p\n", this);
+	printf("response addres: %p %d\n", this, request.getStatusCode());
 	setRequest(&request, config);
 	if (this->request->getRedirectionStatus())
 	{
@@ -83,24 +83,32 @@ void	Response::handleErrorPages(void)
 		if (this->request->getStatusCode() == NOT_FOUND)
 		{
 			errorPage = this->request->getServerInstance()->getErrorPages()->path_not_found;
-			responseBody = readContent(errorPage);
+			if (!errorPage.empty())
+			{
+				responseBody = readContent(errorPage);
+				return ;
+			}
 		}
 		else if (this->request->getStatusCode() == FORBIDDEN)
 		{
 			errorPage = this->request->getServerInstance()->getErrorPages()->path_forbidden;
-			responseBody = readContent(errorPage);
+			if (!errorPage.empty())
+			{
+				responseBody = readContent(errorPage);
+				return ;
+			}
 		}
 		else if (this->request->getStatusCode() == SERVER_ERROR)
 		{
 			errorPage = this->request->getServerInstance()->getErrorPages()->path_internal_error;
-			responseBody = readContent(errorPage);
+			if (!errorPage.empty())
+			{
+				responseBody = readContent(errorPage);
+				return ;
+			}
 		}
 	}
-	else
-	{
-		std::cout << "test 1 "  << std::endl;
-		responseBody = generateErrorPage();
-	}
+	responseBody = generateErrorPage();
 }
 
 int	Response::handleRedirection(void)
@@ -261,7 +269,13 @@ int	Response::applyMethod(void)
 	std::string method = request->getMethod();
 	if (request->getListingStatus() && statusCode == 0)
 	{
-		responseBody = listDirectory(request->getPath());
+		try {
+			responseBody = listDirectory(request->getPath());
+		}
+		catch (std::exception &e)
+		{
+			request->setStatusCode(SERVER_ERROR);
+		}
 		return (0);
 	}
 	if (method == "GET" && statusCode == 0)
@@ -344,6 +358,7 @@ void	Response::setRequest(Request *request, Config *config)
 	statusCodeMap[NOT_IMPLENTED] = "Not Implemented";
 	statusCodeMap[SERVER_ERROR] = "Internal Server Error";
 	statusCodeMap[HTTP_VERSION] = "HTTP Version Not Supported";
+	statusCodeMap[TIME_OUT] = "Request Timeout";
 }
 
 void	Response::setResponseBody(std::string responseBody)

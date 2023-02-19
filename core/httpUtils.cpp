@@ -6,7 +6,7 @@
 /*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/16 13:38:00 by yelatman          #+#    #+#             */
-/*   Updated: 2023/02/19 15:16:43 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/19 15:37:16 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -367,6 +367,11 @@ void HttpApplication::checkConnectionTimeOut (SOCKET fd)
 	size_t t;
 	size_t timePased;
 	SOCKET connSocket;
+	Response 	*response;
+	Request 	*request;
+	std::string resData;
+	int resLen  = 0;
+	int sendRet = 0;
 	
 
 	t = timeInMilliseconds ();
@@ -380,5 +385,14 @@ void HttpApplication::checkConnectionTimeOut (SOCKET fd)
 	timePased  = t - connection->getLastRead ();
 	connSocket =  connection->getConnectionSocket ();
 	if (timePased >= REQUEST_TIMEOUT)
-			terminateConnection (connSocket, connection->getPeerAddr(), connection->getPeerPort ());
+	{
+		request = new Request (TIME_OUT);
+		response = new Response (*request, config);
+		resData = response->getResponse ();
+		resLen = resData.length ();
+		sendRet = send (connection->getConnectionSocket(), resData.c_str (), resLen, 0);
+		if (sendRet <= 0)
+			throw Connection_error ("SEND ERROR", "SEND FAILURE");
+		terminateConnection (connSocket, connection->getPeerAddr(), connection->getPeerPort ());
+	}
 }
