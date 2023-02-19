@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/19 20:59:19 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/19 22:00:51 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -326,19 +326,19 @@ int	Response::applyMethod(void)
 ** --------------------------------- ACCESSOR ---------------------------------
 */
 
-std::string Response::getResponse(void)
+std::vector<char> Response::getResponse(void)
 {
 	std::string toReturn;
 	std::stringstream ss;
-	stringContainer::iterator begin = responseToSend.begin();
-	stringContainer::iterator end = responseToSend.end();
+	char *buffer;
+	stringContainer::reverse_iterator begin = responseToSend.rbegin();
+	stringContainer::reverse_iterator end = responseToSend.rend();
 	while (end != begin)
 	{
-		ss << *begin;
+		std::copy((*begin).begin(), (*begin).end(), std::front_inserter(responseBody));
 		++begin;
 	}
-	toReturn = ss.str();
-	return (toReturn);
+	return (responseBody);
 }
 
 void	Response::setRequest(Request *request, Config *config)
@@ -368,9 +368,5 @@ void	Response::setResponseBody(std::string response)
 	responseBody = std::vector<char>(response.begin(), response.end());
 }
 
-std::vector<char> Response::getResponseBody(void)
-{
-	return (responseBody);
-}
 
 /* ************************************************************************** */
