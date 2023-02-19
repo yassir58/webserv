@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   httpUtils.cpp                                      :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/02/16 13:38:00 by yelatman          #+#    #+#             */
+/*   Updated: 2023/02/18 22:22:04 by yelatman         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "ServerInstance.hpp"
 #include "../request/Request.hpp"
 #include "../response/Response.hpp"
@@ -21,6 +33,8 @@ Connection::Connection ()
 	request = NULL;
 	response = NULL;
 	CGI = NULL ;
+	status  = 0;
+	lastRead = 0 ;
 }
 
 Connection::Connection (int fd)
@@ -39,6 +53,8 @@ Connection::Connection (int fd)
 	request = NULL;
 	response = NULL;
 	CGI = NULL ;
+	status = 0;
+	lastRead = 0 ;
 }
 
 Connection::~Connection()
@@ -107,6 +123,27 @@ std::string Connection::getRequestHeaders (void) const
 	return (this->requestHeader);
 }
 
+int Connection::getStatus (void) const
+{
+	return (this->status);	
+}
+
+
+size_t Connection::getLastRead (void)
+{
+	return (lastRead);	
+}
+
+int Connection::getPeerPort (void) const
+{
+	return (this->port);
+}
+
+std::string Connection::getPeerAddr (void) const
+{
+	return (this->ipAddress);
+}
+
 // * *  ------------------------------------------- SETTERS -------------------------------------------  ** //
 
 void Connection::setRequest (void)
@@ -143,42 +180,13 @@ void HttpApplication::serverLog (int serverIndx)
     accessLog << " \e[0;33m" << currentDateTime ()  << "" <<  std::endl;
 }
 
-void handleError (int err)
-{
-    switch (err)
-    {
-        case READERR:
-            std::cerr << "\e[0;31mcontext : \e[0m" << "read" << std::endl;
-        break;
-        case ACCEPTERR:
-            std::cerr << "\e[0;31mcontext : \e[0m" << "accept" << std::endl;
-        break; 
-        case LISTENERR:
-            std::cerr << "\e[0;31mcontext : \e[0m" << "listen" << std::endl;
-        break;
-        case BINDERR:
-            std::cerr << "\e[0;31mcontext : \e[0m" << "bind" << std::endl;
-        break;
-        case POLLERR:
-            std::cerr << "\e[0;31mcontext : \e[0m" << "poll" << std::endl;
-        break;
-        case WRITEERR:
-            std::cerr << "\e[0;31mcontext : \e[0m" << "write" << std::endl;
-        break;
-        case CLOSEERR:
-            std::cerr << "\e[0;31mcontext : \e[0m" << "close" << std::endl;
-        break;
-        default:
-             std::cerr << "\e[0;31mcontext : \e[0m" << "close" << std::endl;
-            break;
-    }
-    throw Connection_error (strerror (errno), "uknown error");
-}
+
 
 int Connection::recieveData (int *start, int *len)
 {
 	memset (httpBuffer, 0, BUFFER_MAX + 1);
     dataRecievedLength = recv (ConnectionSocket, httpBuffer, BUFFER_MAX, 0);
+	lastRead = timeInMilliseconds ();
 	if (dataRecievedLength > 0)
 	{
 		requestLength += dataRecievedLength ;
@@ -215,26 +223,29 @@ int HttpApplication::isServer (int fd)
 	return (FALSE);
 }
 
+void Connection::setPeerAddress (void)
+{
+	socklen_t len = sizeof (address);
+	char 				ipStr[INET_ADDRSTRLEN];
+
+	getsockname (this->ConnectionSocket, (sockaddr *) &address, &len);
+	inet_ntop (AF_INET, &address.sin_addr, ipStr, INET6_ADDRSTRLEN);
+	ipAddress = std::string(ipStr);
+	port = ntohs (address.sin_port);
+}
+
 void Connection::generateResolversList (serverBlocks serverBlockList)
 {
 	serverBlocks::iterator it;
 	int confPort = 0;
 	std::string confHost;
 	int serverIndx = 0;
-	struct sockaddr_in address;
-	socklen_t len = sizeof (address);
-	char ipStr[INET_ADDRSTRLEN];
-	int port;
 	
-	
-	getsockname (this->ConnectionSocket,(sockaddr *) &address, &len);
-	inet_ntop (AF_INET, &address.sin_addr, ipStr, INET6_ADDRSTRLEN);
-	port = ntohs (address.sin_port);
 	for (it = serverBlockList.begin(); it != serverBlockList.end (); it++)
 	{
 		confPort = (*it)->getPort ();
 		confHost = (*it)->getHost();	
-		if (!confHost.compare (std::string(ipStr)) && confPort == port)
+		if (!confHost.compare (ipAddress) && confPort == port)
 			this->resolversList.push_back (serverIndx);
 		serverIndx++;
 	}
@@ -284,26 +295,6 @@ std::string getTestBody (std::string filename)
 	}
 	file.close ();
 	return (result);
-}
-
-
-void HttpApplication::connectionAccessLog (std::string msg, int requestLength, std::string addr, std::string port)
-{
-	accessLog << currentDateTime () << " " ;
-	accessLog << "\e[0;36m Peer Address : \e[0m" << addr << " ";
-	accessLog << "\e[0;32m Connection Port : \e[0m" << port << " ";
-	accessLog << "\e[0;33m status : \e[0m" << requestLength << " Bytes " << msg;
-	accessLog << std::endl;
-}
-
-void HttpApplication::connectionErrorLog (std::string errorContext, std::string errorMessage, std::string addr, std::string port)
-{
-	accessLog << currentDateTime () << " " ;
-	accessLog << "\e[0;36m Peer Address : \e[0m" << addr << " ";
-	accessLog << "\e[0;32m Connection Port : \e[0m" << port << " ";
-	errorLog << "\e[0;31m Error Context: \e[0m" << errorContext << " ";
-	errorLog << "\e[0;31m Error Context: \e[0m" << errorMessage << " ";
-	errorLog << std::endl;
 }
 
 void HttpApplication::handleSigPipe (void) 
@@ -368,4 +359,26 @@ void Connection::constructResponse (void)
 }
 
 
+void HttpApplication::checkConnectionTimeOut (SOCKET fd)
+{
+	connectionPool::iterator it;
+	Connection *connection;
+	size_t t;
+	size_t timePased;
+	SOCKET connSocket;
+	
 
+	t = timeInMilliseconds ();
+	it = getConnection (fd);
+	if (it == connections.end ())
+	{
+		throw Connection_error ("CONNECTION", "CONNECTION NOT FOUND");
+		return ;
+	}
+	connection = (*it);
+	timePased  = t - connection->getLastRead ();
+	connSocket =  connection->getConnectionSocket ();
+	std::cout << "connection " << connSocket <<" last read in ms : " << timePased << std::endl;
+	if (timePased >= REQUEST_TIMEOUT)
+			terminateConnection (connSocket, connection->getPeerAddr(), connection->getPeerPort ());
+}

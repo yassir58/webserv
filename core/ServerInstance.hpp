@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ServerInstance.hpp                                 :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/02/16 13:38:20 by yelatman          #+#    #+#             */
+/*   Updated: 2023/02/18 21:24:45 by yelatman         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #pragma once
 #ifndef SERVER_INSTANCE_HPP
 #define SERVER_INSTANCE_HPP
@@ -21,14 +33,14 @@
 #include "../config/config.hpp"
 #include <sstream>
 #include <cstring>
- #include <sys/types.h>
+#include <sys/types.h>
 #include <sys/time.h>
 #include <sys/select.h>
 #include <arpa/inet.h>
 #include <signal.h>
 #include <dirent.h>
 #include <sys/ioctl.h>
-
+#include <iomanip>
 
 // * - * --------------------- MACROS --------------------- * - * //
 
@@ -58,6 +70,10 @@
 #define CRLF "\r\n\r\n"
 #define HTTP_RESPONSE_EXAMPLE "HTTP/1.1 200 OK\r\nServer: WebServer\r\nContent-Type: text/html\r\nContent-Length: 23\r\nConnection: close\r\n\r\n<h1> hello world </h1>"
 #define HTTP_LENGTH 225
+#define REQUEST 0
+#define RESPONSE 1
+#define REQUEST_TIMEOUT 50000
+#define SELECT_TIMEOUT 10
 
 // * - * --------------------- TYPE DEFINITIONS --------------------- * - * //
 
@@ -150,35 +166,38 @@ typedef std::vector <ServerInstance*> serverContainer ;
 class Connection {
     
 	private:
-        int				ConnectionSocket;
-		int 			status;
-        int 			dataReminder;
-        int 			dataToRead ;
-        int 			ContentLength;
-        int 			headerLength;
-        int 			upload;
-        int 			bodyRead;
-        int 			readStatus;
-        int 			dataRecievedLength;
-        int 			ConnectionPort;
-		int 			responseIndex;
-		size_t 			bytesSent ;
-		size_t 			requestLength;
-        std::vector 	<int>resolversList;
-        std::vector 	<char>requestBody;
-		CGIHandler 		*CGI;
-		serverBlocks 	servList;
-        Request 		*request;
-		Response 		*response;
-        std::string 	requestHeader;
-		std::string 	serviceName;
-        std::string 	hostName;
-		std::string		ipAddress;
-        struct addrinfo	*requestSourceAddr;
-        char 			httpBuffer[BUFFER_MAX + 1];
-		Config 			*conf;
-		bool 			responseConstructed;
-		bool 			cgi;
+        SOCKET				ConnectionSocket;
+		int 				status;
+        int 				dataReminder;
+        int 				dataToRead ;
+        int 				ContentLength;
+        int 				headerLength;
+        int 				upload;
+        int 				bodyRead;
+        int 				readStatus;
+        int 				dataRecievedLength;
+        int 				ConnectionPort;
+		int 				responseIndex;
+		int 				port;
+		size_t 				bytesSent ;
+		size_t 				requestLength;
+        std::vector 		<int>resolversList;
+        std::vector 		<char>requestBody;
+		CGIHandler 			*CGI;
+		serverBlocks 		servList;
+        Request 			*request;
+		Response 			*response;
+        std::string 		requestHeader;
+		std::string 		serviceName;
+        std::string 		hostName;
+		std::string			ipAddress;
+        struct addrinfo		*requestSourceAddr;
+		struct sockaddr_in	address;
+        char 				httpBuffer[BUFFER_MAX + 1];
+		Config 				*conf;
+		bool 				responseConstructed;
+		bool 				cgi;
+		size_t				lastRead;
 
     public:
 
@@ -190,7 +209,7 @@ class Connection {
 
 		// * - * --------------------- GETTER FUNCTIONS --------------------- * - * //
 
-        int					getConnectionSocket (void) const;
+        SOCKET				getConnectionSocket (void) const;
         char 				*getBuffer (void) ;
 		size_t 				getBytesSent (void) const ;
 		bool 				getResponseState (void) const;
@@ -205,6 +224,9 @@ class Connection {
 		serverBlocks 		getServerBlocks (void) const;
 		Config 				*getConfig (void) const;
         std::vector <int> 	getResolversList (void) const;
+		int 				getStatus (void) const;
+		std::string			getPeerAddr (void) const;
+		int					getPeerPort (void) const;
 
 		// * - * --------------------- SETTER FUNCTIONS --------------------- * - * //
 
@@ -225,6 +247,10 @@ class Connection {
 		void				extractHeaderLength (std::string tmpBuffer, int *start, int *len);
 		void				extractContentLength (std::string tmpBuffer);
 		void				extractMethod (std::string tmpBuffer);
+		void				connectionLog (std::ofstream &accessLog, int flag);
+		void				connectionLog (std::ofstream &errorLog, std::string error , std::string errorContext);
+		void				setPeerAddress (void);
+		size_t				getLastRead (void);
 };
 
 typedef std::vector <Connection *> connectionPool;
@@ -233,6 +259,7 @@ class HttpApplication
 {
     private:
 
+		
 		// * - * --------------------- HELPERS --------------------- * - * //
 
         int nfds;
@@ -249,14 +276,17 @@ class HttpApplication
 		std::ofstream errorLog ;
         std::ofstream binFile;
 		std::ofstream file;
-        Config *config;
-        serverContainer serverList;
-		connectionPool connections;
+		
 		// * - * --------------------- SELECT VARIABLES --------------------- * - * //
-		fd_set readFds, writeFds, errorFds;
-        intContainer serverFds;
-		intContainer watchedFds;
-        intContainer openConnections;
+        Config 			*config;
+        serverContainer serverList;
+		connectionPool 	connections;
+		fd_set			readFds;
+		fd_set			writeFds;
+		fd_set			errorFds;
+        intContainer	serverFds;
+		intContainer	watchedFds;
+        intContainer	openConnections;
 
 	public:
 
@@ -294,20 +324,21 @@ class HttpApplication
 		int 						isServer (int fd);
 		void 						initServerSet (void);
 		connectionPool::iterator	getConnection (int fd);
-		void						connectionAccessLog (std::string msg, int requestLength, std::string addr, std::string port);
-		void						connectionErrorLog (std::string errorContext, std::string errorMessage, std::string addr, std::string port);
 		void						handleSigPipe ();
 		void						closeConnection (SOCKET fd, std::string error);
 		void						removeConnection (SOCKET fd);
 		void						closeConnection (SOCKET fd);
+		void						checkConnectionTimeOut (SOCKET fd);
+		void						terminateConnection (SOCKET fd, std::string addr, int port);
 };
 
 // * - * --------------------- HELPER FUNCTIONS --------------------- * - * //
 
-void handleError(int err);
-void initServers(ServerInstance *serv_list);
-const std::string currentDateTime();
-std::string getTestBody (std::string filename);
-std::string listDirectory (std::string dirPath);
+void 				handleError(int err);
+void				initServers(ServerInstance *serv_list);
+const std::string	currentDateTime();
+std::string			getTestBody (std::string filename);
+std::string			listDirectory (std::string dirPath);
+size_t				timeInMilliseconds(void);
 #endif
 

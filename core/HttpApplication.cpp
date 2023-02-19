@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   HttpApplication.cpp                                :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/02/16 13:37:46 by yelatman          #+#    #+#             */
+/*   Updated: 2023/02/18 21:36:23 by yelatman         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "ServerInstance.hpp"
 #include "../config/config.hpp"
 #include "../request/request.h"
@@ -14,6 +26,8 @@ HttpApplication::HttpApplication ()
     indx = serverCount;
 	fdMax = 0;
 	config = NULL ;
+	accessLog.open ("access.log", std::ios::app);
+	errorLog.open ("error.log", std::ios::app);
 }
 
 HttpApplication::~HttpApplication ()
@@ -21,6 +35,8 @@ HttpApplication::~HttpApplication ()
     std::cout << "\e[0;31m HTTP APPLICATION CLOSED \e[0m" <<std::endl;
 	if (config)
 		delete config;
+	accessLog.close ();
+	errorLog.close ();
 }
 
 HttpApplication::HttpApplication (const HttpApplication &copy)
@@ -115,19 +131,30 @@ void HttpApplication::checkForConnection (void)
 {
 	fd_set read, write, error;
 	int err;
-	char buffer[BUFFER_MAX];
-
-	memset (buffer, 0, BUFFER_MAX);
+	struct timeval			timeout;
+	intContainer::iterator it;
+	
+	
+	timeout.tv_sec = 10;
+	timeout.tv_usec = 0;
 	read = readFds;
 	write = writeFds;
 	error = errorFds;
-	errValue = select (FD_SETSIZE, &read, &write, &error, NULL);
+	errValue = select (FD_SETSIZE, &read, &write, &error, &timeout);
+	for (it = openConnections.begin (); it != openConnections.end (); ++it)
+	{
+		checkConnectionTimeOut ((*it));
+	}
+	std::cout << "block in select" << std::endl ;
 	if (errValue < 0)
 		throw Connection_error(strerror(errno), "SELECT");
+	else if (!errValue)
+		std::cout << "\e[0;31m connection timeout \e[0m" << std::endl;
 	else
 	{
 		for (int i = 0; i < (fdMax + 1); i++)
 		{
+			std::cout << "dhshdhs" << std::endl;
 			if (FD_ISSET (i , &error))
 				throw Connection_error(strerror(errno), "SELECT");
 			if (FD_ISSET (i, &read))
@@ -181,12 +208,14 @@ void HttpApplication::handleHttpRequest (int fd)
 	else
 	{
 		newConnection = new Connection (fd);
+		newConnection->setPeerAddress ();
 		connections.push_back (newConnection);
 		openConnections.push_back (fd);
 	}
 	recvReturn = newConnection->recieveData (&start, &length);
 	if (recvReturn == -1)
 	{
+		newConnection->connectionLog (this->errorLog, "CONNECTION ERROR", "recv failure");
 		closeConnection (fd, "RECV ERROR");
 		removeConnection (fd);
 	}
@@ -194,27 +223,29 @@ void HttpApplication::handleHttpRequest (int fd)
 	{
 		FD_CLR (fd, &readFds);
 		FD_CLR (fd , &errorFds);
+		newConnection->connectionLog (this->errorLog, "CONNECTION ERROR", "connection reset by peer");
 		removeConnection (fd);
 	}
 	else
 	{
 		if (newConnection->getBodyRead () < newConnection->getContentLength ())
-		{
 			newConnection->appendBuffer (start, length);
 			// newConnection->emptyBuffer ();
-		}
 		else if (newConnection->getBodyRead () == newConnection->getContentLength() 
 			|| newConnection->getUpload () <= 0)
 		{
+			std::cout << "upload : " << newConnection->getUpload () << std::endl;
 			newConnection->appendBuffer (start, length);
 			// newConnection->emptyBuffer ();
 			serverBlocks servList = this->config->getHttpContext()->getServers ();
 			newConnection->generateResolversList (servList);
 			newConnection->setServerBlocks (servList);
 			newConnection->setConfig (this->getConfig ());
+			std::cout << " status : " << newConnection->getStatus () << std::endl; 
 			newConnection->setRequest ();
 			FD_CLR (fd, &readFds);
 			FD_SET (fd, &writeFds);
+			newConnection->connectionLog (this->accessLog, REQUEST);
 			removeConnection (fd);
 		}
 	}	
@@ -305,9 +336,13 @@ void HttpApplication::handleHttpResponse (int fd)
 		FD_CLR (fd, &writeFds);
 		FD_CLR (fd, &errorFds);
 		close (fd);
+		connectionInterface->connectionLog (this->errorLog, "SEND ERROR", "failed to send data");
 		connections.erase (it);
 		throw Connection_error (strerror (errno), "SEND");
 	}
-	else
+	else 
+	{
+		connectionInterface->connectionLog (this->accessLog, RESPONSE);
 		closeConnection (fd);	
+	}
 }
