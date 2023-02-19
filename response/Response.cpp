@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/17 12:49:58 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/19 13:42:09 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 
 Response::Response(Request &request, Config *config)
 {
-	printf("response addres: %p\n", this);
+	printf("response addres: %p %d\n", this, request.getStatusCode());
 	setRequest(&request, config);
 	if (this->request->getRedirectionStatus())
 	{
@@ -80,23 +80,32 @@ void	Response::handleErrorPages(void)
 		if (this->request->getStatusCode() == NOT_FOUND)
 		{
 			errorPage = this->request->getServerInstance()->getErrorPages()->path_not_found;
-			responseBody = readContent(errorPage);
+			if (!errorPage.empty())
+			{
+				responseBody = readContent(errorPage);
+				return ;
+			}
 		}
 		else if (this->request->getStatusCode() == FORBIDDEN)
 		{
 			errorPage = this->request->getServerInstance()->getErrorPages()->path_forbidden;
-			responseBody = readContent(errorPage);
+			if (!errorPage.empty())
+			{
+				responseBody = readContent(errorPage);
+				return ;
+			}
 		}
 		else if (this->request->getStatusCode() == SERVER_ERROR)
 		{
 			errorPage = this->request->getServerInstance()->getErrorPages()->path_internal_error;
-			responseBody = readContent(errorPage);
+			if (!errorPage.empty())
+			{
+				responseBody = readContent(errorPage);
+				return ;
+			}
 		}
 	}
-	else
-	{
-		responseBody = generateErrorPage();
-	}
+	responseBody = generateErrorPage();
 }
 
 int	Response::handleRedirection(void)
@@ -257,7 +266,13 @@ int	Response::applyMethod(void)
 	std::string method = request->getMethod();
 	if (request->getListingStatus() && statusCode == 0)
 	{
-		responseBody = listDirectory(request->getPath());
+		try {
+			responseBody = listDirectory(request->getPath());
+		}
+		catch (std::exception &e)
+		{
+			request->setStatusCode(SERVER_ERROR);
+		}
 		return (0);
 	}
 	if (method == "GET" && statusCode == 0)
