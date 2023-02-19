@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
+/*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/17 12:49:58 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/19 12:53:16 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,10 @@ Response::Response(Request &request, Config *config)
 		applyMethod();
 	getStatusCode();
 	if (this->request->getStatusCode() >= BAD_REQUEST)
+	{
+		std::cout << "error page" << std::endl;
 		handleErrorPages();
+	}
 	responseToSend.push_back(generateStatusLine());
 	stringContainer headerFields = generateHeaderFields(responseBody);
 	responseToSend.insert(responseToSend.begin() + 1, headerFields.begin(), headerFields.end());
@@ -95,6 +98,7 @@ void	Response::handleErrorPages(void)
 	}
 	else
 	{
+		std::cout << "test 1 "  << std::endl;
 		responseBody = generateErrorPage();
 	}
 }

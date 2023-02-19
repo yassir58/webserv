@@ -6,7 +6,7 @@
 /*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/16 13:38:33 by yelatman          #+#    #+#             */
-/*   Updated: 2023/02/18 22:16:26 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/19 15:17:33 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -212,7 +212,8 @@ void Connection::connectionLog (std::ofstream &accessLog, int flag)
 	if (status == 2)
 	{
 		accessLog << std::left << std::setw (17) << "Endpoint :" ;
-		accessLog << std::setw (10) <<  request->getLocation ()->getEndPoint ();
+		if (request->getLocation ())
+			accessLog << std::setw (10) <<  request->getLocation ()->getEndPoint ();
 		accessLog << std::left << std::setw (10) << "Request method: " ;
 		accessLog << std::setw (10) << request->getMethod ();
 		accessLog  << std::endl;
@@ -246,9 +247,9 @@ void HttpApplication::terminateConnection  (SOCKET fd, std::string addr, int por
 {
 	closeConnection (fd);
 	std::cout << std::left << std::setw (20) << currentDateTime () << " " ;
-	std::cout << std::left << std::setw (18) << "\e[0;36m Peer Address : \e[0m";
+	std::cout << std::left << std::setw (18) << "\e[0;33m Peer Address : \e[0m";
 	std::cout << std::setw(15) << addr << " ";
-	std::cout << std::left << std::setw (20) << "\e[0;32m Connection Port : \e[0m";
+	std::cout << std::left << std::setw (20) << "\e[0;33m Connection Port : \e[0m";
 	std::cout <<  std::setw (10) << port << "\e[0;31m Connection timeout \e[0m" << std::endl;
 	while (1);
 }

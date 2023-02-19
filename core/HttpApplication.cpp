@@ -6,7 +6,7 @@
 /*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/16 13:37:46 by yelatman          #+#    #+#             */
-/*   Updated: 2023/02/18 21:36:23 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/19 15:15:11 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -145,16 +145,14 @@ void HttpApplication::checkForConnection (void)
 	{
 		checkConnectionTimeOut ((*it));
 	}
-	std::cout << "block in select" << std::endl ;
 	if (errValue < 0)
 		throw Connection_error(strerror(errno), "SELECT");
 	else if (!errValue)
-		std::cout << "\e[0;31m connection timeout \e[0m" << std::endl;
+		std::cout << "\e[0;32m waiting for connection ... \e[0m" << std::endl;
 	else
 	{
 		for (int i = 0; i < (fdMax + 1); i++)
 		{
-			std::cout << "dhshdhs" << std::endl;
 			if (FD_ISSET (i , &error))
 				throw Connection_error(strerror(errno), "SELECT");
 			if (FD_ISSET (i, &read))
@@ -336,7 +334,6 @@ void HttpApplication::handleHttpResponse (int fd)
 		FD_CLR (fd, &writeFds);
 		FD_CLR (fd, &errorFds);
 		close (fd);
-		connectionInterface->connectionLog (this->errorLog, "SEND ERROR", "failed to send data");
 		connections.erase (it);
 		throw Connection_error (strerror (errno), "SEND");
 	}

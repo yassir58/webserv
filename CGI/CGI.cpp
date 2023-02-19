@@ -213,6 +213,8 @@ std::string    CGIHandler::getOutput()
     envList = (char **)this->convertEnvList();
     if (!args || !envList)
         return (std::string());
+    print_table (args);
+    print_table (envList);
     if (pipe(fds) < 0)
         throw CGIError("CGI Error: Could not open pipe.");
     pid = fork();

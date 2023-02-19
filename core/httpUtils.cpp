@@ -6,7 +6,7 @@
 /*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/16 13:38:00 by yelatman          #+#    #+#             */
-/*   Updated: 2023/02/18 22:22:04 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/19 15:16:43 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -352,6 +352,7 @@ void Connection::constructResponse (void)
 		else 
 		{
 			cgi = false;
+			std::cout << "status " << status << std::endl;
 			response = new Response (*request, conf);
 			responseConstructed = true ;
 		}
@@ -378,7 +379,6 @@ void HttpApplication::checkConnectionTimeOut (SOCKET fd)
 	connection = (*it);
 	timePased  = t - connection->getLastRead ();
 	connSocket =  connection->getConnectionSocket ();
-	std::cout << "connection " << connSocket <<" last read in ms : " << timePased << std::endl;
 	if (timePased >= REQUEST_TIMEOUT)
 			terminateConnection (connSocket, connection->getPeerAddr(), connection->getPeerPort ());
 }
