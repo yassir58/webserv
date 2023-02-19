@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/19 13:42:09 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/19 15:22:10 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -355,6 +355,7 @@ void	Response::setRequest(Request *request, Config *config)
 	statusCodeMap[NOT_IMPLENTED] = "Not Implemented";
 	statusCodeMap[SERVER_ERROR] = "Internal Server Error";
 	statusCodeMap[HTTP_VERSION] = "HTTP Version Not Supported";
+	statusCodeMap[TIME_OUT] = "Request Timeout";
 }
 
 void	Response::setResponseBody(std::string responseBody)
