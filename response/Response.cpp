@@ -6,7 +6,7 @@
 /*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/20 13:02:31 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/20 13:26:56 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,6 @@
 
 Response::Response(Request &request, Config *config)
 {
-	printf("response addres: %p %d\n", this, request.getStatusCode());
 	setRequest(&request, config);
 	if (this->request->getRedirectionStatus())
 	{

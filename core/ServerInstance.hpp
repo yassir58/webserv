@@ -6,7 +6,7 @@
 /*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/16 13:38:20 by yelatman          #+#    #+#             */
-/*   Updated: 2023/02/20 12:15:33 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/20 15:19:45 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,8 +72,8 @@
 #define HTTP_LENGTH 225
 #define REQUEST 0
 #define RESPONSE 1
-#define REQUEST_TIMEOUT 50000
-#define SELECT_TIMEOUT 10
+#define REQUEST_TIMEOUT 100000
+#define SELECT_TIMEOUT 40
 
 // * - * --------------------- TYPE DEFINITIONS --------------------- * - * //
 
@@ -130,7 +130,7 @@ class ServerInstance
         std::string service;
         SOCKET serverSocket;
         struct addrinfo addr;
-
+		
 	public:
 
 		// * - * --------------------- CONSTRUCTORS --------------------- * - * //
@@ -331,6 +331,10 @@ class HttpApplication
 		void						closeConnection (SOCKET fd);
 		void						checkConnectionTimeOut (SOCKET fd);
 		void						terminateConnection (SOCKET fd, std::string addr, int port);
+		void						deleteConfig (void);
+		void 						closeOpenConnections (void);
+		void						deleteServers (void);
+		void						deleteConnections (void);
 };
 
 // * - * --------------------- HELPER FUNCTIONS --------------------- * - * //

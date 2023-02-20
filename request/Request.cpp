@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
+/*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/19 20:10:12 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/20 13:26:09 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,13 +73,13 @@ bool Request::checkLocationPath(void)
 	path = adjustPath(root, path);
 	if (!checkDirectory(pathLocation))
 		return (false);
-		std::cout << "hoho1\n";
+		// std::cout << "hoho1\n";
 	if (path.find("..", 0) != std::string::npos)
 		return (statusCode = FORBIDDEN, false);
-		std::cout << "hoho2\n";
+		// std::cout << "hoho2\n";
 	if(!checkUpload(pathLocation))
 		return (false);
-		std::cout << "hoho3\n";
+		// std::cout << "hoho3\n";
 	if (!treatAbsolutePath(pathLocation))
 		return (false);
 	return (checkExtension(pathLocation));

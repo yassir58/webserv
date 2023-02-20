@@ -11,9 +11,16 @@ int main (int argc , char *argv[])
     {
         app.handleConfig (argc, argv);
     }
+    catch (Parse_error &err)
+    {
+        std::cout << err.what () << std::endl;
+        exit (EXIT_FAILURE);
+    }
     catch (std::exception &exc)
     {
         std::cout << exc.what () << std::endl;
+        app.deleteConfig ();
+        system ("leaks webserv");
         exit (EXIT_FAILURE);
     }
     
@@ -32,6 +39,9 @@ int main (int argc , char *argv[])
             catch (Fatal_error &exc)
             {
                 std::cout << exc.what () << std::endl;
+                app.deleteConfig ();
+                app.deleteServers ();
+                app.deleteConnections ();
                 exit (EXIT_FAILURE);
             }
             catch (std::exception &exc)

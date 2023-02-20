@@ -6,7 +6,7 @@
 /*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/16 13:38:00 by yelatman          #+#    #+#             */
-/*   Updated: 2023/02/20 12:58:10 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/20 14:07:51 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -319,38 +319,41 @@ void Connection::appendBuffer (size_t start, int dataRecived)
 	}
 }
 
-
 int Connection::sendResponse (int fd)
 {
-	char *responseData;
+	std::vector<char> responseData;
+	const char *resData;
 	std::string responseHeaders;
 	int responseLength = 0;
 	int dataSent = 0;
 
-	// if (cgi == true)
-	// 	responseData = CGI->execute ();
-	// else
-	// if (!headersSent)
-	// {
-	// 	responseHeaders = response->getResponseHeader ();
-	// 	dataSent = send (fd, responseHeaders.c_str (), responseHeaders.length (), 0);
-	// 	if (dataSent < 0)
-	// 		return (-1);
-	// 	headersSent++;
-	// }
-	// else
-	// {
-		responseData = response->getBuffer();
-		responseLength = strlen (responseData);
-		std::cout << "response length: " << responseLength << std::endl;
-		dataSent = send (fd, responseData + responseIndex, responseLength - bytesSent, 0);
-		if (dataSent < 0)
-			return (-1);
-		bytesSent += dataSent;
-		if (bytesSent == responseLength)
-			return (1);
-		responseIndex = bytesSent ;		
-		std::cout << "response Index: " << responseIndex << std::endl;
+	if (cgi == true)
+		resData = CGI->execute ().c_str();
+	else {
+		
+		if (!headersSent)
+		{
+			responseHeaders = response->getResponseHeader ();
+			dataSent = send (fd, responseHeaders.c_str (), responseHeaders.length (), 0);
+			if (dataSent < 0)
+				return (-1);
+			headersSent++;
+		}
+		else
+		{
+			responseData = response->getResponseBody();
+			std::cout << "=========================== >" << responseData.size () << std::endl;
+			responseLength = responseData.size();
+			resData = responseData.data ();
+		}
+	}
+	dataSent = send (fd,  resData + responseIndex, responseLength - bytesSent, 0);
+	if (dataSent < 0)
+		return (-1);
+	bytesSent += dataSent;
+	if (bytesSent == responseLength)
+		return (1);
+	responseIndex = bytesSent ;		
 	return (0);
 }
 
@@ -367,13 +370,11 @@ void Connection::constructResponse (void)
 		else 
 		{
 			cgi = false;
-			std::cout << "status " << status << std::endl;
 			response = new Response (*request, conf);
 			responseConstructed = true ;
 		}
 	}
 }
-
 
 void HttpApplication::checkConnectionTimeOut (SOCKET fd)
 {

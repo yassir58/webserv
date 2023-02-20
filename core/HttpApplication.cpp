@@ -6,7 +6,7 @@
 /*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/16 13:37:46 by yelatman          #+#    #+#             */
-/*   Updated: 2023/02/20 12:27:39 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/20 15:24:30 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,8 +33,9 @@ HttpApplication::HttpApplication ()
 HttpApplication::~HttpApplication ()
 {
     std::cout << "\e[0;31m HTTP APPLICATION CLOSED \e[0m" <<std::endl;
-	if (config)
-		delete config;
+	deleteConfig();
+	deleteServers ();
+	deleteConnections ();
 	accessLog.close ();
 	errorLog.close ();
 }
@@ -232,14 +233,12 @@ void HttpApplication::handleHttpRequest (int fd)
 		else if (newConnection->getBodyRead () == newConnection->getContentLength() 
 			|| newConnection->getUpload () <= 0)
 		{
-			std::cout << "upload : " << newConnection->getUpload () << std::endl;
 			newConnection->appendBuffer (start, length);
 			// newConnection->emptyBuffer ();
 			serverBlocks servList = this->config->getHttpContext()->getServers ();
 			newConnection->generateResolversList (servList);
 			newConnection->setServerBlocks (servList);
 			newConnection->setConfig (this->getConfig ());
-			std::cout << " status : " << newConnection->getStatus () << std::endl; 
 			newConnection->setRequest ();
 			FD_CLR (fd, &readFds);
 			FD_SET (fd, &writeFds);
@@ -332,6 +331,7 @@ void HttpApplication::handleHttpResponse (int fd)
 	errValue = connectionInterface->sendResponse (fd);
 	if (errValue == -1)
 	{
+		connectionInterface->connectionLog (this->errorLog, "SEND", strerror (errno));
 		FD_CLR (fd, &writeFds);
 		FD_CLR (fd, &errorFds);
 		close (fd);
@@ -342,5 +342,43 @@ void HttpApplication::handleHttpResponse (int fd)
 	{
 		connectionInterface->connectionLog (this->accessLog, RESPONSE);
 		closeConnection (fd);	
+	}
+}
+
+
+void HttpApplication::deleteConfig (void)
+{
+	if (config)
+		delete config;
+}
+
+void HttpApplication::closeOpenConnections (void)
+{
+	intContainer::iterator  it;
+
+	for (it = openConnections.begin () ; it != openConnections.end (); ++it)
+	{
+		close ((*it));
+	}
+}
+
+void HttpApplication::deleteServers (void)
+{
+	serverContainer::iterator it ;
+
+
+	for (it = serverList.begin (); it != serverList.end (); ++it)
+	{
+		delete (*it);
+	}
+}
+
+void HttpApplication::deleteConnections (void)
+{
+	connectionPool::iterator it ;
+
+	for (it = connections.begin (); it != connections.end (); ++it)
+	{
+		delete (*it);
 	}
 }
