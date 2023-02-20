@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
+/*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/20 11:49:31 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/20 13:02:31 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -378,15 +378,18 @@ void	Response::setResponseBody(std::string response)
 	responseBody = std::vector<char>(response.begin(), response.end());
 }
 
+
 char	*Response::getBuffer(void)
 {
 	char *body = responseBody.data();
-	char *toReturn = new char((char)"");
+	char *toReturn = strdup("");
 	stringContainer::iterator begin = responseToSend.begin();
 	stringContainer::iterator end = responseToSend.end();
 	while (end != begin)
 	{
+		std::cout << "start\n";
 		toReturn = ft_strjoin(toReturn, (*begin).c_str());
+		std::cout << "end\n";
 		++begin;
 	}
 	toReturn = ft_strjoin(toReturn, body);
