@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpApplication.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
+/*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/16 13:37:46 by yelatman          #+#    #+#             */
-/*   Updated: 2023/02/20 12:27:39 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/20 14:01:07 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -232,14 +232,12 @@ void HttpApplication::handleHttpRequest (int fd)
 		else if (newConnection->getBodyRead () == newConnection->getContentLength() 
 			|| newConnection->getUpload () <= 0)
 		{
-			std::cout << "upload : " << newConnection->getUpload () << std::endl;
 			newConnection->appendBuffer (start, length);
 			// newConnection->emptyBuffer ();
 			serverBlocks servList = this->config->getHttpContext()->getServers ();
 			newConnection->generateResolversList (servList);
 			newConnection->setServerBlocks (servList);
 			newConnection->setConfig (this->getConfig ());
-			std::cout << " status : " << newConnection->getStatus () << std::endl; 
 			newConnection->setRequest ();
 			FD_CLR (fd, &readFds);
 			FD_SET (fd, &writeFds);

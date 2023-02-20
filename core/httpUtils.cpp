@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   httpUtils.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
+/*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/16 13:38:00 by yelatman          #+#    #+#             */
-/*   Updated: 2023/02/20 12:58:10 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/20 15:25:46 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -322,7 +322,7 @@ void Connection::appendBuffer (size_t start, int dataRecived)
 
 int Connection::sendResponse (int fd)
 {
-	char *responseData;
+	std::string responseData;
 	std::string responseHeaders;
 	int responseLength = 0;
 	int dataSent = 0;
@@ -340,10 +340,10 @@ int Connection::sendResponse (int fd)
 	// }
 	// else
 	// {
-		responseData = response->getBuffer();
-		responseLength = strlen (responseData);
+		responseData = response->getResponse();
+		responseLength = responseData.length();
 		std::cout << "response length: " << responseLength << std::endl;
-		dataSent = send (fd, responseData + responseIndex, responseLength - bytesSent, 0);
+		dataSent = send (fd, responseData.c_str() + responseIndex, responseLength - bytesSent, 0);
 		if (dataSent < 0)
 			return (-1);
 		bytesSent += dataSent;
@@ -367,7 +367,6 @@ void Connection::constructResponse (void)
 		else 
 		{
 			cgi = false;
-			std::cout << "status " << status << std::endl;
 			response = new Response (*request, conf);
 			responseConstructed = true ;
 		}
@@ -384,7 +383,7 @@ void HttpApplication::checkConnectionTimeOut (SOCKET fd)
 	SOCKET connSocket;
 	Response 	*response;
 	Request 	*request;
-	std::vector<char> resData;
+	std::string resData;
 	int resLen  = 0;
 	int sendRet = 0;
 	
@@ -403,9 +402,9 @@ void HttpApplication::checkConnectionTimeOut (SOCKET fd)
 	{
 		request = new Request (TIME_OUT);
 		response = new Response (*request, config);
-		resData = response->getResponseBody ();
+		resData = response->getResponse();
 		resLen = resData.size ();
-		sendRet = send (connection->getConnectionSocket(), resData.data (), resLen, 0);
+		sendRet = send (connection->getConnectionSocket(), resData.c_str (), resLen, 0);
 		if (sendRet <= 0)
 			throw Connection_error ("SEND ERROR", "SEND FAILURE");
 		terminateConnection (connSocket, connection->getPeerAddr(), connection->getPeerPort ());
