@@ -6,7 +6,7 @@
 /*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/16 13:38:20 by yelatman          #+#    #+#             */
-/*   Updated: 2023/02/18 21:24:45 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/20 12:15:33 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -198,6 +198,7 @@ class Connection {
 		bool 				responseConstructed;
 		bool 				cgi;
 		size_t				lastRead;
+		int					headersSent;
 
     public:
 

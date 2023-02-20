@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/20 13:14:10 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/20 15:07:21 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -279,15 +279,9 @@ int	Response::applyMethod(void)
 	}
 	if (method == "GET" && statusCode == 0)
 	{
-		std::ifstream resource(request->getPath());
+		std::ifstream resource(request->getPath(), std::ios::binary);
 		if (resource.is_open())
 		{
-			char c;
-			while (!resource.eof())
-			{
-				resource.get(c);
-				responseBody.push_back(c);
-			}
 			request->setStatusCode(OK);
 			resource.close();
 		}
@@ -378,19 +372,36 @@ void	Response::setResponseBody(std::string response)
 	responseBody = std::vector<char>(response.begin(), response.end());
 }
 
-char	*Response::getBuffer(void)
+// void convertVectorTostring(char *body, std::vector<char> zab)
+// {
+// 	int i = 0;
+// 	std::vector<char>::iterator end = zab.end();
+// 	std::vector<char>::iterator begin = zab.begin();
+// 	while (end != begin)
+// 	{
+// 		body[i] = *begin;
+// 		++begin;
+// 		++i;
+// 	}
+// 	body[i] = 0;
+// 	std::cout << ft_strlen(body) << std::endl;
+// }
+
+const char	*Response::getBuffer(void)
 {
-	responseBody.push_back(0);
-	char *body = responseBody.data();
-	char *toReturn = strdup("");
-	stringContainer::iterator begin = responseToSend.begin();
-	stringContainer::iterator end = responseToSend.end();
-	while (end != begin)
-	{
-		toReturn = ft_strjoin(toReturn, (*begin).c_str());
-		++begin;
-	}
-	toReturn = ft_strjoin(toReturn, body);
+	// char body[responseBody.size() + 1];
+	// convertVectorTostring(body, responseBody);
+	// char *toReturn = strdup("");
+	// stringContainer::iterator begin = responseToSend.begin();
+	// stringContainer::iterator end = responseToSend.end();
+	// while (end != begin)
+	// {
+	// 	toReturn = ft_strjoin(toReturn, (*begin).c_str());
+	// 	++begin;
+	// }
+	// toReturn = ft_strjoin(toReturn, body);
+	// return (toReturn);
+	const char *toReturn = data.data();
 	return (toReturn);
 }
 

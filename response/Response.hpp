@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 14:44:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/20 11:50:27 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/20 15:10:48 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,10 +59,6 @@ class Response
 		void			setResponseBody(std::string responseBody); // setter for the response body
 		std::vector<char> getResponseBody(void); // the getter for the response and it convert the stringContainer to a string
 		std::string		getResponseHeader(void);
-		char			*getBuffer(void);
 };
-
-int		ft_strlen(const char *str);
-char	*ft_strjoin(char *s1, char const *s2);
 
 #endif /* ******************************************************** RESPONSE_H */
