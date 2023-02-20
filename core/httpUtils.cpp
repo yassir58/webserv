@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/16 13:38:00 by yelatman          #+#    #+#             */
-/*   Updated: 2023/02/19 22:02:17 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/20 09:29:49 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -320,7 +320,7 @@ void Connection::appendBuffer (size_t start, int dataRecived)
 
 int Connection::sendResponse (int fd)
 {
-	std::string responseData;
+	std::vector<char> *responseData;
 	int responseLength = 0;
 	int dataSent = 0;
 
@@ -328,8 +328,9 @@ int Connection::sendResponse (int fd)
 		responseData = CGI->execute ();
 	else
 		responseData = response->getResponse ();
-	responseLength = responseData.length();
-	dataSent = send (fd, responseData.c_str () + responseIndex, responseLength - bytesSent, 0);
+	std::cout << "===========================\n" << responseData->data() << std::endl;
+	responseLength = responseData->size();
+	dataSent = send (fd, responseData->data () + responseIndex, responseLength - bytesSent, 0);
 	if (dataSent < 0)
 		return (-1);
 	bytesSent += dataSent;
@@ -369,7 +370,7 @@ void HttpApplication::checkConnectionTimeOut (SOCKET fd)
 	SOCKET connSocket;
 	Response 	*response;
 	Request 	*request;
-	std::string resData;
+	std::vector<char> *resData;
 	int resLen  = 0;
 	int sendRet = 0;
 	
@@ -389,8 +390,8 @@ void HttpApplication::checkConnectionTimeOut (SOCKET fd)
 		request = new Request (TIME_OUT);
 		response = new Response (*request, config);
 		resData = response->getResponse ();
-		resLen = resData.length ();
-		sendRet = send (connection->getConnectionSocket(), resData.c_str (), resLen, 0);
+		resLen = resData->size ();
+		sendRet = send (connection->getConnectionSocket(), resData->data (), resLen, 0);
 		if (sendRet <= 0)
 			throw Connection_error ("SEND ERROR", "SEND FAILURE");
 		terminateConnection (connSocket, connection->getPeerAddr(), connection->getPeerPort ());

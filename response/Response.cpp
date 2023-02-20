@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/19 22:00:51 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/20 09:27:50 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -326,18 +326,28 @@ int	Response::applyMethod(void)
 ** --------------------------------- ACCESSOR ---------------------------------
 */
 
-std::vector<char> Response::getResponse(void)
+std::vector<char> *stringToCharVector(std::string toConvert)
+{
+	return (new std::vector<char>(toConvert.begin(), toConvert.end()));
+}
+
+std::string Response::getResponseHeader(void)
 {
 	std::string toReturn;
 	std::stringstream ss;
-	char *buffer;
-	stringContainer::reverse_iterator begin = responseToSend.rbegin();
-	stringContainer::reverse_iterator end = responseToSend.rend();
+	stringContainer::iterator begin = responseToSend.begin();
+	stringContainer::iterator end = responseToSend.end();
 	while (end != begin)
 	{
-		std::copy((*begin).begin(), (*begin).end(), std::front_inserter(responseBody));
+		ss << *begin;
 		++begin;
 	}
+	toReturn = ss.str();
+	return (toReturn);
+}
+
+std::vector<char> Response::getResponseBody(void)
+{
 	return (responseBody);
 }
 
