@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   responseUtils.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
+/*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/20 11:49:00 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/20 12:53:21 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/20 13:15:41 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,9 +32,7 @@ char	*ft_strjoin(char *s1, char const *s2)
 	if (!s1 || !s2)
 		return (0);
 	l2 = ft_strlen(s2);
-	std::cout << "first\n";
-	str = new char[(sizeof(char) * ft_strlen(s1)) + (sizeof(char) * l2 + 1)];
-	std::cout << "second\n";
+	str = new char[ft_strlen(s1) + l2 + 1];
 	if (!str)
 		return (0);
 	while (s1[++i])

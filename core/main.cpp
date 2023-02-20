@@ -3,13 +3,16 @@
 #include "../request/request.h"
 #include "../request/Request.hpp"
 
+
+
 int main (int argc , char *argv[])
 {
-    HttpApplication app;
 
+    HttpApplication *app;
+    app = new HttpApplication ();
     try 
     {
-        app.handleConfig (argc, argv);
+        app->handleConfig (argc, argv);
     }
     catch (Parse_error &err)
     {
@@ -19,34 +22,34 @@ int main (int argc , char *argv[])
     catch (std::exception &exc)
     {
         std::cout << exc.what () << std::endl;
-        app.deleteConfig ();
-        system ("leaks webserv");
+        app->deleteConfig ();
+        // system ("leaks webserv");
         exit (EXIT_FAILURE);
     }
     
     try
     {
-		app.handleSigPipe ();
-        app.filterServerBlocks ();
-        app.connectServers ();
-		app.initServerSet ();
+        handleSignals ();
+		app->handleSigPipe ();
+        app->filterServerBlocks ();
+        app->connectServers ();
+		app->initServerSet ();
         while (1)
         {
             try 
             {
-                app.checkForConnection ();
+                app->checkForConnection ();
             }
             catch (Fatal_error &exc)
             {
                 std::cout << exc.what () << std::endl;
-                app.deleteConfig ();
-                app.deleteServers ();
-                app.deleteConnections ();
+                delete app;
+                // system ("leaks webserv");
                 exit (EXIT_FAILURE);
             }
             catch (std::exception &exc)
             {
-                 std::cout << exc.what () << std::endl;
+                std::cout << exc.what () << std::endl;
 				 // handle error
             }
         }    
@@ -54,6 +57,7 @@ int main (int argc , char *argv[])
     catch (std::exception &ex) 
     {
         std::cout << ex.what () << std::endl;
+        delete app;
         exit (EXIT_FAILURE);
     }
     return (0);

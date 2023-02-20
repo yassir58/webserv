@@ -6,7 +6,7 @@
 /*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/16 13:37:46 by yelatman          #+#    #+#             */
-/*   Updated: 2023/02/20 15:24:30 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/20 19:48:47 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,8 +26,8 @@ HttpApplication::HttpApplication ()
     indx = serverCount;
 	fdMax = 0;
 	config = NULL ;
-	accessLog.open ("access.log", std::ios::app);
-	errorLog.open ("error.log", std::ios::app);
+	accessLog.open ("./log/access.log", std::ios::app);
+	errorLog.open ("./log/error.log", std::ios::app);
 }
 
 HttpApplication::~HttpApplication ()
@@ -147,7 +147,7 @@ void HttpApplication::checkForConnection (void)
 		checkConnectionTimeOut ((*it));
 	}
 	if (errValue < 0)
-		throw Connection_error(strerror(errno), "SELECT");
+		throw Fatal_error ("select failed");
 	else if (!errValue)
 		std::cout << "\e[0;32m waiting for connection ... \e[0m" << std::endl;
 	else
@@ -229,12 +229,10 @@ void HttpApplication::handleHttpRequest (int fd)
 	{
 		if (newConnection->getBodyRead () < newConnection->getContentLength ())
 			newConnection->appendBuffer (start, length);
-			// newConnection->emptyBuffer ();
 		else if (newConnection->getBodyRead () == newConnection->getContentLength() 
 			|| newConnection->getUpload () <= 0)
 		{
 			newConnection->appendBuffer (start, length);
-			// newConnection->emptyBuffer ();
 			serverBlocks servList = this->config->getHttpContext()->getServers ();
 			newConnection->generateResolversList (servList);
 			newConnection->setServerBlocks (servList);

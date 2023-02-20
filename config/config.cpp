@@ -285,6 +285,7 @@ void    Server::parseDirective(stringContainer config, Server *instance, int lin
     if (str.size() == 2 && str[0] == "root")
     {
         checkPath(str[1], CHECK_MODE);
+        str[1][str[1].length() - 1] != '/' ? str[1].append("/") : str[1].append("");
         instance->root = str[1];
     }
     else if (str.size() == 3 && str[0] == "error_page")
@@ -514,6 +515,7 @@ void    Location::parseDirective(stringContainer line, Location *instance)
     else if (line[0] == "root" && line.size() == 2)
     {
         checkPath(line[1], CHECK_MODE);
+        line[1][line[1].length() - 1] != '/' ? line[1].append("/") : line[1].append("");
         instance->root = line[1];
     }
     else if (line[0] == "index_default" && line.size() == 2)

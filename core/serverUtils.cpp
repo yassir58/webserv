@@ -6,7 +6,7 @@
 /*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/16 13:38:33 by yelatman          #+#    #+#             */
-/*   Updated: 2023/02/20 13:54:41 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/20 19:36:28 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -202,13 +202,13 @@ void Connection::connectionLog (std::ofstream &accessLog, int flag)
 	if (flag == REQUEST)
 	{
 		accessLog << std::left << std::setw (20) <<  "Data recievd :" ;
-		accessLog << std::setw (7) << requestLength ;
+		accessLog << std::setw (10) << requestLength ;
 	}
 		
 	else
 	{
 		accessLog << std::left << std::setw (20) << "Data sent :" ;
-		accessLog << std::setw (7) << bytesSent;
+		accessLog << std::setw (10) << bytesSent;
 	}
 	if (status == 2)
 	{
@@ -253,4 +253,22 @@ void HttpApplication::terminateConnection  (SOCKET fd, std::string addr, int por
 	std::cout << std::left << std::setw (20) << "\e[0;33m Connection Port : \e[0m";
 	std::cout <<  std::setw (10) << port << "\e[0;31m Connection timeout \e[0m" << std::endl;
 	while (1);
+}
+
+
+void sigHandler (int sig)
+{
+	std::cout << "\e[0;31mSIGNAL  " << sig << " recieved\e[0m" << std::endl ;
+	exit (EXIT_SUCCESS);
+}
+
+
+void handleSignals (void)
+{
+	struct sigaction sa;
+	memset(&sa, 0, sizeof(sa));
+	sigemptyset(&sa.sa_mask);
+	sa.sa_handler = &sigHandler;
+	sa.sa_flags = 0;
+	sigaction(SIGINT, &sa, NULL);	
 }
