@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/20 15:07:21 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/20 15:23:08 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 
 Response::Response(Request &request, Config *config)
 {
-	printf("response addres: %p %d\n", this, request.getStatusCode());
+	printf("response addres: %p\n", this);
 	setRequest(&request, config);
 	if (this->request->getRedirectionStatus())
 	{
@@ -38,8 +38,9 @@ Response::Response(Request &request, Config *config)
 		handleErrorPages();
 	}
 	responseToSend.push_back(generateStatusLine());
-	stringContainer headerFields = generateHeaderFields();
+	stringContainer headerFields = generateHeaderFields(responseBody);
 	responseToSend.insert(responseToSend.begin() + 1, headerFields.begin(), headerFields.end());
+	responseToSend.push_back(responseBody);
 }
 
 /*
@@ -82,32 +83,24 @@ void	Response::handleErrorPages(void)
 		if (this->request->getStatusCode() == NOT_FOUND)
 		{
 			errorPage = this->request->getServerInstance()->getErrorPages()->path_not_found;
-			if (!errorPage.empty())
-			{
-				setResponseBody(readContent(errorPage));
-				return ;
-			}
+			responseBody = readContent(errorPage);
 		}
 		else if (this->request->getStatusCode() == FORBIDDEN)
 		{
 			errorPage = this->request->getServerInstance()->getErrorPages()->path_forbidden;
-			if (!errorPage.empty())
-			{
-				setResponseBody(readContent(errorPage));
-				return ;
-			}
+			responseBody = readContent(errorPage);
 		}
 		else if (this->request->getStatusCode() == SERVER_ERROR)
 		{
 			errorPage = this->request->getServerInstance()->getErrorPages()->path_internal_error;
-			if (!errorPage.empty())
-			{
-				setResponseBody(readContent(errorPage));
-				return ;
-			}
+			responseBody = readContent(errorPage);
 		}
 	}
-	setResponseBody(generateErrorPage());
+	else
+	{
+		std::cout << "test 1 "  << std::endl;
+		responseBody = generateErrorPage();
+	}
 }
 
 int	Response::handleRedirection(void)
@@ -160,12 +153,12 @@ std::string	generateDate(void)
 	return (toReturn);
 }
 
-std::string generateLenghtContent(std::vector<char> &responseBody)
+std::string generateLenghtContent(std::string &responseBody)
 {
 	std::stringstream	ss;
 	std::string			lenght;
 	std::string			toReturn;
-	ss << responseBody.size();
+	ss << responseBody.length();
 	ss >> lenght;
 	toReturn = "Content-Lenght: " + lenght + "\r\n";
 	return (toReturn);
@@ -189,7 +182,7 @@ std::string	Response::generateContentType(void)
 	return ("Content-Type: " + pos->second + "\r\n");
 }
 
-stringContainer Response::generateHeaderFields()
+stringContainer Response::generateHeaderFields(std::string &responseBody)
 {
 	stringContainer	toReturn;
 	std::string Date = generateDate();
@@ -268,20 +261,16 @@ int	Response::applyMethod(void)
 	std::string method = request->getMethod();
 	if (request->getListingStatus() && statusCode == 0)
 	{
-		try {
-			setResponseBody(listDirectory(request->getPath()));
-		}
-		catch (std::exception &e)
-		{
-			request->setStatusCode(SERVER_ERROR);
-		}
+		responseBody = listDirectory(request->getPath());
 		return (0);
 	}
 	if (method == "GET" && statusCode == 0)
 	{
-		std::ifstream resource(request->getPath(), std::ios::binary);
+		std::ifstream resource;
+		resource.open (request->getPath(), std::ios::binary);
 		if (resource.is_open())
 		{
+			responseBody = std::string((std::istreambuf_iterator<char>(resource)), std::istreambuf_iterator<char>());
 			request->setStatusCode(OK);
 			resource.close();
 		}
@@ -320,12 +309,7 @@ int	Response::applyMethod(void)
 ** --------------------------------- ACCESSOR ---------------------------------
 */
 
-std::vector<char> *stringToCharVector(std::string toConvert)
-{
-	return (new std::vector<char>(toConvert.begin(), toConvert.end()));
-}
-
-std::string Response::getResponseHeader(void)
+std::string Response::getResponse(void)
 {
 	std::string toReturn;
 	std::stringstream ss;
@@ -338,11 +322,6 @@ std::string Response::getResponseHeader(void)
 	}
 	toReturn = ss.str();
 	return (toReturn);
-}
-
-std::vector<char> Response::getResponseBody(void)
-{
-	return (responseBody);
 }
 
 void	Response::setRequest(Request *request, Config *config)
@@ -364,45 +343,11 @@ void	Response::setRequest(Request *request, Config *config)
 	statusCodeMap[NOT_IMPLENTED] = "Not Implemented";
 	statusCodeMap[SERVER_ERROR] = "Internal Server Error";
 	statusCodeMap[HTTP_VERSION] = "HTTP Version Not Supported";
-	statusCodeMap[TIME_OUT] = "Request Timeout";
 }
 
-void	Response::setResponseBody(std::string response)
+void	Response::setResponseBody(std::string responseBody)
 {
-	responseBody = std::vector<char>(response.begin(), response.end());
-}
-
-// void convertVectorTostring(char *body, std::vector<char> zab)
-// {
-// 	int i = 0;
-// 	std::vector<char>::iterator end = zab.end();
-// 	std::vector<char>::iterator begin = zab.begin();
-// 	while (end != begin)
-// 	{
-// 		body[i] = *begin;
-// 		++begin;
-// 		++i;
-// 	}
-// 	body[i] = 0;
-// 	std::cout << ft_strlen(body) << std::endl;
-// }
-
-const char	*Response::getBuffer(void)
-{
-	// char body[responseBody.size() + 1];
-	// convertVectorTostring(body, responseBody);
-	// char *toReturn = strdup("");
-	// stringContainer::iterator begin = responseToSend.begin();
-	// stringContainer::iterator end = responseToSend.end();
-	// while (end != begin)
-	// {
-	// 	toReturn = ft_strjoin(toReturn, (*begin).c_str());
-	// 	++begin;
-	// }
-	// toReturn = ft_strjoin(toReturn, body);
-	// return (toReturn);
-	const char *toReturn = data.data();
-	return (toReturn);
+	this->responseBody = responseBody;
 }
 
 
