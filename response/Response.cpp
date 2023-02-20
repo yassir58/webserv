@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/20 09:27:50 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/20 11:49:31 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -376,6 +376,21 @@ void	Response::setRequest(Request *request, Config *config)
 void	Response::setResponseBody(std::string response)
 {
 	responseBody = std::vector<char>(response.begin(), response.end());
+}
+
+char	*Response::getBuffer(void)
+{
+	char *body = responseBody.data();
+	char *toReturn = new char((char)"");
+	stringContainer::iterator begin = responseToSend.begin();
+	stringContainer::iterator end = responseToSend.end();
+	while (end != begin)
+	{
+		toReturn = ft_strjoin(toReturn, (*begin).c_str());
+		++begin;
+	}
+	toReturn = ft_strjoin(toReturn, body);
+	return (toReturn);
 }
 
 
