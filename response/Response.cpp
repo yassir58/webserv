@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/19 22:30:23 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/20 09:27:50 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -326,26 +326,29 @@ int	Response::applyMethod(void)
 ** --------------------------------- ACCESSOR ---------------------------------
 */
 
-std::vector<char> stringToCharVector(std::string toConvert)
+std::vector<char> *stringToCharVector(std::string toConvert)
 {
-	return (std::vector<char>(toConvert.begin(), toConvert.end()));
+	return (new std::vector<char>(toConvert.begin(), toConvert.end()));
 }
 
-std::vector<char> Response::getResponse(void)
+std::string Response::getResponseHeader(void)
 {
-	char *buffer;
+	std::string toReturn;
+	std::stringstream ss;
 	stringContainer::iterator begin = responseToSend.begin();
 	stringContainer::iterator end = responseToSend.end();
-	std::vector<char> toReturn;
-	std::vector<char> line;
 	while (end != begin)
 	{
-		line = stringToCharVector(*begin);
-		toReturn.insert(toReturn.end(), line.begin(), line.end());
+		ss << *begin;
 		++begin;
 	}
-	toReturn.insert(toReturn.end(), responseBody.begin(), responseBody.end());
+	toReturn = ss.str();
 	return (toReturn);
+}
+
+std::vector<char> Response::getResponseBody(void)
+{
+	return (responseBody);
 }
 
 void	Response::setRequest(Request *request, Config *config)
