@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/20 11:49:00 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/20 11:49:50 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/20 12:48:51 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 int	ft_strlen(const char *str)
 {
-	int i;
+	int i = 0;
 	while (str[i])
 		i++;
 	return (i);
@@ -32,7 +32,7 @@ char	*ft_strjoin(char *s1, char const *s2)
 	if (!s1 || !s2)
 		return (0);
 	l2 = ft_strlen(s2);
-	str = new char[(sizeof(char) * ft_strlen(s1)) + (sizeof(char) * l2 + 1)];
+	str = new char[ft_strlen(s1) + l2 + 1];
 	if (!str)
 		return (0);
 	while (s1[++i])

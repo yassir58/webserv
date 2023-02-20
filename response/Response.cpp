@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/20 11:49:31 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/20 13:14:10 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -380,8 +380,9 @@ void	Response::setResponseBody(std::string response)
 
 char	*Response::getBuffer(void)
 {
+	responseBody.push_back(0);
 	char *body = responseBody.data();
-	char *toReturn = new char((char)"");
+	char *toReturn = strdup("");
 	stringContainer::iterator begin = responseToSend.begin();
 	stringContainer::iterator end = responseToSend.end();
 	while (end != begin)
