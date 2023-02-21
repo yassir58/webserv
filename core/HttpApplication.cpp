@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpApplication.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
+/*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/16 13:37:46 by yelatman          #+#    #+#             */
-/*   Updated: 2023/02/20 14:01:07 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/20 19:48:47 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,15 +26,16 @@ HttpApplication::HttpApplication ()
     indx = serverCount;
 	fdMax = 0;
 	config = NULL ;
-	accessLog.open ("access.log", std::ios::app);
-	errorLog.open ("error.log", std::ios::app);
+	accessLog.open ("./log/access.log", std::ios::app);
+	errorLog.open ("./log/error.log", std::ios::app);
 }
 
 HttpApplication::~HttpApplication ()
 {
     std::cout << "\e[0;31m HTTP APPLICATION CLOSED \e[0m" <<std::endl;
-	if (config)
-		delete config;
+	deleteConfig();
+	deleteServers ();
+	deleteConnections ();
 	accessLog.close ();
 	errorLog.close ();
 }
@@ -146,7 +147,7 @@ void HttpApplication::checkForConnection (void)
 		checkConnectionTimeOut ((*it));
 	}
 	if (errValue < 0)
-		throw Connection_error(strerror(errno), "SELECT");
+		throw Fatal_error ("select failed");
 	else if (!errValue)
 		std::cout << "\e[0;32m waiting for connection ... \e[0m" << std::endl;
 	else
@@ -228,12 +229,10 @@ void HttpApplication::handleHttpRequest (int fd)
 	{
 		if (newConnection->getBodyRead () < newConnection->getContentLength ())
 			newConnection->appendBuffer (start, length);
-			// newConnection->emptyBuffer ();
 		else if (newConnection->getBodyRead () == newConnection->getContentLength() 
 			|| newConnection->getUpload () <= 0)
 		{
 			newConnection->appendBuffer (start, length);
-			// newConnection->emptyBuffer ();
 			serverBlocks servList = this->config->getHttpContext()->getServers ();
 			newConnection->generateResolversList (servList);
 			newConnection->setServerBlocks (servList);
@@ -330,6 +329,7 @@ void HttpApplication::handleHttpResponse (int fd)
 	errValue = connectionInterface->sendResponse (fd);
 	if (errValue == -1)
 	{
+		connectionInterface->connectionLog (this->errorLog, "SEND", strerror (errno));
 		FD_CLR (fd, &writeFds);
 		FD_CLR (fd, &errorFds);
 		close (fd);
@@ -340,5 +340,43 @@ void HttpApplication::handleHttpResponse (int fd)
 	{
 		connectionInterface->connectionLog (this->accessLog, RESPONSE);
 		closeConnection (fd);	
+	}
+}
+
+
+void HttpApplication::deleteConfig (void)
+{
+	if (config)
+		delete config;
+}
+
+void HttpApplication::closeOpenConnections (void)
+{
+	intContainer::iterator  it;
+
+	for (it = openConnections.begin () ; it != openConnections.end (); ++it)
+	{
+		close ((*it));
+	}
+}
+
+void HttpApplication::deleteServers (void)
+{
+	serverContainer::iterator it ;
+
+
+	for (it = serverList.begin (); it != serverList.end (); ++it)
+	{
+		delete (*it);
+	}
+}
+
+void HttpApplication::deleteConnections (void)
+{
+	connectionPool::iterator it ;
+
+	for (it = connections.begin (); it != connections.end (); ++it)
+	{
+		delete (*it);
 	}
 }

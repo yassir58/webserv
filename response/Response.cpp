@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
+/*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/20 15:23:08 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/20 20:05:24 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,6 @@
 
 Response::Response(Request &request, Config *config)
 {
-	printf("response addres: %p\n", this);
 	setRequest(&request, config);
 	if (this->request->getRedirectionStatus())
 	{
@@ -231,6 +230,7 @@ std::string listDirectory (std::string dirPath)
 	std::string hrClose ("\">");
 	std::string indexBody;
 	std::string href ("./");
+
 
 	if (dir == NULL)
 		throw std::exception ();

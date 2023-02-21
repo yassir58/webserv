@@ -3,6 +3,7 @@ CFLAGS = -fsanitize=address #-Wall -Wextra -Werror  -g #-std=c++98
 CCP =c++
 CC =gcc
 EXEC=webserv
+LOGS= ./log/access.log ./log/error.log
 CORE_SRCS = main.cpp serverUtils.cpp ServerInstance.cpp  HttpApplication.cpp httpUtils.cpp 
 CONF_SRCS = config.cpp utils.cpp
 REQUEST_SRCS = Request.cpp requestTools.cpp requestParser.cpp
@@ -27,12 +28,11 @@ all:$(EXEC)
 $(EXEC):$(OBJS) 
 	$(CCP) $(CFLAGS) $(OBJS) -o $(EXEC) 
 
-
 hoho: all clean
 	clear && ./$(EXEC) ./testing/configs/test2.conf
 
 clean:
-	rm  $(OBJS)
+	rm  -rf $(OBJS) $(LOGS)
 fclean: clean
 	rm -rf $(EXEC)
 re:fclean all

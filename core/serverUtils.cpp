@@ -6,7 +6,7 @@
 /*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/16 13:38:33 by yelatman          #+#    #+#             */
-/*   Updated: 2023/02/19 15:17:33 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/20 19:36:28 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -194,28 +194,29 @@ void Connection::connectionLog (std::ofstream &accessLog, int flag)
 {
 	accessLog << std::left << std::setw (20) << currentDateTime () << " " ;
 	if (flag == REQUEST)
-		accessLog << std::left << std::setw (15) << std::setw (10) << "\e[0;33mREQUEST \e[0m"<< " ";
+		accessLog << std::left << std::setw (10) << "\e[0;33mREQUEST \e[0m"<< " ";
 	else
-		accessLog << std::left << std::setw (15) << "\e[0;33mRESPONSE\e[0m"<< " ";
+		accessLog << std::left << std::setw (10) << "\e[0;33mRESPONSE\e[0m"<< " ";
 	accessLog << std::left << std::setw (10) << "Peer Address : \e[0;36m" << ipAddress << " \e[0m";
 	accessLog << std::left << std::setw (10) << "Connection Port : \e[0;32m" << port << " \e[0m";
 	if (flag == REQUEST)
 	{
-		accessLog << std::left << std::setw (20) <<  "Data recievd :"  << requestLength ;
+		accessLog << std::left << std::setw (20) <<  "Data recievd :" ;
+		accessLog << std::setw (10) << requestLength ;
 	}
 		
 	else
 	{
-		accessLog << std::left << std::setw (15) << "Data sent :" ;
-		accessLog << std::setw (15) << bytesSent;
+		accessLog << std::left << std::setw (20) << "Data sent :" ;
+		accessLog << std::setw (10) << bytesSent;
 	}
 	if (status == 2)
 	{
-		accessLog << std::left << std::setw (17) << "Endpoint :" ;
+		accessLog << std::left << std::setw (10) << "Endpoint :" ;
 		if (request->getLocation ())
-			accessLog << std::setw (10) <<  request->getLocation ()->getEndPoint ();
-		accessLog << std::left << std::setw (10) << "Request method: " ;
-		accessLog << std::setw (10) << request->getMethod ();
+			accessLog << std::setw (20) <<  request->getLocation ()->getEndPoint ();
+		accessLog << std::left << std::setw (16) << "Request method: " ;
+		accessLog << std::setw (4) << request->getMethod ();
 		accessLog  << std::endl;
 	}
 }
@@ -225,12 +226,12 @@ void Connection::connectionLog (std::ofstream &errorLog, std::string error, std:
 	errorLog << std::left << std::setw (20) << currentDateTime () << " " ;
 	errorLog << std::left << std::setw (18) << "\e[0;36m Peer Address : \e[0m";
 	errorLog << std::setw(15) << ipAddress << " ";
-	errorLog << std::left << std::setw (20) << "\e[0;32m Connection Port : \e[0m";
+	errorLog << std::left << std::setw (15) << "\e[0;32m Connection Port : \e[0m";
 	errorLog <<  std::setw (10) << port << " ";
 	errorLog << std::left << std::setw (10) << "\e[0;31m Error Context: \e[0m" ;
-	errorLog << std::setw (20) << errorContext << " ";
-	errorLog << std::left << std::setw (20) << "\e[0;31m Error Context: \e[0m" ;
-	errorLog << std::setw (20) << error << " ";
+	errorLog << std::setw (15) << errorContext << " ";
+	errorLog << std::left << std::setw (15) << "\e[0;31m Error Context: \e[0m" ;
+	errorLog << std::setw (15) << error << " ";
 	errorLog << std::endl;
 }
 
@@ -252,4 +253,22 @@ void HttpApplication::terminateConnection  (SOCKET fd, std::string addr, int por
 	std::cout << std::left << std::setw (20) << "\e[0;33m Connection Port : \e[0m";
 	std::cout <<  std::setw (10) << port << "\e[0;31m Connection timeout \e[0m" << std::endl;
 	while (1);
+}
+
+
+void sigHandler (int sig)
+{
+	std::cout << "\e[0;31mSIGNAL  " << sig << " recieved\e[0m" << std::endl ;
+	exit (EXIT_SUCCESS);
+}
+
+
+void handleSignals (void)
+{
+	struct sigaction sa;
+	memset(&sa, 0, sizeof(sa));
+	sigemptyset(&sa.sa_mask);
+	sa.sa_handler = &sigHandler;
+	sa.sa_flags = 0;
+	sigaction(SIGINT, &sa, NULL);	
 }

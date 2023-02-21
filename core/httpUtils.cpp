@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   httpUtils.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
+/*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/16 13:38:00 by yelatman          #+#    #+#             */
-/*   Updated: 2023/02/20 15:25:46 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/20 20:02:30 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,7 @@ Connection::Connection (int fd)
 
 Connection::~Connection()
 {
+	std::cout << "\e[0;31m CONNECTION CLOSED \e[0m" << std::endl;
 	if (this->request)
 		delete this->request;
 	if (this->response)
@@ -319,7 +320,6 @@ void Connection::appendBuffer (size_t start, int dataRecived)
 	}
 }
 
-
 int Connection::sendResponse (int fd)
 {
 	std::string responseData;
@@ -327,30 +327,20 @@ int Connection::sendResponse (int fd)
 	int responseLength = 0;
 	int dataSent = 0;
 
-	// if (cgi == true)
-	// 	responseData = CGI->execute ();
-	// else
-	// if (!headersSent)
-	// {
-	// 	responseHeaders = response->getResponseHeader ();
-	// 	dataSent = send (fd, responseHeaders.c_str (), responseHeaders.length (), 0);
-	// 	if (dataSent < 0)
-	// 		return (-1);
-	// 	headersSent++;
-	// }
-	// else
-	// {
+	if (cgi == true)
+		responseData = CGI->execute ();
+	else
 		responseData = response->getResponse();
-		responseLength = responseData.length();
-		std::cout << "response length: " << responseLength << std::endl;
-		dataSent = send (fd, responseData.c_str() + responseIndex, responseLength - bytesSent, 0);
-		if (dataSent < 0)
-			return (-1);
-		bytesSent += dataSent;
-		if (bytesSent == responseLength)
-			return (1);
-		responseIndex = bytesSent ;		
-		std::cout << "response Index: " << responseIndex << std::endl;
+	responseLength = responseData.length();
+	std::cout << "response length: " << responseLength << std::endl;
+	dataSent = send (fd, responseData.c_str() + responseIndex, responseLength - bytesSent, 0);
+	if (dataSent < 0)
+		return (-1);
+	bytesSent += dataSent;
+	if (bytesSent == responseLength)
+		return (1);
+	responseIndex = bytesSent ;		
+	std::cout << "response Index: " << responseIndex << std::endl;
 	return (0);
 }
 
@@ -372,7 +362,6 @@ void Connection::constructResponse (void)
 		}
 	}
 }
-
 
 void HttpApplication::checkConnectionTimeOut (SOCKET fd)
 {
