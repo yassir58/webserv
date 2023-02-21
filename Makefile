@@ -1,5 +1,5 @@
 SDIR =tcp
-CFLAGS = -fsanitize=address #-Wall -Wextra -Werror  -g #-std=c++98 
+CFLAGS = -fsanitize=address -Wall -Wextra  -g #-std=c++98 
 CCP =c++
 CC =gcc
 EXEC=webserv

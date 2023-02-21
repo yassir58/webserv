@@ -169,7 +169,7 @@ std::string CGIHandler::getQuery()
     std::string urlExample = this->request->getRequestTarget();
     stringContainer str;
     stringContainer params;
-    int i;
+    unsigned int i;
 
     i = 0;
     if (urlExample.find("?") != std::string::npos)
