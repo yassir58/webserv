@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:36 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/19 15:21:39 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/22 12:39:04 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@
 # define OK			   200
 # define CREATED	   201
 # define NO_CONTENT	   204
-# define FOUND		   301
+# define FOUND		   302
 # define BAD_REQUEST   400
 # define FORBIDDEN	   403
 # define NOT_FOUND	   404
