@@ -63,7 +63,6 @@ void    Config::parseConfig()
 void    Config::validateConfig()
 {
     unsigned int i;
-    unsigned int j;
 
     i = 0;
     while (i < this->mainHttpContext->getServers().size())

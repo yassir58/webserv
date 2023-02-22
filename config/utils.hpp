@@ -46,6 +46,8 @@ const char * indexExtensions[] = {
         "html",
         "htm",
         "php",
+        "py",
+        "rb",
         NULL
 };
 
