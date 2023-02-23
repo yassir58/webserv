@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpApplication.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
+/*   By: ochoumou <ochoumou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/16 13:37:46 by yelatman          #+#    #+#             */
-/*   Updated: 2023/02/21 13:18:50 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/23 13:52:26 by ochoumou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,7 +131,6 @@ void HttpApplication::initServerSet (void)
 void HttpApplication::checkForConnection (void)
 {
 	fd_set read, write, error;
-	int err;
 	struct timeval			timeout;
 	intContainer::iterator it;
 	
@@ -315,11 +314,6 @@ ServerInstance *HttpApplication::findServerByFd (int serverFd)
 void HttpApplication::handleHttpResponse (int fd)
 {
 	connectionPool::iterator it;
-	Server *server;
-	Request *request;
-	Response *newResponse ;
-	
-
 	Connection *connectionInterface = nullptr;
 
 	
