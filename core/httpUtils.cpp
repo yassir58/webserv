@@ -6,7 +6,7 @@
 /*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/16 13:38:00 by yelatman          #+#    #+#             */
-/*   Updated: 2023/02/22 12:36:08 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/23 15:13:16 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -331,7 +331,6 @@ int Connection::sendResponse (int fd)
 	else
 		responseData = response->getResponse();
 	responseLength = responseData.length();
-	std::cout << "response length: " << responseLength << std::endl;
 	dataSent = send (fd, responseData.c_str() + responseIndex, responseLength - bytesSent, 0);
 	if (dataSent < 0)
 		return (-1);

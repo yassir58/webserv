@@ -6,4 +6,4 @@ cgitb.enable()
 postData = cgi.FieldStorage()
 
 name = postData["name"].value;
-name);
+print(name);

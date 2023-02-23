@@ -14,7 +14,7 @@ HOST_NAME="127.0.0.1"
 HOST_PORT="8080"
 
 ENDPOINT="http://localhost:8080"
-FORBIDDEN_PATH="/test/forbidden/forbidden.html"
+FORBIDDEN_PATH="/forbidden/forbidden.html"
 FORBIDDEN_FILE="/Users/yelatman/Documents/webserv/www/test/forbidden/forbidden.html"
 FILE_PATH=""/Users/yelatman/Documents/webserv/www/test/srcs/index.html""
 NOT_ALLOWED_PATH="/getNotAllowed/"
