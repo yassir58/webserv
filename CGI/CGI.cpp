@@ -2,7 +2,7 @@
 
 CGIHandler::CGIHandler()
 {
-    std::cout << "Calling the default constructor." << std::endl;
+    // std::cout << "Calling the default constructor." << std::endl;
 }
 
 CGIHandler::CGIHandler(Request *request)

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpApplication.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ochoumou <ochoumou@student.42.fr>          +#+  +:+       +#+        */
+/*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/16 13:37:46 by yelatman          #+#    #+#             */
-/*   Updated: 2023/02/23 13:52:26 by ochoumou         ###   ########.fr       */
+/*   Updated: 2023/02/23 15:31:54 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -149,7 +149,7 @@ void HttpApplication::checkForConnection (void)
 		throw Fatal_error ("select failed");
 	else if (!errValue)
 	{
-		// std::cout << "\e[0;32m waiting for connection ... \e[0m" << std::endl;
+		std::cout << "\e[0;32m waiting for connection ... \e[0m" << std::endl;
 	}
 	else
 	{

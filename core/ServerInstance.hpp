@@ -6,14 +6,13 @@
 /*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/16 13:38:20 by yelatman          #+#    #+#             */
-/*   Updated: 2023/02/20 20:05:04 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/23 15:25:32 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 #ifndef SERVER_INSTANCE_HPP
 #define SERVER_INSTANCE_HPP
-
 
 
 #include <sys/socket.h>

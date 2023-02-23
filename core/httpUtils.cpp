@@ -6,7 +6,7 @@
 /*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/16 13:38:00 by yelatman          #+#    #+#             */
-/*   Updated: 2023/02/23 15:13:16 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/23 15:29:36 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -338,7 +338,6 @@ int Connection::sendResponse (int fd)
 	if (bytesSent == responseLength)
 		return (1);
 	responseIndex = bytesSent ;		
-	std::cout << "response Index: " << responseIndex << std::endl;
 	return (0);
 }
 

@@ -1,5 +1,5 @@
 SDIR =tcp
-CFLAGS = -fsanitize=address -Wall -Wextra  -g -std=c++98 
+CFLAGS =  -Wall -Wextra -Werror  -g -std=c++98 
 CCP =c++
 CC =gcc
 EXEC=webserv
@@ -27,9 +27,6 @@ all:$(EXEC)
 
 $(EXEC):$(OBJS) 
 	$(CCP) $(CFLAGS) $(OBJS) -o $(EXEC) 
-
-hoho: all clean
-	clear && ./$(EXEC) ./testing/configs/test2.conf
 
 clean:
 	rm  -rf $(OBJS) $(LOGS)
