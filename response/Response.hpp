@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 14:44:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/20 15:21:31 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/23 15:11:20 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,6 @@ class Response
 {
 	private:
 		Request			*request; // a pointer on the request that have been parsed by the all mighty ma3ert
-		int				statusIndex; // the index of the appropriate code response in the table
 		std::string		responseBody; // the body of the response 
 		stringContainer	responseToSend; // the all mighty response
 		Config			*configData; // the data from the configuration file
