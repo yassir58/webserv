@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/22 13:11:23 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/23 15:12:53 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -208,7 +208,6 @@ stringContainer Response::generateHeaderFields(std::string &responseBody)
 	if (request->getRedirectionStatus())
 	{
 		std::string location = "Location: http://" + request->getStartLine().IpAdress + ":" + request->getStartLine().Port + "/" + request->getRedirectionLink() + " \r\n";
-		std::cout << location;
 		toReturn.push_back(location);
 	}
 	std::string Server = "Server: websrv\r\n\r\n";
@@ -335,7 +334,6 @@ void	Response::setRequest(Request *request, Config *config)
 	this->request = request;
 	errorPagestatus = false;
 	this->configData = config;
-	size_t	index = 0;
 	statusCodeMap[OK] = "OK";
 	statusCodeMap[CREATED] = "CREATED";
 	statusCodeMap[FOUND] = "FOUND";

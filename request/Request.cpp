@@ -6,7 +6,7 @@
 /*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/22 14:56:59 by Ma3ert           ###   ########.fr       */
+/*   Updated: 2023/02/23 15:12:13 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,7 @@ Request::~Request()
 
 bool Request::checkLocationPath(void)
 {
-	if (serverInstance->getMaxBodySize() > 0 && getBody().length() > serverInstance->getMaxBodySize())
+	if (serverInstance->getMaxBodySize() > 0 && getBody().length() > (size_t)serverInstance->getMaxBodySize())
 	{
 		statusCode = TOO_LARGE;
 		return (false);
@@ -127,7 +127,6 @@ int	Request::checkDirectory(Location *pathLocation)
 		statusCode = FORBIDDEN;
 		return (0);
 	}
-	std::cout << "hoho1\n";
 	if (dec && startLine.method == "GET")
 	{
 		if (*(path.end() - 1) != '/')
@@ -136,7 +135,6 @@ int	Request::checkDirectory(Location *pathLocation)
 			redirectionLink = path.substr(pos + root.length(), std::string::npos) + "/";
 			redirectCode = "302";
 			redirectionStatus = true;
-			std::cout << "I get here to change location\n";
 			return (0);
 		}
 		std::string indexFile = pathLocation->getDefaultIndex();
