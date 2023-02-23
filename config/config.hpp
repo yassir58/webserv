@@ -188,4 +188,4 @@ mapContainer createMiMe();
 bool checkVectorDuplicate(stringContainer container, std::string key);
 std::string generateErrorPage(unsigned int statusCode);
 
-#endif 
+#endif

@@ -6,7 +6,7 @@
 /*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/16 13:38:00 by yelatman          #+#    #+#             */
-/*   Updated: 2023/02/20 20:02:30 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/22 12:36:08 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -268,7 +268,6 @@ void Connection::printfResolvers (void)
 Server *Request::matchRequestHandler (serverBlocks serverList, std::vector <int> resolversList)
 {
 	int servIndx = 0;
-	int hostFlag = this->getStartLine().Host;
 	std::string servName;
 	intContainer::iterator it;
 
@@ -324,7 +323,7 @@ int Connection::sendResponse (int fd)
 {
 	std::string responseData;
 	std::string responseHeaders;
-	int responseLength = 0;
+	size_t responseLength = 0;
 	int dataSent = 0;
 
 	if (cgi == true)

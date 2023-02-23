@@ -6,7 +6,7 @@
 /*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/16 13:37:46 by yelatman          #+#    #+#             */
-/*   Updated: 2023/02/20 19:48:47 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/22 12:35:13 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,7 +131,6 @@ void HttpApplication::initServerSet (void)
 void HttpApplication::checkForConnection (void)
 {
 	fd_set read, write, error;
-	int err;
 	struct timeval			timeout;
 	intContainer::iterator it;
 	
@@ -313,11 +312,6 @@ ServerInstance *HttpApplication::findServerByFd (int serverFd)
 void HttpApplication::handleHttpResponse (int fd)
 {
 	connectionPool::iterator it;
-	Server *server;
-	Request *request;
-	Response *newResponse ;
-	
-
 	Connection *connectionInterface = nullptr;
 
 	
