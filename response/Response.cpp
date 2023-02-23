@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
+/*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 17:06:43 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/20 20:05:24 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/22 13:11:23 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,10 +32,7 @@ Response::Response(Request &request, Config *config)
 		applyMethod();
 	getStatusCode();
 	if (this->request->getStatusCode() >= BAD_REQUEST)
-	{
-		std::cout << "error page" << std::endl;
 		handleErrorPages();
-	}
 	responseToSend.push_back(generateStatusLine());
 	stringContainer headerFields = generateHeaderFields(responseBody);
 	responseToSend.insert(responseToSend.begin() + 1, headerFields.begin(), headerFields.end());
@@ -82,24 +79,32 @@ void	Response::handleErrorPages(void)
 		if (this->request->getStatusCode() == NOT_FOUND)
 		{
 			errorPage = this->request->getServerInstance()->getErrorPages()->path_not_found;
-			responseBody = readContent(errorPage);
+			if (!errorPage.empty())
+			{
+				responseBody = readContent(errorPage);
+				return ;
+			}
 		}
 		else if (this->request->getStatusCode() == FORBIDDEN)
 		{
 			errorPage = this->request->getServerInstance()->getErrorPages()->path_forbidden;
-			responseBody = readContent(errorPage);
+			if (!errorPage.empty())
+			{
+				responseBody = readContent(errorPage);
+				return ;
+			}
 		}
 		else if (this->request->getStatusCode() == SERVER_ERROR)
 		{
 			errorPage = this->request->getServerInstance()->getErrorPages()->path_internal_error;
-			responseBody = readContent(errorPage);
+			if (!errorPage.empty())
+			{
+				responseBody = readContent(errorPage);
+				return ;
+			}
 		}
 	}
-	else
-	{
-		std::cout << "test 1 "  << std::endl;
-		responseBody = generateErrorPage();
-	}
+	responseBody = generateErrorPage();
 }
 
 int	Response::handleRedirection(void)
@@ -202,7 +207,8 @@ stringContainer Response::generateHeaderFields(std::string &responseBody)
 	}
 	if (request->getRedirectionStatus())
 	{
-		std::string location = "Location: " + request->getRedirectionLink() + " \r\n";
+		std::string location = "Location: http://" + request->getStartLine().IpAdress + ":" + request->getStartLine().Port + "/" + request->getRedirectionLink() + " \r\n";
+		std::cout << location;
 		toReturn.push_back(location);
 	}
 	std::string Server = "Server: websrv\r\n\r\n";

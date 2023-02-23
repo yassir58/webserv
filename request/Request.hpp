@@ -6,7 +6,7 @@
 /*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:36 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/22 12:33:56 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/23 13:39:10 by yelatman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@
 # define OK			   200
 # define CREATED	   201
 # define NO_CONTENT	   204
-# define FOUND		   301
+# define FOUND		   302
 # define BAD_REQUEST   400
 # define FORBIDDEN	   403
 # define NOT_FOUND	   404

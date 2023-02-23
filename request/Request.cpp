@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yelatman <yelatman@student.42.fr>          +#+  +:+       +#+        */
+/*   By: Ma3ert <yait-iaz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 20:24:14 by Ma3ert            #+#    #+#             */
-/*   Updated: 2023/02/20 15:38:02 by yelatman         ###   ########.fr       */
+/*   Updated: 2023/02/22 14:56:59 by Ma3ert           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,9 +85,20 @@ Location *Request::matchLocation(void)
 	std::vector<Location *>::iterator begin = Locations.begin();
 	std::vector<Location *>::iterator end = Locations.end();
 	size_t	pos;
+	std::string endPoint;
+	std::string newPath = path;
+	if (*(newPath.end() - 1) != '/')
+		newPath = newPath + '/';
+	if (*newPath.begin() != '/')
+		newPath = '/' + newPath;
 	while (end != begin)
 	{
-		int dec = path.compare((*begin)->getEndPoint());
+		endPoint = (*begin)->getEndPoint();
+		if (*(endPoint.end() - 1) != '/')
+			endPoint = endPoint + "/";
+		if (*endPoint.begin() != '/')
+			endPoint = '/' + endPoint;
+		int dec = newPath.compare(endPoint);
 		if (!dec)
 			return (*begin);
 		++begin;
@@ -95,7 +106,12 @@ Location *Request::matchLocation(void)
 	begin = Locations.begin();
 	while (end != begin)
 	{
-		pos = path.find((*begin)->getEndPoint(), 0);
+		endPoint = (*begin)->getEndPoint();
+		if (*(endPoint.end() - 1) != '/')
+			endPoint = endPoint + "/";
+		if (*endPoint.begin() != '/')
+			endPoint = '/' + endPoint;
+		pos = newPath.find(endPoint, 0);
 		if (pos == 0)
 			return (*begin);
 		++begin;
@@ -111,14 +127,16 @@ int	Request::checkDirectory(Location *pathLocation)
 		statusCode = FORBIDDEN;
 		return (0);
 	}
+	std::cout << "hoho1\n";
 	if (dec && startLine.method == "GET")
 	{
 		if (*(path.end() - 1) != '/')
 		{
 			size_t pos = path.find(root);
 			redirectionLink = path.substr(pos + root.length(), std::string::npos) + "/";
-			redirectCode = "301";
+			redirectCode = "302";
 			redirectionStatus = true;
+			std::cout << "I get here to change location\n";
 			return (0);
 		}
 		std::string indexFile = pathLocation->getDefaultIndex();
@@ -198,7 +216,7 @@ int Request::treatAbsolutePath(Location *pathLocation)
 		size_t pos = path.find_last_of('/', std::string::npos);
 		std::string fileName = path.substr(pos, std::string::npos);
 		path = path.substr(0, pos);
-		if (access(path.c_str(), W_OK) == -1)
+		if (!statusCode && access(path.c_str(), W_OK) == -1)
 			statusCode = FORBIDDEN;
 		path = adjustPath(path, fileName);
 		return (0);
